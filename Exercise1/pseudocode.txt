@@ -1,0 +1,9 @@
+//Pseudocode für Funktionen/Programmablauf vom ersten Übungsblatt
+hamiltonian(array spins, h, N, J=1)
+interaction=0
+	for spin in 1...N:
+	//periodische Randbedingungen durch mod implementiert
+		interaction-=spins[i]*spins[(i+1)modN]+h*spins[i]
+return interaction		
+
+		
