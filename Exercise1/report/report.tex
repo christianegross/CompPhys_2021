@@ -12,7 +12,7 @@
 
 % Verzeichnisse mit Abbildungen; kann gestrichen werden,
 % falls Sie dies schon in edv_pakete.tex definiert haben:
-%\graphicspath{{Blatt2/}}
+%\graphicspath{{../report}}
 
 \addbibresource{refs.bib} %Hinzufügen einer Literaturdatenbank aus dem angegebenen Verzeichnis
 
@@ -27,30 +27,102 @@
 	\maketitle
 
 \section{Ising-Model in 1 dimension}
-copy definitions of H, Z, m from sheet
+%copy definitions of H, Z, m from sheet
+As described on the exercise sheet, we wish to study the Ising-Model in one dimension. For simplicity's sake we set $k_B=1$. We can imagine spins with possible values $s_i\pm1$ that are arranged on a one-dimensional lattice. From the sheet we know the hamiltonian
+\begin{equation}
+	H(s)=-J\sum_{\langle i,j\rangle }s_is_j-h\sum_{\langle i,j\rangle }s_i
+	\label{eq:hamiltonianising}
+\end{equation}
+
+where $h$ is the strength of an external magnetic field and the physical meaning of $J$ is elaborated in subsection \ref{subsec:meaningJ}. 
+
+We also know the spin configurations have the Boltzmann-weight \begin{equation}
+P(s)=\frac{1}{Z}\exp\left( \frac{-H(s_i)}{T}\right) 
+\qquad
+Z=\sum_{s}\exp\left( \frac{-H(s_i)}{T}\right) 
+\label{eq:boltzmann}
+\end{equation}
+
+We further know the analytical solution for $N$ spins
+\begin{equation}
+Z=\lambda_+^N+\lambda_-^N \qquad 
+\lambda_{\pm}=\text{e}^{\frac{J}{T}}
+\left( \cosh\left(\frac{h}{T} \right) \pm \sqrt{\sinh^2\left(\frac{h}{T} \right)+\text{e}^{\frac{-4J}{T}} }\right) 
+\label{eq:zanalytical}  
+\end{equation}
+
+as well as 
+\begin{equation}
+\langle m\rangle =-\frac{T}{N}\dpd{\log Z}{h}
+\label{eq:manalytical}  
+\end{equation}
 
 \section{Preliminary deliberations}
 
-Before simulating the model, we first have to think about several aspects
+Before simulating the model, we first have to think about several aspects.
 	
-\subsection{What is the physical meaning of J?}
+\subsection{What is the physical meaning of $J$?}
+\label{subsec:meaningJ}
 
-strength of connection between spins, also called exchange energy~\cite{binderheermann}, bigger J=stronger magnet, J>0: ferromagnetic, J<0 antiferromagnetic
+The so-called exchange energy $J$ determines the strength of the internal coupling of the spins. The bigger $J$ ist, the stronger the total system is as a magnet. If $J<0$, the system is ferromagnetic and a parallel orientation of the spins is energetically preferable, if $J>0$ the system is anti-ferromagnetic and an antiparallel orientation is preferable.
+%strength of connection between spins, also called exchange energy~\cite{binderheermann}, bigger J=stronger magnet, J>0: ferromagnetic, J<0 antiferromagnetic
 
 \subsection{What are periodic boundary conditions?}
-In 1D, every state has to have 2 neighbours. What about spins at end of lattice? Neighbour=Spin at other end of lattice. Implemented by using modulo operator on indices.
+Every spin $s_i$ has two neighbours, $s_{i-1}$ and $s_{i+1}$. However, for $s_0$ and $s_{N-1}$, only one neighbour is known, $s_{-1}$ and $s_N$ are not clear. These neigbours are fixed by the boundary conditions, in this case periodic boundary conditions. this means the lattice is \enquote{repeated} at the end, so $s_0$ and $s_{N-1}$ are set to be neighbours. Practically, this is achieved by the use of the modulo-operator.
+%In 1D, every state has to have 2 neighbours. What about spins at end of lattice? Neighbour=Spin at other end of lattice. Implemented by using modulo operator on indices.
 
 \subsection{What are the relevant dimensionless ratios?}
 
-J/T, h/T, as seen in arguments of cosh/sinh and exponents of exp in Z. Need to vary temperature to get results.
+The relevant dimensionless parameters are those that appear in the exponents and arguments of the trigononmetric functions in eq.~\ref{eq:zanalytical}, so $\frac{h}{T}$ and $\frac{J}{T}$. These ratios also appear in the Boltzmann-weight, eq.~\ref{eq:boltzmann} in the form of $\frac{H}{T}$.
+%J/T, h/T, as seen in arguments of cosh/sinh and exponents of exp in Z. Need to vary temperature to get results.
 
-\subsection{What are we wxpecting for the magnetization?}
-calculate -T/N dlogZ/dh, maybe plot?
+\subsection{What are we expecting for the magnetization?}
+\label{subsec:expectationmagnetization}
+%calculate -T/N dlogZ/dh, maybe plot?
+We can calculate eq.~\ref{eq:manalytical}, if we use some additional calculations and the chain rule:
+\[\begin{array}{>{\displaystyle}r>{\displaystyle}c>{\displaystyle}l}
+\dpd{\cosh\left( \frac{h}{T}\right)}{h}
+&=&\frac{1}{T}\sinh\left( \frac{h}{T}\right)\\
+
+\dpd{\sqrt{\sinh^2\left(\frac{h}{T} \right)+\text{e}^{\frac{-4J}{T}} }}{h}
+&=&\frac{\sinh\left( \frac{h}{T}\right)\cosh\left( \frac{h}{T}\right)}
+{T\sqrt{\sinh^2\left(\frac{h}{T} \right)+\text{e}^{\frac{-4J}{T}} }}\\
+
+&&\\
+
+\langle m\rangle =-\frac{T}{N}\dpd{\log Z}{h}
+&=&-\frac{TN}{NZ}\left( \lambda_+^{N-1}\dpd{\lambda_+}{h}+\lambda_-^{N-1}\dpd{\lambda_-}{h}\right) \\
+
+&=&-\frac{1}{Z} 
+\lambda_+^{N-1} \text{e}^{\frac{J}{T}}
+\left( \sinh\left(\frac{h}{T} \right) 
++ \frac{\sinh\left( \frac{h}{T}\right)\cosh\left( \frac{h}{T}\right)}
+{\sqrt{\sinh^2\left(\frac{h}{T} \right)+\text{e}^{\frac{-4J}{T}} }} \right)\\
+
+  
+&&-\frac{1}{Z}\lambda_-^{N-1}\text{e}^{\frac{J}{T}}
+\left( \sinh\left(\frac{h}{T} \right) 
+- \frac{\sinh\left( \frac{h}{T}\right)\cosh\left( \frac{h}{T}\right)}
+{\sqrt{\sinh^2\left(\frac{h}{T} \right)+\text{e}^{\frac{-4J}{T}} }} \right)
+
+\end{array}\]
+
+This equation is quite unwieldy, but can nevertheless be plugged into gnuplot and is shown in section~\ref{sec:results}.
 	
-\subsection{How to determine the error on the measurements?}
-L=number of random configurations sampled
+\subsection{How are the expectation value and the variance of the magnetization determined?}
+%L=number of random configurations sampled
 
-\[\sigma^2(m)=\langle(\langle m\rangle-m)^2\rangle=\frac{1}{Z}\sum_{i=0}^{n=L}(\langle m\rangle-m_i)^2\exp(\frac{-H(s_i)}{T})\]
+The expectation value $\langle m\rangle$ of the magnetization can be calculated as shown in lecture 2, with $L$ the total number of sampled spin sonfigurations: 
+\[\langle m\rangle=\frac{1}{Z}\sum_{i=0}^{L}m(s_i)\exp\left( \frac{-H(s_i)}{T}\right) \]
+%\[Z=\sum_{i=0}^{n=L}\exp(\frac{-H(s_i)}{T})\]
+
+The standard deviation $\sigma$ can be calculated similarly:
+\[\sigma^2(m)=\langle(\langle m\rangle-m)^2\rangle=\frac{1}{Z}\sum_{i=0}^{L}(\langle m\rangle-m_i)^2\exp\left( \frac{-H(s_i)}{T}\right) \]
+
+
+%mean: like in lecture 2, slide 29 
+%\[\langle m\rangle=\frac{1}{Z}\sum_{i=0}^{n=L}m(s_i)\exp(\frac{-H(s_i)}{T})\]
+%\[Z=\sum_{i=0}^{n=L}\exp(\frac{-H(s_i)}{T})\]
 
 \section{Simulation}
 Using gsl\_rng generator with Mersenne-Twister\cite{gsldoc}
@@ -68,10 +140,23 @@ write maen/variance of m in file
 plot with gnuplot
 
 \section{Results}
+\label{sec:results}
 \subsection{Varying h}
-plot
+
+	\begin{figure}[htbp]
+		\input{magnetizationvaryingh}
+		\caption{Magnetization for varying h}
+		\label{fig:magvarh}
+	\end{figure}
+	
 \subsection{Varying N}
-plot
+
+	\begin{figure}[htbp]
+		\input{magnetizationvaryingN}
+		\caption{Magnetization for varying N}
+		\label{fig:magvarN}
+	\end{figure}
+	
 \subsection{thermodynamical limit}
 
 	
