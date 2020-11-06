@@ -12,7 +12,7 @@
 
 % Verzeichnisse mit Abbildungen; kann gestrichen werden,
 % falls Sie dies schon in edv_pakete.tex definiert haben:
-%\graphicspath{{Blatt2/}}
+%\graphicspath{{../report}}
 
 \addbibresource{refs.bib} %Hinzufügen einer Literaturdatenbank aus dem angegebenen Verzeichnis
 
@@ -53,7 +53,7 @@ Z=\lambda_+^N+\lambda_-^N \qquad
 
 as well as 
 \begin{equation}
-\langle m\rangle =\frac{T}{N}\dpd{\log Z}{h}
+\langle m\rangle =-\frac{T}{N}\dpd{\log Z}{h}
 \label{eq:manalytical}  
 \end{equation}
 
@@ -90,17 +90,17 @@ We can calculate eq.~\ref{eq:manalytical}, if we use some additional calculation
 
 &&\\
 
-\langle m\rangle =\frac{T}{N}\dpd{\log Z}{h}
-&=&\frac{TN}{NZ}\left( \lambda_+^{N-1}\dpd{\lambda_+}{h}+\lambda_-^{N-1}\dpd{\lambda_-}{h}\right) \\
+\langle m\rangle =-\frac{T}{N}\dpd{\log Z}{h}
+&=&-\frac{TN}{NZ}\left( \lambda_+^{N-1}\dpd{\lambda_+}{h}+\lambda_-^{N-1}\dpd{\lambda_-}{h}\right) \\
 
-&=&\frac{1}{Z} 
+&=&-\frac{1}{Z} 
 \lambda_+^{N-1} \text{e}^{\frac{J}{T}}
 \left( \sinh\left(\frac{h}{T} \right) 
 + \frac{\sinh\left( \frac{h}{T}\right)\cosh\left( \frac{h}{T}\right)}
 {\sqrt{\sinh^2\left(\frac{h}{T} \right)+\text{e}^{\frac{-4J}{T}} }} \right)\\
 
   
-&&+\frac{1}{Z}\lambda_-^{N-1}\text{e}^{\frac{J}{T}}
+&&-\frac{1}{Z}\lambda_-^{N-1}\text{e}^{\frac{J}{T}}
 \left( \sinh\left(\frac{h}{T} \right) 
 - \frac{\sinh\left( \frac{h}{T}\right)\cosh\left( \frac{h}{T}\right)}
 {\sqrt{\sinh^2\left(\frac{h}{T} \right)+\text{e}^{\frac{-4J}{T}} }} \right)
@@ -142,9 +142,21 @@ plot with gnuplot
 \section{Results}
 \label{sec:results}
 \subsection{Varying h}
-plot
+
+	\begin{figure}[htbp]
+		\input{magnetizationvaryingh}
+		\caption{Magnetization for varying h}
+		\label{fig:magvarh}
+	\end{figure}
+	
 \subsection{Varying N}
-plot
+
+	\begin{figure}[htbp]
+		\input{magnetizationvaryingN}
+		\caption{Magnetization for varying N}
+		\label{fig:magvarN}
+	\end{figure}
+	
 \subsection{thermodynamical limit}
 
 	
