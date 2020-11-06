@@ -1,0 +1,96 @@
+% !TeX spellcheck = en_UK
+% Die erste (unkommentierte) Zeile im Dokument legt immer die
+% Dokumentklasse fest
+\documentclass{scrartcl} 
+
+% Präambel:
+% Einbinen von zusätzlichen Paketen. Falls für eine Datei keine Endung
+% explizit angegeben wird, benutzt LaTeX '.tex'. Im Folgenden wird
+% also die Datei 'edv_pakete.tex' eingebunden.
+\input{edv_pakete}
+
+
+% Verzeichnisse mit Abbildungen; kann gestrichen werden,
+% falls Sie dies schon in edv_pakete.tex definiert haben:
+%\graphicspath{{Blatt2/}}
+
+\addbibresource{refs.bib} %Hinzufügen einer Literaturdatenbank aus dem angegebenen Verzeichnis
+
+% Titel, Autor und Datum
+\title{Computational Physics}
+\subtitle{Exercise 1}
+\date{\today}
+\author{Christiane Groß, Nico Dichter}
+
+% Jetzt startet das eigentliche Dokument
+\begin{document}
+	\maketitle
+
+\section{Ising-Model in 1 dimension}
+copy definitions of H, Z, m from sheet
+
+\section{Preliminary deliberations}
+
+Before simulating the model, we first have to think about several aspects
+	
+\subsection{What is the physical meaning of J?}
+
+strength of connection between spins, also called exchange energy~\cite{binderheermann}, bigger J=stronger magnet, J>0: ferromagnetic, J<0 antiferromagnetic
+
+\subsection{What are periodic boundary conditions?}
+In 1D, every state has to have 2 neighbours. What about spins at end of lattice? Neighbour=Spin at other end of lattice. Implemented by using modulo operator on indices.
+
+\subsection{What are the relevant dimensionless ratios?}
+
+J/T, h/T, as seen in arguments of cosh/sinh and exponents of exp in Z. Need to vary temperature to get results.
+
+\subsection{What are we wxpecting for the magnetization?}
+calculate -T/N dlogZ/dh, maybe plot?
+	
+\subsection{How to determine the error on the measurements?}
+L=number of random configurations sampled
+
+\[\sigma^2(m)=\langle(\langle m\rangle-m)^2\rangle=\frac{1}{Z}\sum_{i=0}^{n=L}(\langle m\rangle-m_i)^2\exp(\frac{-H(s_i)}{T})\]
+
+\section{Simulation}
+Using gsl\_rng generator with Mersenne-Twister\cite{gsldoc}
+
+for range of h or N
+for range of temperatures
+(for range of number of configs:
+generate random state
+calculate m, H, weight exp(-h/T), write in txt-file, add weight to Z)
+calculate Z
+read file to calculate mean(m)
+read file again to calculate variance(m)
+write maen/variance of m in file
+
+plot with gnuplot
+
+\section{Results}
+\subsection{Varying h}
+plot
+\subsection{Varying N}
+plot
+\subsection{thermodynamical limit}
+
+	
+%	\begin{table}[htbp]
+%		\centering
+%		\begin{tabular}{l||l|l}
+%			&Float&Double\\
+%			\hline
+%			&&\\
+%			$h_{opt}$&$2.630\cdot10^{-3}$&$3.236\cdot10^{-6}$\\
+%			$\delta_M$&$7.429\cdot10^{-9}$&$1.383\cdot10^{-17}$\\
+%			$k$&$6.918\cdot10^{-5}$&$1.514\cdot10^{-8}$\\
+%		\end{tabular} 
+%		\caption{Ergebnisse für die Drei-Punkt-Ableitung} 
+%		\label{tab:Drei-Punkt}
+%	\end{table}
+%	
+	
+\newpage	
+\listoffigures
+\printbibliography
+\end{document}

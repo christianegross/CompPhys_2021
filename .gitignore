@@ -1,2 +1,15 @@
 *.exe
 *.o
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.nav
+*.log
+*.lof
+*.out
+*.run.xml
+*.snm
+*.synctex.gz
+*.toc
+*.pdf
