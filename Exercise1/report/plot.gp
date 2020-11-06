@@ -25,13 +25,15 @@ set xrange [0:5]
 
 set xlabel "temperature"
 set ylabel "magnetization"
-do for [N=1:8:2]{
-set title sprintf("N=%d", N)
-#plot for [h=-2:2] magnetization (x, h/2.0, N) title sprintf("h=%.1f", h/2.0)
+set out "magnetization.pdf"
+do for [N in "2 4 8 16"]{
+file=sprintf("../data/%s.dat", N)
+set title sprintf("N=%s", N)
+plot for [h=-2:2] magnetization (x, h/2.0, N)  ls (h+3) title sprintf("h=%.1f", h/2.0), for [h=-2:2] file u (($1==h/2.0)?$2:1/0):3:4 w yerrorbars ls (h+3) title sprintf("h=%.1f", h/2.0)
 }
 
 set title "h=1"
-plot for [N=1:6:1] magnetization (x, 1.0, N) title sprintf("N=%d", N)
+#plot for [N=1:6:1] magnetization (x, 1.0, N) title sprintf("N=%d", N)
 
 
 set ter epslatex size 15 cm, 10.6cm color colortext
