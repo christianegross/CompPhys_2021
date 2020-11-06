@@ -78,7 +78,7 @@ int main(int argc, char **argv){
 	 * @var Temp		Temperatur of the heat bath
 	 * @var J			Coppling strength
 	 * @var lattice		Array of Spins=single configuration
-	 *
+	 * @var length_max	Maximum length to be simulated
 	 */
 	int length=2;
 	double h=-1;
@@ -86,30 +86,32 @@ int main(int argc, char **argv){
 	double Temp=1;
 	const double J=1;
 	int lattice[length];
-	
 	int length_max=20;
 	double part_fct=0;
 	double magnetization=0;
 	double magnet_var=0;
+	
 	//set and allocate random number generator
 	int seed=2;//use fixed seed: result should be exactly reproduced using the same seed
 	gsl_rng *generator;
-	
 	generator=gsl_rng_alloc(gsl_rng_mt19937);//use mersenne-twister
 	gsl_rng_set(generator, seed);
 	
 	/**
-	 * @note	Generate a new configuration "conf"-times.
-	 * 			Calculate the boltzman weight and the weighted mean-spin 
-	 * 			of each configuration.
-	 * 			At the end the expected value of magnetization gets calculated.
+	 * @note	Allocate memory for all the boltzmann weights and mean 
+	 * 			of the spins for a given parameter set. 
+	 * 			And open the needed file stream.
 	 *
 	 */
-
 	gsl_block *b_weights=gsl_block_alloc(amount_conf (length_max));
 	gsl_block *means_spin=gsl_block_alloc(amount_conf (length_max));
 	char filename [100];
-	FILE * savedata=fopen ("data/dummy.dat", "w");
+	snprintf (filename, 100, "data/%d.dat",length);
+	FILE * savedata=fopen (filename, "w");
+	
+	/**
+	 * @note	Itterate through each paramter set.
+	 */
 	for(length=2;length<=length_max;length*=2){
 		printf ("Starting calculation for N=%d....\n",length);
 		snprintf (filename, 100, "data/%d.dat",length);
@@ -121,6 +123,13 @@ int main(int argc, char **argv){
 		fprintf(savedata,"#h\tT\t<m>\t<m>_err\n");
 		for(h=-1;h<1.1;h+=0.5){
 			for(Temp=0.2;Temp<8.1;Temp+=0.2){
+				/**
+				 * @note	Generate a new configuration "conf"-times.
+				 * 			Calculate the boltzman weight and the weighted mean-spin 
+				 * 			of each configuration.
+				 * 			At the end the expected value of magnetization gets calculated.
+				 *
+				 */
 				part_fct=0;
 				magnetization=0;
 				magnet_var=0;
@@ -132,6 +141,11 @@ int main(int argc, char **argv){
 					magnetization+=(means_spin->data[i])*(b_weights->data[i]);
 				}
 				magnetization/=part_fct;
+				
+				/**
+				 * @note	Calculate the variance of the magnetization.
+				 * 			And save the data.
+				 */
 				for(int i=0;i<conf; i+=1){
 					magnet_var+=(magnetization-means_spin->data[i])*(magnetization-means_spin->data[i])*(b_weights->data[i]);
 				}
@@ -140,6 +154,10 @@ int main(int argc, char **argv){
 			}
 		}
 	}
+	
+	/**
+	 * @note	Cleanup.
+	 */
 	gsl_rng_free(generator);
 	gsl_block_free (b_weights);
 	gsl_block_free (means_spin);

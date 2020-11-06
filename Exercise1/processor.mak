@@ -83,7 +83,7 @@ plot:
 #main calculation
 calc:$(BINDIR)/$(EXECUTIONFILE)
 	@echo [make] calculating ...
-	$(BINDIR)/$(EXECUTIONFILE) 10 2
+	$(BINDIR)/$(EXECUTIONFILE)
 
 # Builder uses this target to run the application.
 run:

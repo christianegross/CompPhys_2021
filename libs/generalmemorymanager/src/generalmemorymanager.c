@@ -1,9 +1,3 @@
-// Die folgenden Befehle müssen im Verzeichnis, 
-// in dem die "Makefile" liegt ausgeführt werden:
-// make
-// make calc
-// Nico Dichter, Florian Giefer
-// Die Plots können mit "make plot" erstellt werden.
 #include "generalmemorymanager.h"
 #include <stdlib.h>
 #include <stdio.h>
