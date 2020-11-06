@@ -66,7 +66,7 @@ double mean_spin(int *lattice, int length){
 }
 
 int amount_conf(int length){
-	return pow (2, length-1);
+	return pow (2, length-1+6);
 }
 int main(int argc, char **argv){
 	/**
