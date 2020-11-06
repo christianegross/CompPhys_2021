@@ -52,6 +52,10 @@ L=number of random configurations sampled
 
 \[\sigma^2(m)=\langle(\langle m\rangle-m)^2\rangle=\frac{1}{Z}\sum_{i=0}^{n=L}(\langle m\rangle-m_i)^2\exp(\frac{-H(s_i)}{T})\]
 
+mean: like in lecture 2, slide 29 
+\[\langle m\rangle=\frac{1}{Z}\sum_{i=0}^{n=L}m(s_i)\exp(\frac{-H(s_i)}{T})\]
+\[Z=\sum_{i=0}^{n=L}\exp(\frac{-H(s_i)}{T})\]
+
 \section{Simulation}
 Using gsl\_rng generator with Mersenne-Twister\cite{gsldoc}
 
