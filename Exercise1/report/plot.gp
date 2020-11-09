@@ -16,7 +16,7 @@ Z(T, h, N)=(lambdaplus(T,h))**N+(lambdaminus(T,h))**N
 
 fracsinh(T, h)=sinh(h/T)*cosh(h/T)/sqrt(sinh(h/T)*sinh(h/T)+exp(-4.0/T))
 
-magnetization(T,h,N)=-(((lambdaplus(T,h))**(N-1))*exp(1/T)*(sinh(h/T)+fracsinh(T, h))+((lambdaminus(T,h))**(N-1))*exp(1/T)*(sinh(h/T)-fracsinh(T, h)))/Z(T,h,N)
+magnetization(T,h,N)=(((lambdaplus(T,h))**(N-1))*exp(1/T)*(sinh(h/T)+fracsinh(T, h))+((lambdaminus(T,h))**(N-1))*exp(1/T)*(sinh(h/T)-fracsinh(T, h)))/Z(T,h,N)
 
 set ter pdfcairo size 4in, 4in
 #pdf for easy viewing

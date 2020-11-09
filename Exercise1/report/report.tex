@@ -53,7 +53,7 @@ Z=\lambda_+^N+\lambda_-^N \qquad
 
 as well as 
 \begin{equation}
-\langle m\rangle =-\frac{T}{N}\dpd{\log Z}{h}
+\langle m\rangle =\frac{T}{N}\dpd{\log Z}{h}
 \label{eq:manalytical}  
 \end{equation}
 
@@ -91,16 +91,16 @@ We can calculate eq.~\ref{eq:manalytical}, if we use some additional calculation
 &&\\
 
 \langle m\rangle =-\frac{T}{N}\dpd{\log Z}{h}
-&=&-\frac{TN}{NZ}\left( \lambda_+^{N-1}\dpd{\lambda_+}{h}+\lambda_-^{N-1}\dpd{\lambda_-}{h}\right) \\
+&=&\frac{TN}{NZ}\left( \lambda_+^{N-1}\dpd{\lambda_+}{h}+\lambda_-^{N-1}\dpd{\lambda_-}{h}\right) \\
 
-&=&-\frac{1}{Z} 
+&=&\frac{1}{Z} 
 \lambda_+^{N-1} \text{e}^{\frac{J}{T}}
 \left( \sinh\left(\frac{h}{T} \right) 
 + \frac{\sinh\left( \frac{h}{T}\right)\cosh\left( \frac{h}{T}\right)}
 {\sqrt{\sinh^2\left(\frac{h}{T} \right)+\text{e}^{\frac{-4J}{T}} }} \right)\\
 
   
-&&-\frac{1}{Z}\lambda_-^{N-1}\text{e}^{\frac{J}{T}}
+&&+\frac{1}{Z}\lambda_-^{N-1}\text{e}^{\frac{J}{T}}
 \left( \sinh\left(\frac{h}{T} \right) 
 - \frac{\sinh\left( \frac{h}{T}\right)\cosh\left( \frac{h}{T}\right)}
 {\sqrt{\sinh^2\left(\frac{h}{T} \right)+\text{e}^{\frac{-4J}{T}} }} \right)
