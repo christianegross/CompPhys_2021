@@ -66,7 +66,7 @@ double mean_spin(int *lattice, int length){
 }
 
 int amount_conf(int length){
-	return pow (2, 20);//length-1+8); 
+	return pow (2, 21);//length-1+8); 
 	//amount of configurations can be set to be different per length, because phase space has different sizes per length
 	//measurements show not needed
 }
