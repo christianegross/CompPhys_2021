@@ -59,14 +59,14 @@ double hamiltonian(int *lattice, int length,double h, double J){
  */
 double mean_spin(int *lattice, int length){
 	double sum_of_spins=0;
-	for(int i=0;i<length-1; i++){
+	for(int i=0;i<length; i++){
 		sum_of_spins+=lattice[i];
 	}
 	return sum_of_spins/length;
 }
 
 int amount_conf(int length){
-	return pow (2, length-1);
+	return pow (2, length-1+5);
 }
 int main(int argc, char **argv){
 	/**
