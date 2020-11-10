@@ -1,4 +1,4 @@
-% !TeX spellcheck = en_UK
+% !TeX spellcheck = en_GB
 % Die erste (unkommentierte) Zeile im Dokument legt immer die
 % Dokumentklasse fest
 \documentclass{scrartcl} 
@@ -112,7 +112,7 @@ This equation is quite unwieldy, but can nevertheless be plugged into gnuplot an
 \subsection{How are the expectation value and the variance of the magnetization determined?}
 %L=number of random configurations sampled
 
-The expectation value $\langle m\rangle$ of the magnetization can be calculated as shown in lecture 2, with $L$ the total number of sampled spin sonfigurations: 
+The expectation value $\langle m\rangle$ of the magnetization can be calculated as shown in lecture 2, with $L$ the total number of sampled spin configurations: 
 \[\langle m\rangle=\frac{1}{Z}\sum_{i=0}^{L}m(s_i)\exp\left( \frac{-H(s_i)}{T}\right) \]
 %\[Z=\sum_{i=0}^{n=L}\exp(\frac{-H(s_i)}{T})\]
 
@@ -125,27 +125,20 @@ The standard deviation $\sigma$ can be calculated similarly:
 %\[Z=\sum_{i=0}^{n=L}\exp(\frac{-H(s_i)}{T})\]
 
 \section{Simulation}
-Using gsl\_rng generator with Mersenne-Twister\cite{gsldoc}
+Using gsl\_rng generator with Mersenne-Twister\cite{gsldoc} and gsl\_block \cite{gsldoc_blk}
+Each set of wanted h and N(length) parameter sets gets iterated through.
+In each iteration we generate a specific amount of  random spin configurations, with the wanted length N.
+Then we calculate the boltzman weight and the mean of the spins in each configuration. These values get stored and are also used to calculate the expectation value of the magnetization for the given parameter set and the partition function. At the end of each iteration the stored boltzman weights an mean values of the spins get used to calculate the variance of our result. These values get saved into a file. 
 
-for range of h or N
-for range of temperatures
-(for range of number of configs:
-generate random state
-calculate m, H, weight exp(-h/T), save in arrays, add weight to Z)
-calculate Z
-calulate mean(m)
-read array to calculate variance(m)
-write mean/variance of m in file
-
-plot with gnuplot
+From this file the data points get plotted using gnuplot, the analytical solution got implemented directly into gnuplot.
 
 \section{Results}
 \label{sec:results}
 \subsection{Varying h}
-The results of the simulations for varying $h$ and fixed $N$ at $2^{20}$ samples per measurement,as well as the expectations from sec.~\ref{subsec:expectationmagnetization} are plotted in fig.~\ref{fig:magvarh}. We expect the magnetization to be zero for $h=0$, and for $h>0$ we expect the magnetization to be one for  low temperatures and to fall for larger temperatures. This fall is expected to be steeper for smaller $h$, and the slope first gets steeper for higher temperatures, but then gets smaller again and the graphs for different values of $h$ get closer again. For larger temperatures, the magnetization converges to zero. For $h<0$, the absolute value of the magnetization behaves identically, but the magnetization is negative. For $h\neg 0$ our measurements follow the expectation pretty weel, for $N=16$ and $2^{21}$ sampled configurations almost all points lie on the expected curve and those few that so not are really close. The error on the measurement grows with growing temperature. For $h=0$, all points at higher temperatures lie on the curve, but there are some at small temperatures that are pretty far off. However, the errors get smaller with rising temperatures. The far off-points would probably be improved with more measurements.
+The results of the simulations for varying $h$ and fixed $N$ at $2^{21}$ samples per measurement,as well as the expectations from sec.~\ref{subsec:expectationmagnetization} are plotted in fig.~\ref{fig:magvarh}. We expect the magnetization to be zero for $h=0$, and for $h>0$ we expect the magnetization to be one for  low temperatures and to fall for larger temperatures. This fall is expected to be steeper for smaller $h$, and the slope first gets steeper for higher temperatures, but then gets smaller again and the graphs for different values of $h$ get closer again. For larger temperatures, the magnetization converges to zero. For $h<0$, the absolute value of the magnetization behaves identically, but the magnetization is negative. For $h\neg 0$ our measurements follow the expectation pretty weel, for $N=16$ and $2^{21}$ sampled configurations almost all points lie on the expected curve and those few that so not are really close. The error on the measurement grows with growing temperature. For $h=0$, all points at higher temperatures lie on the curve, but there are some at small temperatures that are pretty far off. However, the errors get smaller with rising temperatures. The far off-points would probably be improved with more measurements.
 
 	\begin{figure}[htbp]
-		\input{magnetizationvaryingh}
+		%\input{magnetizationvaryingh}
 		\caption{Magnetization for varying h, $N=16$, $2^{21}$ configurations sampled}
 		\label{fig:magvarh}
 	\end{figure}
@@ -155,7 +148,7 @@ The results of the simulations for varying $h$ and fixed $N$ at $2^{20}$ samples
 For varying $N$, our results for $h=1$ and $2^{21}$ sampled configurations are plotted together with the expectations in fig.~\ref{fig:magvarN}. Again our results follow the expectations pretty nicely: For $N=2$ the slope is a bit steeper than for the other configurations, $N=4$ is visibly a little bit steeper and below the curves for $N=8$ and $N=16$, which are on top of each other. Indeed, our measurements for $N=4,8,16$ lie pretty close to or even on top of each other, while the measurements for $N=2$ are visible below the other points. the errors of the measurements are larger for larger temperatures, and larger for smaller $N$, probably because of the size of the phase space.
 
 	\begin{figure}[htbp]
-		\input{magnetizationvaryingN}
+		%\input{magnetizationvaryingN}
 		\caption{Magnetization for varying N, $h=1$, $2^{21}$ configurations sampled}
 		\label{fig:magvarN}
 	\end{figure}
