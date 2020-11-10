@@ -21,7 +21,7 @@ magnetization(T,h,N)=(((lambdaplus(T,h))**(N-1))*exp(1/T)*(sinh(h/T)+fracsinh(T,
 set ter pdfcairo size 4in, 4in
 #pdf for easy viewing
 
-datafile="../data/"
+datafile="../data/N_h.dat"
 Nfix=20
 hfix=1
 set yrange [-1:1]
