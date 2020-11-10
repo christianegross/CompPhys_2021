@@ -9,7 +9,7 @@ set style line 6 lc 5 lt 7 pt 4#4 gut
 
 set style line 8 lc 2 lt 7 pt 11
 
-#do not consider J because J=1
+#do not consider J because J=1, set T=1 in plot commands
 lambdaplus(T, h) =exp(1.0/T)*(cosh(h/T)+sqrt(sinh(h/T)*sinh(h/T)+exp(-4.0/T)))
 lambdaminus(T, h)=exp(1.0/T)*(cosh(h/T)-sqrt(sinh(h/T)*sinh(h/T)+exp(-4.0/T)))
 Z(T, h, N)=(lambdaplus(T,h))**N+(lambdaminus(T,h))**N
@@ -20,24 +20,33 @@ magnetization(T,h,N)=(((lambdaplus(T,h))**(N-1))*exp(1/T)*(sinh(h/T)+fracsinh(T,
 
 set ter pdfcairo size 4in, 4in
 #pdf for easy viewing
-set out "firsttry.pdf"
 
-set xrange [0:5]
-#plot magnetization(x,0.2,5) lt 2 title "h=0.2, N=5"
-
-set xlabel "temperature"
+datafile="../data/"
+Nfix=20
+hfix=1
+set yrange [-1:1]
 set ylabel "magnetization"
-set out "magnetization.pdf"
-do for [N in "2 4 8 16"]{
-file=sprintf("../data/%s.dat", N)
+
+
+set out "varyingh.pdf"
+set xlabel "h"
+set xrange [-1:1]
+set key top left
+do for [N in "2 4 8 12 16 20"]{
 set title sprintf("N=%s", N)
-plot for [h=-2:2] magnetization (x, h/2.0, N)  ls (h+3) title sprintf("h=%.1f", h/2.0), for [h=-2:2] file u (($1==h/2.0)?$2:1/0):3:4 w yerrorbars ls (h+3) title sprintf("h=%.1f", h/2.0)
+plot magnetization(1,x,N) title "expectation"#, datafile ($1==N)?$2:1/0):3:4 w yerrorbars title sprintf("N=%s", N)
 }
 
 
-
-set title "h=1"
-plot for [N in "2 8 32 128 512 2048"] magnetization (x, 1.0, N) dashtype N title sprintf("N=%s", N)
+set out "varyingN.pdf"
+set xlabel "N"
+set xrange [1:21]
+set key top right
+do for [a=-10:10:2]{
+h=a/10.0
+set title sprintf("h=%.1f", h)
+plot magnetization(1,h,x) title "expectation"#, datafile ($2==h)?$1:1/0):3:4 w yerrorbars title sprintf("h=%.1f", h)
+}
 
 
 set ter epslatex size 15 cm, 10.6cm color colortext
@@ -46,10 +55,11 @@ set ter epslatex size 15 cm, 10.6cm color colortext
 unset title
 
 set out "magnetizationvaryingh.tex"
-file=sprintf("../data/%d.dat", 16)
-plot for [h=-2:2] magnetization (x, h/2.0, 16)  ls (h+3) title "", for [h=-2:2] file u (($1==h/2.0)?$2:1/0):3:4 w yerrorbars ls (h+3) ps 2 title sprintf("h=%.1f", h/2.0)
+set xrange [-1:1]
+plot magnetization(1,x,Nfix) title "expectation"#, datafile ($1==Nfix)?$2:1/0):3:4 w yerrorbars title sprintf("N=%s", Nfix)
 
 set out "magnetizationvaryingN.tex"
-set key bottom left
-plot for [N in "2 4 8 16"] magnetization (x, 1, N)  ls (N/2) title "", for [N in "2 4 8 16"] sprintf("../data/%s.dat", N) u (($1==1)?$2:1/0):3:4 w yerrorbars ls (N/2) ps 2 title sprintf("N=%s", N)
+set xrange [1:21]
+plot magnetization(1,hfix,x) title "expectation"#, datafile ($2==hfix)?$1:1/0):3:4 w yerrorbars title sprintf("h=%.1f", hfix)
 
+set output
