@@ -53,7 +53,7 @@ Z=\lambda_+^N+\lambda_-^N \qquad
 
 as well as 
 \begin{equation}
-\langle m\rangle =-\frac{T}{N}\dpd{\log Z}{h}
+\langle m\rangle =\frac{T}{N}\dpd{\log Z}{h}
 \label{eq:manalytical}  
 \end{equation}
 
@@ -91,16 +91,16 @@ We can calculate eq.~\ref{eq:manalytical}, if we use some additional calculation
 &&\\
 
 \langle m\rangle =-\frac{T}{N}\dpd{\log Z}{h}
-&=&-\frac{TN}{NZ}\left( \lambda_+^{N-1}\dpd{\lambda_+}{h}+\lambda_-^{N-1}\dpd{\lambda_-}{h}\right) \\
+&=&\frac{TN}{NZ}\left( \lambda_+^{N-1}\dpd{\lambda_+}{h}+\lambda_-^{N-1}\dpd{\lambda_-}{h}\right) \\
 
-&=&-\frac{1}{Z} 
+&=&\frac{1}{Z} 
 \lambda_+^{N-1} \text{e}^{\frac{J}{T}}
 \left( \sinh\left(\frac{h}{T} \right) 
 + \frac{\sinh\left( \frac{h}{T}\right)\cosh\left( \frac{h}{T}\right)}
 {\sqrt{\sinh^2\left(\frac{h}{T} \right)+\text{e}^{\frac{-4J}{T}} }} \right)\\
 
   
-&&-\frac{1}{Z}\lambda_-^{N-1}\text{e}^{\frac{J}{T}}
+&&+\frac{1}{Z}\lambda_-^{N-1}\text{e}^{\frac{J}{T}}
 \left( \sinh\left(\frac{h}{T} \right) 
 - \frac{\sinh\left( \frac{h}{T}\right)\cosh\left( \frac{h}{T}\right)}
 {\sqrt{\sinh^2\left(\frac{h}{T} \right)+\text{e}^{\frac{-4J}{T}} }} \right)
@@ -142,23 +142,29 @@ plot with gnuplot
 \section{Results}
 \label{sec:results}
 \subsection{Varying h}
+The results of the simulations for varying $h$ and fixed $N$ at $2^{20}$ samples per measurement,as well as the expectations from sec.~\ref{subsec:expectationmagnetization} are plotted in fig.~\ref{fig:magvarh}. We expect the magnetization to be zero for $h=0$, and for $h>0$ we expect the magnetization to be one for  low temperatures and to fall for larger temperatures. This fall is expected to be steeper for smaller $h$, and the slope first gets steeper for higher temperatures, but then gets smaller again and the graphs for different values of $h$ get closer again. For larger temperatures, the magnetization converges to zero. For $h<0$, the absolute value of the magnetization behaves identically, but the magnetization is negative. For $h\neg 0$ our measurements follow the expectation pretty weel, for $N=16$ and $2^{21}$ sampled configurations almost all points lie on the expected curve and those few that so not are really close. The error on the measurement grows with growing temperature. For $h=0$, all points at higher temperatures lie on the curve, but there are some at small temperatures that are pretty far off. However, the errors get smaller with rising temperatures. The far off-points would probably be improved with more measurements.
 
 	\begin{figure}[htbp]
 		\input{magnetizationvaryingh}
-		\caption{Magnetization for varying h}
+		\caption{Magnetization for varying h, $N=16$, $2^{21}$ configurations sampled}
 		\label{fig:magvarh}
 	\end{figure}
 	
 \subsection{Varying N}
 
+For varying $N$, our results for $h=1$ and $2^{21}$ sampled configurations are plotted together with the expectations in fig.~\ref{fig:magvarN}. Again our results follow the expectations pretty nicely: For $N=2$ the slope is a bit steeper than for the other configurations, $N=4$ is visibly a little bit steeper and below the curves for $N=8$ and $N=16$, which are on top of each other. Indeed, our measurements for $N=4,8,16$ lie pretty close to or even on top of each other, while the measurements for $N=2$ are visible below the other points. the errors of the measurements are larger for larger temperatures, and larger for smaller $N$, probably because of the size of the phase space.
+
 	\begin{figure}[htbp]
 		\input{magnetizationvaryingN}
-		\caption{Magnetization for varying N}
+		\caption{Magnetization for varying N, $h=1$, $2^{21}$ configurations sampled}
 		\label{fig:magvarN}
 	\end{figure}
 	
 \subsection{thermodynamical limit}
 
+As seen above in fig.~\ref{fig:magvarN}, the expected magnetizations for $N=8$ and $N=16$ already lie on top of each other. We do not expect this to change for even bigger N, so our simulations with $N=16$ already reproduce the thermodynamical limit. 
+
+We also see that Monte-Carlo simulation does not really make sense in this case: We sampled $2^{21}$ configurations, but even for $N=16$ this is a factor of $2^5$ larger than the entire phase space, which only contains $2^{16}$ possible configurations, and was solved in a few minutes. So in this case it would have been very easy and straightforward to sample the entire phase space. we have however seen that Monte-Carlo methods work and reproduce the expected solution quite nicely.
 	
 %	\begin{table}[htbp]
 %		\centering

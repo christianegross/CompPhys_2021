@@ -16,7 +16,7 @@ Z(T, h, N)=(lambdaplus(T,h))**N+(lambdaminus(T,h))**N
 
 fracsinh(T, h)=sinh(h/T)*cosh(h/T)/sqrt(sinh(h/T)*sinh(h/T)+exp(-4.0/T))
 
-magnetization(T,h,N)=-(((lambdaplus(T,h))**(N-1))*exp(1/T)*(sinh(h/T)+fracsinh(T, h))+((lambdaminus(T,h))**(N-1))*exp(1/T)*(sinh(h/T)-fracsinh(T, h)))/Z(T,h,N)
+magnetization(T,h,N)=(((lambdaplus(T,h))**(N-1))*exp(1/T)*(sinh(h/T)+fracsinh(T, h))+((lambdaminus(T,h))**(N-1))*exp(1/T)*(sinh(h/T)-fracsinh(T, h)))/Z(T,h,N)
 
 set ter pdfcairo size 4in, 4in
 #pdf for easy viewing
@@ -34,8 +34,10 @@ set title sprintf("N=%s", N)
 plot for [h=-2:2] magnetization (x, h/2.0, N)  ls (h+3) title sprintf("h=%.1f", h/2.0), for [h=-2:2] file u (($1==h/2.0)?$2:1/0):3:4 w yerrorbars ls (h+3) title sprintf("h=%.1f", h/2.0)
 }
 
+
+
 set title "h=1"
-#plot for [N=1:6:1] magnetization (x, 1.0, N) title sprintf("N=%d", N)
+plot for [N in "2 8 32 128 512 2048"] magnetization (x, 1.0, N) dashtype N title sprintf("N=%s", N)
 
 
 set ter epslatex size 15 cm, 10.6cm color colortext
@@ -45,8 +47,9 @@ unset title
 
 set out "magnetizationvaryingh.tex"
 file=sprintf("../data/%d.dat", 16)
-plot for [h=-2:2] magnetization (x, h/2.0, 16)  ls (h+3) title sprintf("h=%.1f", h/2.0), for [h=-2:2] file u (($1==h/2.0)?$2:1/0):3:4 w yerrorbars ls (h+3) title ""
+plot for [h=-2:2] magnetization (x, h/2.0, 16)  ls (h+3) title "", for [h=-2:2] file u (($1==h/2.0)?$2:1/0):3:4 w yerrorbars ls (h+3) ps 2 title sprintf("h=%.1f", h/2.0)
 
 set out "magnetizationvaryingN.tex"
-plot for [N in "2 4 8 16"] magnetization (x, 1, N)  ls (N/2) title "", for [N in "2 4 8 16"] sprintf("../data/%s.dat", N) u (($1==1)?$2:1/0):3:4 w yerrorbars ls (N/2) title sprintf("N=%s", N)
+set key bottom left
+plot for [N in "2 4 8 16"] magnetization (x, 1, N)  ls (N/2) title "", for [N in "2 4 8 16"] sprintf("../data/%s.dat", N) u (($1==1)?$2:1/0):3:4 w yerrorbars ls (N/2) ps 2 title sprintf("N=%s", N)
 

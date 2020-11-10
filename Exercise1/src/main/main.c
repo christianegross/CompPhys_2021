@@ -1,6 +1,6 @@
 //Exercise 1 for Computational Physics: Simulation of the 1D Ising-Model
-//Nico dichter, Christiane Groß
-//06. November 2020
+//Nico Dichter, Christiane Groß
+//06. November 2020-11. Novemebr 2020
 
 //computation would be faster with char instead of int in the arrays, however use int at first to get human readable output
 
@@ -43,7 +43,7 @@ double hamiltonian(int *lattice, int length,double h, double J){
 	for(int i=0;i<length-1; i++){
 		interaction-=J*lattice[i]*lattice[i+1]+h*lattice[i];
 	}
-	interaction-=J*lattice[length-1]*lattice[0]+h*lattice[length-1];
+	interaction-=J*lattice[length-1]*lattice[0]+h*lattice[length-1];//implements periodic boundary conditions
 	return interaction;
 }
 
@@ -59,14 +59,16 @@ double hamiltonian(int *lattice, int length,double h, double J){
  */
 double mean_spin(int *lattice, int length){
 	double sum_of_spins=0;
-	for(int i=0;i<length-1; i++){
+	for(int i=0;i<length; i++){
 		sum_of_spins+=lattice[i];
 	}
 	return sum_of_spins/length;
 }
 
 int amount_conf(int length){
-	return pow (2, length-1+6);
+	return pow (2, 21);//length-1+8); 
+	//amount of configurations can be set to be different per length, because phase space has different sizes per length
+	//measurements show not needed
 }
 int main(int argc, char **argv){
 	/**
@@ -110,7 +112,7 @@ int main(int argc, char **argv){
 	FILE * savedata=fopen (filename, "w");
 	
 	/**
-	 * @note	Itterate through each paramter set.
+	 * @note	Itterate through each paramter set: N, h, temperature
 	 */
 	for(length=2;length<=length_max;length*=2){
 		printf ("Starting calculation for N=%d....\n",length);
@@ -122,7 +124,7 @@ int main(int argc, char **argv){
 		conf=amount_conf (length);
 		fprintf(savedata,"#h\tT\t<m>\t<m>_err\n");
 		for(h=-1;h<1.1;h+=0.5){
-			for(Temp=0.2;Temp<8.1;Temp+=0.2){
+			for(Temp=0.2;Temp<5.1;Temp+=0.2){
 				/**
 				 * @note	Generate a new configuration "conf"-times.
 				 * 			Calculate the boltzman weight and the weighted mean-spin 
