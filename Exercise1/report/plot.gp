@@ -22,9 +22,9 @@ set ter pdfcairo size 4in, 4in
 #pdf for easy viewing
 
 datafile="../data/N_h.dat"
-Nfix=20
-hfix=1
-set yrange [-1:1]
+Nfix=16
+hfix=0.4
+set yrange [-1.5:1.5]
 set ylabel "magnetization"
 
 
@@ -34,7 +34,7 @@ set xrange [-1:1]
 set key top left
 do for [N in "2 4 8 12 16 20"]{
 set title sprintf("N=%s", N)
-plot magnetization(1,x,N) title "expectation"#, datafile ($1==N)?$2:1/0):3:4 w yerrorbars title sprintf("N=%s", N)
+plot magnetization(1,x,N) title "expectation", datafile u (($1==N)?$2:1/0):3:4 w yerrorbars title "measurement"#sprintf("N=%s", N)
 }
 
 
@@ -45,7 +45,7 @@ set key top right
 do for [a=-10:10:2]{
 h=a/10.0
 set title sprintf("h=%.1f", h)
-plot magnetization(1,h,x) title "expectation"#, datafile ($2==h)?$1:1/0):3:4 w yerrorbars title sprintf("h=%.1f", h)
+plot magnetization(1,h,x) title "expectation", datafile u (($2==h)?$1:1/0):3:4 w yerrorbars title "measurement"#sprintf("h=%.1f", h)
 }
 
 
@@ -56,10 +56,14 @@ unset title
 
 set out "magnetizationvaryingh.tex"
 set xrange [-1:1]
-plot magnetization(1,x,Nfix) title "expectation"#, datafile ($1==Nfix)?$2:1/0):3:4 w yerrorbars title sprintf("N=%s", Nfix)
+
+set key top left
+plot magnetization(1,x,Nfix) ls 1 lw 2 title "expectation", datafile u (($1==Nfix)?$2:1/0):3:4 w yerrorbars ls 2 ps 2 title "measurement"#sprintf("N=%s", Nfix)
 
 set out "magnetizationvaryingN.tex"
 set xrange [1:21]
-plot magnetization(1,hfix,x) title "expectation"#, datafile ($2==hfix)?$1:1/0):3:4 w yerrorbars title sprintf("h=%.1f", hfix)
+set yrange [-0.5:1.5]
+set key bottom right
+plot magnetization(1,hfix,x) ls 1 lw 2 title "expectation", datafile u (($2==hfix)?$1:1/0):3:4 w yerrorbars ls 2 ps 2 title "measurement"#sprintf("h=%.1f", hfix)
 
 set output
