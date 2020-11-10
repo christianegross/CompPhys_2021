@@ -1,4 +1,6 @@
-set ter epslatex size 15 cm, 10.6cm color colortext
+#Christiane Gross, Nico Dichter
+#Exercise 1 Computational Physics WS20/21
+#script for plotting theoretical and experimental results of magnetization
 
 set style line 1 lc 7 lt 7 pt 7 #ps 0.2
 set style line 2 lc 1 lt 7 pt 8
@@ -57,10 +59,12 @@ unset title
 set out "magnetizationvaryingh.tex"
 set xrange [-1:1]
 
+set xlabel "h"
 set key top left
 plot magnetization(1,x,Nfix) ls 1 lw 2 title "expectation", datafile u (($1==Nfix)?$2:1/0):3:4 w yerrorbars ls 2 ps 2 title "measurement"#sprintf("N=%s", Nfix)
 
 set out "magnetizationvaryingN.tex"
+set xlabel "N"
 set xrange [1:21]
 set yrange [-0.5:1.5]
 set key bottom right

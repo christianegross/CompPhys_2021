@@ -89,7 +89,7 @@ int main(int argc, char **argv){
 	const double J=1;
 	int length_max=20;
 	int lattice[length_max];
-	const int amount_N=6;
+	const int amount_N=10;
 	double part_fct=0;
 	double magnetization=0;
 	double magnet_var=0;
@@ -116,9 +116,8 @@ int main(int argc, char **argv){
 	 * @note	Set the wanted values for N
 	 * 			Itterate through each paramter set: N, h
 	 */
-	lengths->data[0]=2;
-	for(int i=1;i<amount_N;i++){
-		lengths->data[i]=4*i;
+	for(int i=0;i<amount_N;i++){
+		lengths->data[i]=2*i+2;
 	}
 	for(int j=0;j<amount_N;j++){
 		length=lengths->data[j];
