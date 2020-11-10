@@ -87,8 +87,9 @@ int main(int argc, char **argv){
 	int conf=20;
 	double Temp=1;
 	const double J=1;
-	int lattice[length];
 	int length_max=20;
+	int lattice[length_max];
+	const int amount_N=6;
 	double part_fct=0;
 	double magnetization=0;
 	double magnet_var=0;
@@ -107,53 +108,52 @@ int main(int argc, char **argv){
 	 */
 	gsl_block *b_weights=gsl_block_alloc(amount_conf (length_max));
 	gsl_block *means_spin=gsl_block_alloc(amount_conf (length_max));
-	char filename [100];
-	snprintf (filename, 100, "data/%d.dat",length);
-	FILE * savedata=fopen (filename, "w");
+	gsl_block_int *lengths=gsl_block_int_alloc(amount_N);
+	FILE * savedata=fopen ("data/N_h.dat", "w");
+	fprintf(savedata,"#N\th\t<m>\t<m>_err\n");
 	
 	/**
-	 * @note	Itterate through each paramter set: N, h, temperature
+	 * @note	Set the wanted values for N
+	 * 			Itterate through each paramter set: N, h
 	 */
-	for(length=2;length<=length_max;length*=2){
+	lengths->data[0]=2;
+	for(int i=1;i<amount_N;i++){
+		lengths->data[i]=4*i;
+	}
+	for(int j=0;j<amount_N;j++){
+		length=lengths->data[j];
 		printf ("Starting calculation for N=%d....\n",length);
-		snprintf (filename, 100, "data/%d.dat",length);
-		if(freopen (filename, "w", savedata)==NULL){
-			fprintf(stderr, "Error in freopen.\n");
-			exit (EXIT_FAILURE);
-		};
 		conf=amount_conf (length);
-		fprintf(savedata,"#h\tT\t<m>\t<m>_err\n");
-		for(h=-1;h<1.1;h+=0.5){
-			for(Temp=0.2;Temp<5.1;Temp+=0.2){
-				/**
-				 * @note	Generate a new configuration "conf"-times.
-				 * 			Calculate the boltzman weight and the weighted mean-spin 
-				 * 			of each configuration.
-				 * 			At the end the expected value of magnetization gets calculated.
-				 *
-				 */
-				part_fct=0;
-				magnetization=0;
-				magnet_var=0;
-				for(int i=0;i<conf; i+=1){
-					generate_random_state(lattice,length,generator);
-					b_weights->data[i]=exp (-hamiltonian (lattice, length, h,  J)/Temp);
-					means_spin->data[i]=mean_spin(lattice,length);
-					part_fct+=b_weights->data[i];
-					magnetization+=(means_spin->data[i])*(b_weights->data[i]);
-				}
-				magnetization/=part_fct;
-				
-				/**
-				 * @note	Calculate the variance of the magnetization.
-				 * 			And save the data.
-				 */
-				for(int i=0;i<conf; i+=1){
-					magnet_var+=(magnetization-means_spin->data[i])*(magnetization-means_spin->data[i])*(b_weights->data[i]);
-				}
-				magnet_var/=part_fct;
-				fprintf(savedata,"%f\t%f\t%f\t%f\n",h,Temp,magnetization,sqrt (magnet_var));
+		
+		for(h=-1;h<1.1;h+=0.2){
+			/**
+			 * @note	Generate a new configuration "conf"-times.
+			 * 			Calculate the boltzman weight and the weighted mean-spin 
+			 * 			of each configuration.
+			 * 			At the end the expected value of magnetization gets calculated.
+			 *
+			 */
+			part_fct=0;
+			magnetization=0;
+			magnet_var=0;
+			for(int i=0;i<conf; i+=1){
+				generate_random_state(lattice,length,generator);
+				b_weights->data[i]=exp (-hamiltonian (lattice, length, h,  J)/Temp);
+				means_spin->data[i]=mean_spin(lattice,length);
+				part_fct+=b_weights->data[i];
+				magnetization+=(means_spin->data[i])*(b_weights->data[i]);
 			}
+			magnetization/=part_fct;
+			
+			/**
+			 * @note	Calculate the variance of the magnetization.
+			 * 			And save the data.
+			 */
+			for(int i=0;i<conf; i+=1){
+				magnet_var+=(magnetization-means_spin->data[i])*(magnetization-means_spin->data[i])*(b_weights->data[i]);
+			}
+			magnet_var/=part_fct;
+			fprintf(savedata,"%d\t%f\t%f\t%f\n",length,h,magnetization,sqrt (magnet_var));
 		}
 	}
 	
@@ -163,6 +163,7 @@ int main(int argc, char **argv){
 	gsl_rng_free(generator);
 	gsl_block_free (b_weights);
 	gsl_block_free (means_spin);
+	gsl_block_int_free (lengths);
 	fclose (savedata);
 	return 0;
 }
