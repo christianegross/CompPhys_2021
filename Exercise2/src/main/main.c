@@ -208,7 +208,7 @@ int main(int argc, char **argv){
 				//printf ("a=%f\tb=%f\n",J_T_max,J_T);
 				fprintf (savedata, "%d\t%f\t%f\t%f\t%f\t%f\t%f\n",N,J_T,h_T,
 						 magnetization,sqrt (squared_mean-magnetization*magnetization),
-						 avr_energy_ps,sqrt (avr_squared_energy_ps-avr_energy_ps*avr_energy_ps));
+						 avr_energy_ps,sqrt(fabs (avr_squared_energy_ps-avr_energy_ps*avr_energy_ps)));//fabs to prevent sqrt(-0.0000)
 			}
 		}
 	}
