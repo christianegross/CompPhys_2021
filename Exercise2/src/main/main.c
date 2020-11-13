@@ -148,10 +148,11 @@ int main(int argc, char **argv){
 	double h_T_max=1.;
 	double J_T_max=2.;
 	int therm_sweeps=500;
-	int amount_meas=50;
+	int amount_meas=100;
 	
 	double magnetization=0;
 	double squared_mean=0;
+	double abs_magnetization=0;
 	double avr_energy_ps=0;
 	double avr_squared_energy_ps=0;
 	
@@ -170,6 +171,8 @@ int main(int argc, char **argv){
 	gsl_matrix_int_view lattice;
 	FILE * savedata=fopen ("data/N_J_h.dat", "w");
 	fprintf(savedata,"#N\tJ\th\t<m>\t<m>_err\t<e>\t<e>_err\n");
+	FILE * savedata_abs_m=fopen ("data/abs_m.dat", "w");
+	fprintf(savedata_abs_m,"#N\tJ\t<|m|>\t<|m|>_err\n");
 	for(;N<N_x_max+1;N+=4){
 		printf ("Beginning calculation for N=%d ....\n",N);
 		lambda=N*N;
@@ -196,6 +199,8 @@ int main(int argc, char **argv){
 					magnetization+=means_spin->data[k];
 					squared_mean+=means_spin->data[k]*means_spin->data[k];
 					
+					abs_magnetization+=fabs (means_spin->data[k]);
+					
 					energy_ps->data[k]=b_hamiltonian(&lattice.matrix,h_T,J_T)/lambda;
 					avr_energy_ps+=energy_ps->data[k];
 					avr_squared_energy_ps+=energy_ps->data[k]*energy_ps->data[k];
@@ -203,12 +208,19 @@ int main(int argc, char **argv){
 				magnetization/=amount_meas;
 				squared_mean/=amount_meas;
 				
+				
+				
 				avr_energy_ps/=amount_meas;
 				avr_squared_energy_ps/=amount_meas;
 				//printf ("a=%f\tb=%f\n",J_T_max,J_T);
+				if(h_T<0.001&&h_T>-0.001){
+					abs_magnetization/=amount_meas;
+					fprintf (savedata_abs_m, "%d\t%f\t%f\t%f\t\n",N,J_T,abs_magnetization,sqrt (fabs(squared_mean-abs_magnetization*abs_magnetization)));
+				}
 				fprintf (savedata, "%d\t%f\t%f\t%f\t%f\t%f\t%f\n",N,J_T,h_T,
-						 magnetization,sqrt (squared_mean-magnetization*magnetization),
-						 avr_energy_ps,sqrt (avr_squared_energy_ps-avr_energy_ps*avr_energy_ps));
+						 magnetization,sqrt (fabs(squared_mean-magnetization*magnetization)),
+						 avr_energy_ps,sqrt(fabs (avr_squared_energy_ps-avr_energy_ps*avr_energy_ps)));//fabs to prevent sqrt(-0.0000)
+				
 			}
 		}
 	}
@@ -221,6 +233,6 @@ int main(int argc, char **argv){
 	gsl_rng_free (generator);
 	gsl_matrix_int_free (lattice_mem);
 	fclose (savedata);
-	
+	fclose (savedata_abs_m);
 	return 0;
 }
