@@ -31,9 +31,11 @@ void generate_random_state(gsl_matrix_int* lattice, gsl_rng *generator){
 	}
 }
 
+
+
 /**
  * @fn double hamiltonian(int *lattice, int length,double h, double J);
- * @brief Calculates the hamiltonian of the given configuration, implements periodic boundary conditions with modulus
+ * @brief Calculates the beta*hamiltonian of the given configuration, implements periodic boundary conditions with modulus
  *
  *
  * @param lattice	Array of Spins
@@ -44,17 +46,18 @@ void generate_random_state(gsl_matrix_int* lattice, gsl_rng *generator){
  * 
  * @return hamiltonian
  */
-double hamiltonian(int *lattice, int lengthx, int lengthy, double h, double J){
+double b_hamiltonian(gsl_matrix_int* lattice, double h_T, double J_T){
 	double interaction=0;
-	for(int i=0;i<lengthx; i++){//all rows
-		for(int k=0;k<lengthy; k++){//each column in row
-			interaction-=lattice[(i*lengthx)+k]*(h//external magnetic field
-												+lattice[(i*lengthx)+(k+1)%lengthy]//right neighbour with periodic boundary conditions
-												+lattice[(((i+1)%lengthx)*lengthx)+k]);//lower neighbour with periodic boundary conditions
+	for(int i=0;i<lattice->size1; i++){//all rows
+		for(int j=0;j<lattice->size2; j++){//each column in row
+			interaction-=gsl_matrix_int_get (lattice, i, j)*(h_T//external magnetic field
+												+J_T*(gsl_matrix_int_get (lattice, i, (j+1)%lattice->size2)//right neighbour with periodic boundary conditions
+												+gsl_matrix_int_get (lattice, (i+1)%lattice->size1, j)));//lower neighbour with periodic boundary conditions
 		}
 	}
 	return interaction;
 }
+
 
 /**
  * @fn double mean_spin(int *lattice, int lengthx, int lengthy);
@@ -67,14 +70,14 @@ double hamiltonian(int *lattice, int lengthx, int lengthy, double h, double J){
  * @return mean over all spins
  *
  */
-double mean_spin(int *lattice, int lengthx, int lengthy){
+double mean_spin(gsl_matrix_int* lattice){
 	double sum_of_spins=0;
-	for(int i=0;i<lengthx; i++){
-		for(int k=0;k<lengthy; k++){
-			sum_of_spins+=lattice[i*lengthx+k];
+	for(int i=0;i<lattice->size1; i+=1){
+		for(int j=0;j<lattice->size2; j+=1){
+			sum_of_spins+=gsl_matrix_int_get (lattice, i, j);
 		}
 	}
-	return sum_of_spins/lengthx/lengthy;
+	return sum_of_spins/lattice->size1/lattice->size2;
 }
 
 /**
@@ -91,13 +94,13 @@ double mean_spin(int *lattice, int lengthx, int lengthy){
  * 
  * @return change in energy if spin is flipped
  */
-double energy_change(int *lattice, int lengthx, int lengthy, int posx, int posy, double J, double h){
+double energy_change(gsl_matrix_int* lattice, int i, int j, double h_T, double J_T){
 	double change=0;
-	change+=2*lattice[lengthx*posx+posy]*(h//external field
-										+lattice[(posx*lengthx)+(posy+1)%lengthy]//right neighbour with periodic boundary conditions
-										+lattice[(((posx+1)%lengthx)*lengthx)+posy]//lower neighbour with periodic boundary conditions
-										+lattice[(posx*lengthx)+(posy-1+lengthy)%lengthy]//left neighbour with periodic boundary conditions
-										+lattice[(((posx-1+lengthx)%lengthx)*lengthx)+posy]);//upper neighbour with periodic boundary conditions
+	change+=2*gsl_matrix_int_get (lattice, i, j)*(h_T//external field
+										+J_T*(gsl_matrix_int_get (lattice, i, (j+1)%lattice->size2)//right neighbour with periodic boundary conditions
+										+gsl_matrix_int_get (lattice, (i+1)%lattice->size1, j)//lower neighbour with periodic boundary conditions
+										+gsl_matrix_int_get (lattice, i, (j-1+lattice->size2)%lattice->size2)//left neighbour with periodic boundary conditions
+										+gsl_matrix_int_get (lattice, (i-1+lattice->size1)%lattice->size1, j)));//upper neighbour with periodic boundary conditions
 	return change;
 }
 	
@@ -106,6 +109,23 @@ int amount_conf(int length){
 	return pow (2, 21);//length-1+8); 
 	//amount of configurations can be set to be different per length, because phase space has different sizes per length
 	//measurements show not needed
+}
+
+void complete_sweep(gsl_matrix_int* lattice, gsl_rng *generator,double h_T, double J_T){
+	double delta_S=0;
+	double randomstate=0;
+	int amount_accepts=0;
+	for(int i=0;i<lattice->size1; i+=1){
+		for(int j=0;j<lattice->size2; j+=1){
+			delta_S=energy_change(lattice,i,j,h_T,J_T);
+			randomstate=gsl_rng_uniform(generator);
+			if(randomstate<=exp (-delta_S)){
+				gsl_matrix_int_set (lattice, i, j, -1*gsl_matrix_int_get (lattice, i, j));
+				amount_accepts++;
+			}
+		}
+	}
+	printf ("%f\n",((double)amount_accepts)/lattice->size1/lattice->size2);
 }
 int main(int argc, char **argv){
 	/**
@@ -122,20 +142,41 @@ int main(int argc, char **argv){
 	int N_x=4;
 	int N_y=4;
 	double h=-1;
-	double Temp=1;
-	const double J=1;
-	int conf=20;
+	double T=1;
+	double J=1;
+	double h_T=h/T;
+	double J_T=J/T;
+	int therm_sweeps=200;
+	int amount_meas=10;
 	
 
 	
 	//set and allocate random number generator
-	int seed=2;//use fixed seed: result should be exactly reproduced using the same seed
+	int seed=42;//use fixed seed: result should be exactly reproduced using the same seed
 	gsl_rng *generator;
 	generator=gsl_rng_alloc(gsl_rng_mt19937);//use mersenne-twister
 	gsl_rng_set(generator, seed);
 	
+	gsl_block *means_spin=gsl_block_alloc(amount_meas);
 	gsl_matrix_int* lattice=gsl_matrix_int_alloc (N_x, N_y);
 	generate_random_state(lattice,generator);
+	
+	/**
+	 * @note	Thermalization
+	 */
+	for(int k=0;k<therm_sweeps-1;k++){
+		complete_sweep (lattice, generator, h_T, J_T);
+		//printf ("%d\n",k);
+	}
+	/**
+	 * @note	Measurements
+	 */
+	for(int k=0;k<amount_meas;k++){
+		complete_sweep (lattice, generator, h_T, J_T);
+		means_spin->data[k]=mean_spin(lattice);
+		printf ("%f\n",means_spin->data[k]);
+	}
+	
 	
 	return 0;
 }
