@@ -9,22 +9,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <gsl/gsl_block.h>
+#include <gsl/gsl_matrix.h>
 #include <gsl/gsl_rng.h>//random number generator
 #include "math.h"//exp-Function
 #include <sys/time.h>//measuring of wallclock execution time
 
-void generate_random_state(int *lattice, int lengthx, int lengthy, gsl_rng *generator){
+void generate_random_state(gsl_matrix_int* lattice, gsl_rng *generator){
 	//uses generator to generate a random state of 1 and -1 in lattice with dimension lengthx*lengthy
 	double randomstate;
-	for(int i=0;i<lengthx; i+=1){
-		for(int k=0;k<lengthy; k+=1){
+	for(int i=0;i<lattice->size1; i+=1){
+		for(int j=0;j<lattice->size2; j+=1){
 			//generate one random number for each element in lattice, decide if lattice point positive or negative
 			randomstate=gsl_rng_uniform(generator);
 			if (randomstate<0.5){
-				lattice[lengthx*i+k]=-1;
+				gsl_matrix_int_set (lattice, i, j, -1);
 			}
 			else{
-				lattice[lengthx*i+k]=1;
+				gsl_matrix_int_set (lattice, i, j, 1);
 			}
 		}
 	}
@@ -118,17 +119,14 @@ int main(int argc, char **argv){
 	 * @var lattice		Array of Spins=single configuration
 	 * @var length_max	Maximum length to be simulated
 	 */
-	int length=2;
+	int N_x=4;
+	int N_y=4;
 	double h=-1;
-	int conf=20;
 	double Temp=1;
 	const double J=1;
-	int length_max=20;
-	int lattice[length_max];
-	const int amount_N=10;
-	double part_fct=0;
-	double magnetization=0;
-	double magnet_var=0;
+	int conf=20;
+	
+
 	
 	//set and allocate random number generator
 	int seed=2;//use fixed seed: result should be exactly reproduced using the same seed
@@ -136,69 +134,8 @@ int main(int argc, char **argv){
 	generator=gsl_rng_alloc(gsl_rng_mt19937);//use mersenne-twister
 	gsl_rng_set(generator, seed);
 	
-	/**
-	 * @note	Allocate memory for all the boltzmann weights and mean 
-	 * 			of the spins for a given parameter set. 
-	 * 			And open the needed file stream.
-	 *
-	 */
-	gsl_block *b_weights=gsl_block_alloc(amount_conf (length_max));
-	gsl_block *means_spin=gsl_block_alloc(amount_conf (length_max));
-	gsl_block_int *lengths=gsl_block_int_alloc(amount_N);
-	FILE * savedata=fopen ("data/N_h.dat", "w");
-	fprintf(savedata,"#N\th\t<m>\t<m>_err\n");
+	gsl_matrix_int* lattice=gsl_matrix_int_alloc (N_x, N_y);
+	generate_random_state(lattice,generator);
 	
-	/**
-	 * @note	Set the wanted values for N
-	 * 			Itterate through each paramter set: N, h
-	 */
-	for(int i=0;i<amount_N;i++){
-		lengths->data[i]=2*i+2;
-	}
-	for(int j=0;j<amount_N;j++){
-		length=lengths->data[j];
-		printf ("Starting calculation for N=%d....\n",length);
-		conf=amount_conf (length);
-		
-		for(h=-1;h<1.1;h+=0.2){
-			/**
-			 * @note	Generate a new configuration "conf"-times.
-			 * 			Calculate the boltzman weight and the weighted mean-spin 
-			 * 			of each configuration.
-			 * 			At the end the expected value of magnetization gets calculated.
-			 *
-			 */
-			part_fct=0;
-			magnetization=0;
-			magnet_var=0;
-			for(int i=0;i<conf; i+=1){
-				generate_random_state(lattice,length,generator);
-				b_weights->data[i]=exp (-hamiltonian (lattice, length, h,  J)/Temp);
-				means_spin->data[i]=mean_spin(lattice,length);
-				part_fct+=b_weights->data[i];
-				magnetization+=(means_spin->data[i])*(b_weights->data[i]);
-			}
-			magnetization/=part_fct;
-			
-			/**
-			 * @note	Calculate the variance of the magnetization.
-			 * 			And save the data.
-			 */
-			for(int i=0;i<conf; i+=1){
-				magnet_var+=(magnetization-means_spin->data[i])*(magnetization-means_spin->data[i])*(b_weights->data[i]);
-			}
-			magnet_var/=part_fct;
-			fprintf(savedata,"%d\t%f\t%f\t%f\n",length,h,magnetization,sqrt (magnet_var));
-		}
-	}
-	
-	/**
-	 * @note	Cleanup.
-	 */
-	gsl_rng_free(generator);
-	gsl_block_free (b_weights);
-	gsl_block_free (means_spin);
-	gsl_block_int_free (lengths);
-	fclose (savedata);
 	return 0;
 }
