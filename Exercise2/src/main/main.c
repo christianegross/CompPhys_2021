@@ -170,11 +170,12 @@ int main(int argc, char **argv){
 	gsl_matrix_int_view lattice;
 	FILE * savedata=fopen ("data/N_J_h.dat", "w");
 	fprintf(savedata,"#N\tJ\th\t<m>\t<m>_err\t<e>\t<e>_err\n");
-	for(;N<N_x_max;N+=4){
+	for(;N<N_x_max+1;N+=4){
+		printf ("Beginning calculation for N=%d ....\n",N);
 		lambda=N*N;
-		for(;J_T<J_T_max;J_T+=0.05){
-			for(;h_T<h_T_max+0.01;h_T+=0.1){
-				lattice=gsl_matrix_int_submatrix (lattice_mem, 0, 0, N, N);
+		lattice=gsl_matrix_int_submatrix (lattice_mem, 0, 0, N, N);
+		for(J_T=0.25;J_T<J_T_max+0.01;J_T+=0.05){
+			for(h_T=-1;h_T<h_T_max+0.01;h_T+=0.1){
 				/**
 				 * @note	Thermalization
 				 */
@@ -204,7 +205,7 @@ int main(int argc, char **argv){
 				
 				avr_energy_ps/=amount_meas;
 				avr_squared_energy_ps/=amount_meas;
-				printf ("a=%f\tb=%f\n",J_T_max,J_T);
+				//printf ("a=%f\tb=%f\n",J_T_max,J_T);
 				fprintf (savedata, "%d\t%f\t%f\t%f\t%f\t%f\t%f\n",N,J_T,h_T,
 						 magnetization,sqrt (squared_mean-magnetization*magnetization),
 						 avr_energy_ps,sqrt (avr_squared_energy_ps-avr_energy_ps*avr_energy_ps));
