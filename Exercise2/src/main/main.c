@@ -178,7 +178,7 @@ int main(int argc, char **argv){
 		lambda=N*N;
 		lattice=gsl_matrix_int_submatrix (lattice_mem, 0, 0, N, N);
 		for(J_T=0.25;J_T<J_T_max+0.01;J_T+=0.05){
-			for(h_T=-1;h_T<h_T_max+0.01;h_T+=0.1){
+			for(h_T=1;h_T>-h_T_max-0.01;h_T-=0.1){
 				/**
 				 * @note	Thermalization
 				 */
