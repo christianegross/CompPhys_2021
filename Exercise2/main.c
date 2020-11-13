@@ -13,17 +13,19 @@
 #include "math.h"//exp-Function
 #include <sys/time.h>//measuring of wallclock execution time
 
-void generate_random_state(int *lattice, int length, gsl_rng *generator){
-	//uses generator to generate a random state of 1 and -1 in lattice with length length
+void generate_random_state(int *lattice, int lengthx, int lengthy, gsl_rng *generator){
+	//uses generator to generate a random state of 1 and -1 in lattice with dimension lengthx*lengthy
 	double randomstate;
-	for(int i=0;i<length; i+=1){
-		//generate one random number for each element in lattice, decide if lattice point positive or negative
-		randomstate=gsl_rng_uniform(generator);
-		if (randomstate<0.5){
-			lattice[i]=-1;
-		}
-		else{
-			lattice[i]=1;
+	for(int i=0;i<lengthx; i+=1){
+		for(int k=0;k<lengthy; k+=1){
+			//generate one random number for each element in lattice, decide if lattice point positive or negative
+			randomstate=gsl_rng_uniform(generator);
+			if (randomstate<0.5){
+				lattice[lengthx*i+k]=-1;
+			}
+			else{
+				lattice[lengthx*i+k]=1;
+			}
 		}
 	}
 }
@@ -54,19 +56,22 @@ double hamiltonian(int *lattice, int lengthx, int lengthy, double h, double J){
 }
 
 /**
- * @fn double mean_spin(int *lattice, int length);
+ * @fn double mean_spin(int *lattice, int lengthx, int lengthy);
  * @brief Calculates the mean over all spins in the given configuration
  *
  * @param lattice	Array of Spins
- * @param length	Length of lattice
+ * @param lengthx	Length of lattice in x-direction
+ * @param lengthy	Length of lattice in y-direction
  * 
  * @return mean over all spins
  *
  */
-double mean_spin(int *lattice, int length){
+double mean_spin(int *lattice, int lengthx, int lengthy){
 	double sum_of_spins=0;
-	for(int i=0;i<length; i++){
-		sum_of_spins+=lattice[i];
+	for(int i=0;i<lengthx; i++){
+		for(int k=0;k<lengthy; k++){
+			sum_of_spins+=lattice[i*lengthx+k];
+		}
 	}
 	return sum_of_spins/length;
 }
