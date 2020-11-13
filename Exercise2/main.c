@@ -47,7 +47,7 @@ double hamiltonian(int *lattice, int lengthx, int lengthy, double h, double J){
 	double interaction=0;
 	for(int i=0;i<lengthx; i++){//all rows
 		for(int k=0;k<lengthy; k++){//each column in row
-			interaction-=lattice[(i*lengthx)+y]*(h//external magnetic field
+			interaction-=lattice[(i*lengthx)+k]*(h//external magnetic field
 												+lattice[(i*lengthx)+(k+1)%lengthy]//right neighbour with periodic boundary conditions
 												+lattice[(((i+1)%lengthx)*lengthx)+k]);//lower neighbour with periodic boundary conditions
 		}
@@ -73,7 +73,7 @@ double mean_spin(int *lattice, int lengthx, int lengthy){
 			sum_of_spins+=lattice[i*lengthx+k];
 		}
 	}
-	return sum_of_spins/length;
+	return sum_of_spins/lengthx/lengthy;
 }
 
 /**
@@ -91,13 +91,13 @@ double mean_spin(int *lattice, int lengthx, int lengthy){
  * @return change in energy if spin is flipped
  */
 double energy_change(int *lattice, int lengthx, int lengthy, int posx, int posy, double J, double h){
-	change=0;
+	double change=0;
 	change+=2*lattice[lengthx*posx+posy]*(h//external field
 										+lattice[(posx*lengthx)+(posy+1)%lengthy]//right neighbour with periodic boundary conditions
 										+lattice[(((posx+1)%lengthx)*lengthx)+posy]//lower neighbour with periodic boundary conditions
 										+lattice[(posx*lengthx)+(posy-1+lengthy)%lengthy]//left neighbour with periodic boundary conditions
 										+lattice[(((posx-1+lengthx)%lengthx)*lengthx)+posy]);//upper neighbour with periodic boundary conditions
-	return change
+	return change;
 }
 	
 
