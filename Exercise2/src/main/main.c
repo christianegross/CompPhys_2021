@@ -189,6 +189,7 @@ int main(int argc, char **argv){
 				 * @note	Measurements
 				 */
 				magnetization=0;
+				abs_magnetization=0;
 				squared_mean=0;
 				avr_energy_ps=0;
 				avr_squared_energy_ps=0;
