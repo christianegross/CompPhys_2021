@@ -148,7 +148,7 @@ int main(int argc, char **argv){
 	double h_T_max=1.;
 	double J_T_max=2.;
 	int therm_sweeps=1000;
-	int amount_meas=100;
+	int amount_meas=300;
 	
 	double magnetization=0;
 	double squared_mean=0;
