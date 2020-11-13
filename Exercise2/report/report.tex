@@ -41,7 +41,12 @@ Possible: only use nearest neighbours, as shown in lecture for 1D: effort only d
 \subsection{determining errors}
 
 \section{simulation}
-describe energy\_change, matrices, thermalising, sweeps
+In the implementation of the simulation gsl\_matrix objects get used to save the state of the largest lattice and views on these get used to create smaller lattices (see \cite{gsldoc_mat}). For each parameter set (N,h,J) a large amount of thermalization sweeps get made and afterwards several measurements of the wanted physical variable take place with single sweeps in between. A Sweep in this case means scanning through the complete lattice and performing a Metropolis-Hastings step at each site. The thermalization steps are needed to make sure the measurements take place on configurations which resemble the given parameter set according to the boltzmann distribution. To improve the run time the function energy\_change got implemented. It calculates $\Delta S$ by only using the parts of the Hamiltonian which change when $s_{i,j}$ changes to $-s_{i,j}$, these parts consist of the energy of $s_{i,j}$ in the external magnetic field and the coppling energy with the 4 neighbours.
+So in total $\Delta S$ simplifies to:
+\begin{equation}
+	\Delta S=2 s_{i,j}\left(\dfrac{h}{T}+\dfrac{J}{T}(s_{i+1,j}+s_{i-1,j}+s_{i,j+1}+s_{i,j-1})\right)
+\end{equation}
+
 
 \section{Results}
 
