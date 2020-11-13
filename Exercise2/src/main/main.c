@@ -125,7 +125,7 @@ void complete_sweep(gsl_matrix_int* lattice, gsl_rng *generator,double h_T, doub
 			}
 		}
 	}
-	printf ("%f\n",((double)amount_accepts)/lattice->size1/lattice->size2);
+	//printf ("acc_rate: %f\n",((double)amount_accepts)/lattice->size1/lattice->size2);
 }
 int main(int argc, char **argv){
 	/**
@@ -139,44 +139,87 @@ int main(int argc, char **argv){
 	 * @var lattice		Array of Spins=single configuration
 	 * @var length_max	Maximum length to be simulated
 	 */
-	int N_x=4;
-	int N_y=4;
-	double h=-1;
-	double T=1;
-	double J=1;
-	double h_T=h/T;
-	double J_T=J/T;
-	int therm_sweeps=200;
-	int amount_meas=10;
+	int N_x_max=20;
+	int N_y_max=20;
+	int N=4;
+	int lambda=N*N;
+	double h_T=-1;
+	double J_T=0.25;
+	double h_T_max=1.;
+	double J_T_max=2.;
+	int therm_sweeps=500;
+	int amount_meas=50;
+	
+	double magnetization=0;
+	double squared_mean=0;
+	double avr_energy_ps=0;
+	double avr_squared_energy_ps=0;
 	
 
 	
 	//set and allocate random number generator
-	int seed=42;//use fixed seed: result should be exactly reproduced using the same seed
+	int seed=2;//use fixed seed: result should be exactly reproduced using the same seed
 	gsl_rng *generator;
 	generator=gsl_rng_alloc(gsl_rng_mt19937);//use mersenne-twister
 	gsl_rng_set(generator, seed);
 	
 	gsl_block *means_spin=gsl_block_alloc(amount_meas);
-	gsl_matrix_int* lattice=gsl_matrix_int_alloc (N_x, N_y);
-	generate_random_state(lattice,generator);
+	gsl_block *energy_ps=gsl_block_alloc(amount_meas);
+	gsl_matrix_int* lattice_mem=gsl_matrix_int_alloc (N_x_max, N_y_max);
+	generate_random_state(lattice_mem,generator);
+	gsl_matrix_int_view lattice;
+	FILE * savedata=fopen ("data/N_J_h.dat", "w");
+	fprintf(savedata,"#N\tJ\th\t<m>\t<m>_err\t<e>\t<e>_err\n");
+	for(;N<N_x_max;N+=4){
+		lambda=N*N;
+		for(;J_T<J_T_max;J_T+=0.05){
+			for(;h_T<h_T_max+0.01;h_T+=0.1){
+				lattice=gsl_matrix_int_submatrix (lattice_mem, 0, 0, N, N);
+				/**
+				 * @note	Thermalization
+				 */
+				for(int k=0;k<therm_sweeps-1;k++){
+					complete_sweep (&lattice.matrix, generator, h_T, J_T);
+				}
+				/**
+				 * @note	Measurements
+				 */
+				magnetization=0;
+				squared_mean=0;
+				avr_energy_ps=0;
+				avr_squared_energy_ps=0;
+				for(int k=0;k<amount_meas;k++){
+					complete_sweep (&lattice.matrix, generator, h_T, J_T);
+					
+					means_spin->data[k]=mean_spin(&lattice.matrix);
+					magnetization+=means_spin->data[k];
+					squared_mean+=means_spin->data[k]*means_spin->data[k];
+					
+					energy_ps->data[k]=b_hamiltonian(&lattice.matrix,h_T,J_T)/lambda;
+					avr_energy_ps+=energy_ps->data[k];
+					avr_squared_energy_ps+=energy_ps->data[k]*energy_ps->data[k];
+				}
+				magnetization/=amount_meas;
+				squared_mean/=amount_meas;
+				
+				avr_energy_ps/=amount_meas;
+				avr_squared_energy_ps/=amount_meas;
+				printf ("a=%f\tb=%f\n",J_T_max,J_T);
+				fprintf (savedata, "%d\t%f\t%f\t%f\t%f\t%f\t%f\n",N,J_T,h_T,
+						 magnetization,sqrt (squared_mean-magnetization*magnetization),
+						 avr_energy_ps,sqrt (avr_squared_energy_ps-avr_energy_ps*avr_energy_ps));
+			}
+		}
+	}
 	
 	/**
-	 * @note	Thermalization
+	 * @note	Cleanup
 	 */
-	for(int k=0;k<therm_sweeps-1;k++){
-		complete_sweep (lattice, generator, h_T, J_T);
-		//printf ("%d\n",k);
-	}
-	/**
-	 * @note	Measurements
-	 */
-	for(int k=0;k<amount_meas;k++){
-		complete_sweep (lattice, generator, h_T, J_T);
-		means_spin->data[k]=mean_spin(lattice);
-		printf ("%f\n",means_spin->data[k]);
-	}
-	
+	gsl_block_free (means_spin);
+	gsl_block_free (energy_ps);
+	gsl_rng_free (generator);
+	gsl_matrix_int_free (lattice_mem);
+	fclose (savedata);
 	
 	return 0;
 }
