@@ -1,0 +1,68 @@
+% !TeX spellcheck = en_GB
+% Die erste (unkommentierte) Zeile im Dokument legt immer die
+% Dokumentklasse fest
+\documentclass{scrartcl} 
+
+% Präambel:
+% Einbinen von zusätzlichen Paketen. Falls für eine Datei keine Endung
+% explizit angegeben wird, benutzt LaTeX '.tex'. Im Folgenden wird
+% also die Datei 'edv_pakete.tex' eingebunden.
+\input{edv_pakete}
+
+
+% Verzeichnisse mit Abbildungen; kann gestrichen werden,
+% falls Sie dies schon in edv_pakete.tex definiert haben:
+%\graphicspath{{../report}}
+
+\addbibresource{refs.bib} %Hinzufügen einer Literaturdatenbank aus dem angegebenen Verzeichnis
+
+% Titel, Autor und Datum
+\title{Computational Physics}
+\subtitle{Exercise 2}
+\date{\today}
+\author{Christiane Groß, Nico Dichter}
+
+% Jetzt startet das eigentliche Dokument
+\begin{document}
+	\maketitle
+\section{The 2D-Ising-model}
+Hamiltonian, expected values for magnetization and epsilon
+
+\section{Deliberations}
+\subsection{Numerical cost of calculation}
+\paragraph{Energy} Have to iterate over all lattice points: effort proportional lambda.
+
+\paragraph{change in energy for one spin flip}
+naive: calculate two Hamiltonians, subtract: scales with lambda. 
+Possible: only use nearest neighbours, as shown in lecture for 1D: effort only depends ion dimension, not lattice size.
+
+\subsection{Meaning of J} critical J: phase transition from randomly ordered to ordered.
+
+\subsection{determining errors}
+
+\section{simulation}
+describe energy\_change, matrices, thermalising, sweeps
+
+\section{Results}
+
+\subsection{$\langle m\rangle$ for fixed $J$ and varying $h$}
+plot, description
+
+\subsection{$\langle \epsilon\rangle$ for fixed $h$ and varying $J$}
+plot, description, comparison literature
+
+\subsection{$\langle |m|\rangle$ for fixed $h$ and varying $J$}
+plot, description, comparison literature
+see sharp drop, phase transition
+\paragraph{$\langle |m|\rangle$ vs. $\langle m\rangle$}
+For $h=0$: everything cancels out, m=0 everywhere because simulation randomly flops between positive and negative behaviour, even at ordered phase due to finite length.
+Use absolute value of m so it can't cancel out.
+
+\paragraph{thermodynamical limit}
+
+
+
+\newpage	
+\listoffigures
+\printbibliography
+\end{document}
