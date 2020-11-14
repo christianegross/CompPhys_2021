@@ -59,6 +59,13 @@ plot magnetization(x) ls 1 title 'Literatur', for [N=4:20:4] absfile u (($1==N)?
 
 unset y2label
 
+set out 'heatcap.pdf'
+set ylabel 'C/J^2'
+set xlabel 'J^-1'
+set key top right
+set xrange [1:4]
+plot epsilonfile u (1/$1):3 w lines ls 1 title 'theory', for [N=4:20:4] datafile u (($1==N&&$3==0)?1/$2:1/0):($7*$7*N*N/$2/$2) ls (N/4+1) title sprintf('N=%d', N)
+
 clear
 set ter epslatex size 15 cm, 10.6cm color colortext
 #.tex for easy inputting in report
@@ -73,25 +80,28 @@ set key top right
 
 plot epsilonfile u 1:2 w lines ls 1 title 'Literatur', for [N=4:20:4] datafile u (($1==N&&$3==0)?$2:1/0):6:7 w yerrorbars ls (N/4+1) ps 2 title sprintf('$N=$%d', N)
 
+
+set ter epslatex size 15 cm, 20cm color colortext
 set out 'magnetizationfixJ.tex'
 
 set key top left
 set xlabel '$h$'
 set ylabel '$\langle m\rangle$'
 
-#set multiplot layout 1,2
+set multiplot layout 2,1
 set xrange [-1:1]
 set title '$J=0.3$'
 
 plot for [N=4:20:4] datafile u (($1==N&&$2==0.3)?$3:1/0):4:5 w yerrorbars ls (N/4+1) ps 2 title sprintf('$N=$%d', N)
 
-#set title '$J=0.8$'
+set title '$J=0.8$'
 
-#plot for [N=4:20:4] datafile u (($1==N&&$2==0.8)?$3:1/0):4:5 w yerrorbars ls (N/4+1) title sprintf('$N=$%d', N)
+plot for [N=4:20:4] datafile u (($1==N&&$2==0.8)?$3:1/0):4:5 w yerrorbars ls (N/4+1) title sprintf('$N=$%d', N)
 
 unset title
-#unset multiplot
+unset multiplot
 
+set ter epslatex size 15 cm, 10.6cm color colortext
 set xrange [0.25:1]
 set key bottom right
 set out 'magnetizationh0.tex'
@@ -106,5 +116,11 @@ set ylabel '$\langle |m|\rangle$'
 
 plot magnetization(x) ls 1 title 'Literatur', for [N=4:20:4] absfile u (($1==N)?$2:1/0):3:4 w yerrorbars ls (N/4+1) ps 2 title sprintf('$N=$%d', N)
 
+set out 'heatcapacity.tex'
+set ylabel '$C/J^2$'
+set xlabel '$J^{-1}$'
+set key top right
+set xrange [1:4]
+plot epsilonfile u (1/$1):3 w lines ls 1 title 'theory', for [N=4:20:4] datafile u (($1==N&&$3==0)?1/$2:1/0):($7*$7*N*N/$2/$2) ls (N/4+1) title sprintf('$N=$%d', N)
 
 set output
