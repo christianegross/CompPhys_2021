@@ -45,6 +45,13 @@ We also know the theoretical expectation values for the  absolute value of the m
  Contrary to our simulation of the Ising model in one dimension, we do not do simple sampling here, but instead we do importance sampling. For this, we do a sweep of the entire lattice and perform an accept-reject step at each site: We propose a spin flip $s\rightarrow-s$ and accept it with probability $\min \left[1, \exp(-\Delta H/k_BT)\right]$, where $\Delta H$ is the change in energy due to the spin flip.  
 %Hamiltonian, expected values for magnetization and epsilon
 
+We furthermore know the theoretical value for the heat capacity:
+\begin{equation}
+C=\frac{4J^2}{\pi\tanh^2(2J)}\left( K(\kappa^2)-E(\kappa^2)-\left(1-\tanh^2(2J)\right)\left[\frac{\pi}{2} +\left(2\tanh^2(2J)-1\right)K(\kappa^2)\right] \right)
+\end{equation}
+
+where $E$ is the incomplete elliptical of the second kind and $\kappa=\frac{2\sinh(2J)}{\cosh^2(2J)}$.
+
 \section{Deliberations}
 Before starting the simulations, we have to think about several aspects in our code:
 \subsection{Numerical cost of calculation}
@@ -52,7 +59,7 @@ Before starting the simulations, we have to think about several aspects in our c
 Determining th energy of a given spin configuration means determining the hamiltonian with eq.~\ref{eq:hamiltonianising}. For this we need to sum over all lattice points, so the numerical cost of this is proportional to the system size $\Lambda$.
 % Have to iterate over all lattice points: effort proportional lambda.
 
-\paragraph{change in energy for one spin flip}
+\paragraph{Change in energy for one spin flip}
 The naive approach to calculating the energy difference if one spin is flipped would be to calculate the hamiltoninan before and after the flip and subtract the results. This would scale with $\Lambda$. However, as was shown in the lectures, subtracting the hamiltonians leaves only the interactions with the nearest neighbours, because these are the only couplings we consider. There are four nearest neighbours in two dimensions, no matter how large the lattice is. so, the numerical cost of this calculation is constant, regardless of $\Lambda$.
 %naive: calculate two Hamiltonians, subtract: scales with lambda. 
 %Possible: only use nearest neighbours, as shown in lecture for 1D: effort only depends ion dimension, not lattice size.
@@ -61,19 +68,27 @@ The naive approach to calculating the energy difference if one spin is flipped w
 We expect a phase transition to occur at $J=J_c$ and $h=0$: for smaller $J$, the magnetization will be zero and the spins will be randomly disributed. For $J>J_c$, most of the spins will be pointing in one direction and the magnetization will be much closer to one than to zero and measurable. The drop in magnetization is quite steep in theory, however, due to our finite lattice sizes, it is to be expected that this effect will be smeared out and we will see a continuous curve~\cite{YangMagnetization}\cite{binderheermann}.
 %critical J: phase transition from randomly ordered to ordered.
 
-\subsection{determining errors}
+\subsection{Determining errors}
 
 Because we are doing importance sampling, we do not need to consider the partition function and can calculate expectation values as simple arithmetic means. This gives us:
 \begin{equation}
 \langle x\rangle=\frac{1}{L}\sum_{i=0}^{L} x_i
 \end{equation}
 \begin{equation}
-\sigma^2=\langle (\langle x\rangle-x)^2\rangle=\langle x^2\rangle-\langle x\rangle^2=\frac{1}{L}\sum_{i=0}^{L} x_i^2-\left( \frac{1}{L}\sum_{i=0}^{L} x_i\right) ^2
+\sigma^2(x)=\langle (\langle x\rangle-x)^2\rangle=\langle x^2\rangle-\langle x\rangle^2=\frac{1}{L}\sum_{i=0}^{L} x_i^2-\left( \frac{1}{L}\sum_{i=0}^{L} x_i\right) ^2
+\label{eq:error}
 \end{equation}
 
-x is the observable we want to measure, so $m$ oder $\epsilon$. We know these error estimates are a bit off due to correlation in the data, however for this sheet, no other methods of estimating errors were introduced in the lectures.
+x is the observable we want to measure, so $m$ or $\epsilon$. We know these error estimates are a bit off due to correlation in the data, however for this sheet, no other methods of estimating errors were introduced in the lectures.
+
+\subsection{Heat capacity}
+
+From the sheet we know we can calculate $C$ as $C=\Lambda\cdot(\langle \epsilon^2\rangle-\langle \epsilon\rangle^2)$. So we need to measure the quantity $\langle \epsilon^2\rangle-\langle \epsilon\rangle^2$. However, looking at eq.~\ref{eq:error} we see that we have already calculated this as the error of $\epsilon$ and thus only need to multiply the square of the value we have already used with the system size $\Lambda$.
 
 \section{Simulation}
+
+Our code can be found in the github-repository \url{https://github.com/christianegross/CompPhys\_2021}. The simulation of the Ising model is in Exercise2/src/main/main.c, the calculations for the expected heat capacity and average energy are in Exercise2/report/epsilonexpected.c and the gnuplotscript for the plots is in Exercise2/report/plot.gp.
+
 In the implementation of the simulation gsl\_matrix objects are used to save the state of the largest lattice and views on these are used to create smaller lattices (see \cite{gsldoc_mat}). For each parameter set (N,h,J) a large amount of thermalization sweeps are made and afterwards several measurements of the wanted physical variable take place with single sweeps in between. A Sweep in this case means scanning through the complete lattice and performing a Metropolis-Hastings step at each site. The thermalization steps are needed to make sure the measurements take place on configurations which resemble the given parameter set according to the boltzmann distribution. To improve the run time the function energy\_change was implemented. It calculates $\Delta S$ by only using the parts of the Hamiltonian which change when $s_{i,j}$ changes to $-s_{i,j}$, these parts consist of the energy of $s_{i,j}$ in the external magnetic field and the coupling energy with the 4 neighbours.
 So in total $\Delta S$ simplifies to:
 \begin{equation}
@@ -86,7 +101,9 @@ So in total $\Delta S$ simplifies to:
 For all our results, we did the measurements with 1000 thermalisation steps and 2000 measurement steps per data point.
 
 \subsection{$\langle m\rangle$ for fixed $J$ and varying $h$}
-plot, description
+In fig.~\ref{fig:magfixJ}, our results are plotted for varying $h$ and $J=0.3$ and $J=0.8$. For $J=0.3<J_c$ we see a behaviour that is very similar to that of the ising model in one dimension: For $h=-1$, the magnetization is -1. It grows with $h$ and rises steeply in the region around $h=0$ and then grows slower, coming to $m=1$ at $h=1$. the rise is minimally less steep for $N=4$, all the measurements of the other $N$ lie on top of each other. The errors are bigger for smaller $N$ and biggest around $h=1$.
+ 
+For $J=0.8>J_c$, the behaviour is quite different: From $h=-1$ to $h=-0.3$, the magnetization is minus one. Above that, the magnetization jumps to one, no value in between is seen. This underlines the phase transition that occurs at $J=J_c$: Below that critical value, the external magnetic field determines the strength of the magnetization as well as the direction of the spins. Above the critical coupling, the absolute value of the magnetization is fixed and can't be changed by external influences, the external fiel can only flip all spins at once.
 
 	\begin{figure}[htbp]
 		\input{magnetizationfixJ}
@@ -95,7 +112,7 @@ plot, description
 	\end{figure}
 
 \subsection{$\langle \epsilon\rangle$ for fixed $h=0$ and varying $J$}
-plot, description, comparison literature
+We expect the average energy per site to fall monotonously, with a little curve at small J that then becomes a straight line. Up to about $J=0.45$, the values for $N=4$ are a bit below the expectation, the measurements for the other $N$ are at or above the expectation. The difference between the different $N$ is pretty small. From $J\approx0.45$, the measurements for all $N$ are below the expectations, but come closer with growing $J$. At $J=2$, the measurements lie on top of the expectation. 
 	\begin{figure}[htbp]
 		\input{avenergy}
 		\caption{Average energy per site for $h=0$}

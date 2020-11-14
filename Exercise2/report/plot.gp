@@ -27,7 +27,7 @@ set xlabel 'J'
 set ylabel '<e>'
 set xrange [0.25:2]
 
-plot epsilonfile u 1:2 w lines ls 1 title 'Literatur', for [N=4:20:4] datafile u (($1==N&&$3==0)?$2:1/0):6:7 w yerrorbars ls (N/4+1) title sprintf('N=%d', N)
+plot epsilonfile u 1:2 w lines ls 1 title 'theory', for [N=4:20:4] datafile u (($1==N&&$3==0)?$2:1/0):6:7 w yerrorbars ls (N/4+1) title sprintf('N=%d', N)
 
 set out 'magnetization.pdf'
 set key top left
@@ -50,12 +50,12 @@ set link y2
 set xrange [0.25:1]
 set key bottom right
 
-plot magnetization(x) ls 1 title 'Literatur', for [N=4:20:4] datafile u (($1==N&&$3==0)?$2:1/0):4:5 w yerrorbars ls (N/4+1) title sprintf('N=%d', N), for [N=4:20:4] absfile u (($1==N)?$2:1/0):3:4 w yerrorbars lc (N/4+7) title sprintf('N=%d, m_abs', N)
+plot magnetization(x) ls 1 title 'theory', for [N=4:20:4] datafile u (($1==N&&$3==0)?$2:1/0):4:5 w yerrorbars ls (N/4+1) title sprintf('N=%d', N), for [N=4:20:4] absfile u (($1==N)?$2:1/0):3:4 w yerrorbars lc (N/4+7) title sprintf('N=%d, m_abs', N)
 set title 'magnetization'
-plot magnetization(x) ls 1 title 'Literatur', for [N=4:20:4] datafile u (($1==N&&$3==0)?$2:1/0):4:5 w yerrorbars ls (N/4+1) title sprintf('N=%d', N)
+plot magnetization(x) ls 1 title 'theory', for [N=4:20:4] datafile u (($1==N&&$3==0)?$2:1/0):4:5 w yerrorbars ls (N/4+1) title sprintf('N=%d', N)
 
 set title 'abs(magnetization)'
-plot magnetization(x) ls 1 title 'Literatur', for [N=4:20:4] absfile u (($1==N)?$2:1/0):3:4 w yerrorbars lc (N/4+7) title sprintf('N=%d, m_abs', N)
+plot magnetization(x) ls 1 title 'theory', for [N=4:20:4] absfile u (($1==N)?$2:1/0):3:4 w yerrorbars lc (N/4+7) title sprintf('N=%d, m_abs', N)
 
 unset y2label
 
@@ -78,7 +78,7 @@ set ylabel '$\langle\epsilon\rangle$'
 set xrange [0.25:2]
 set key top right
 
-plot epsilonfile u 1:2 w lines ls 1 title 'Literatur', for [N=4:20:4] datafile u (($1==N&&$3==0)?$2:1/0):6:7 w yerrorbars ls (N/4+1) ps 2 title sprintf('$N=$%d', N)
+plot epsilonfile u 1:2 w lines ls 1 title 'theory', for [N=4:20:4] datafile u (($1==N&&$3==0)?$2:1/0):6:7 w yerrorbars ls (N/4+1) title sprintf('$N=$%d', N)
 
 
 set ter epslatex size 15 cm, 20cm color colortext
@@ -92,7 +92,7 @@ set multiplot layout 2,1
 set xrange [-1:1]
 set title '$J=0.3$'
 
-plot for [N=4:20:4] datafile u (($1==N&&$2==0.3)?$3:1/0):4:5 w yerrorbars ls (N/4+1) ps 2 title sprintf('$N=$%d', N)
+plot for [N=4:20:4] datafile u (($1==N&&$2==0.3)?$3:1/0):4:5 w yerrorbars ls (N/4+1) title sprintf('$N=$%d', N)
 
 set title '$J=0.8$'
 
@@ -109,12 +109,12 @@ set xlabel '$J$'
 set xrange [0.25:1]
 set key bottom right
 
-plot magnetization(x) ls 1 title 'Literatur', for [N=4:20:4] datafile u (($1==N&&$3==0)?$2:1/0):4:5 w yerrorbars ls (N/4+1) ps 2 title sprintf('$N=$%d', N)
+plot magnetization(x) ls 1 title 'theory', for [N=4:20:4] datafile u (($1==N&&$3==0)?$2:1/0):4:5 w yerrorbars ls (N/4+1) title sprintf('$N=$%d', N)
 
 set out 'absmagnetization.tex'
 set ylabel '$\langle |m|\rangle$'
 
-plot magnetization(x) ls 1 title 'Literatur', for [N=4:20:4] absfile u (($1==N)?$2:1/0):3:4 w yerrorbars ls (N/4+1) ps 2 title sprintf('$N=$%d', N)
+plot magnetization(x) ls 1 title 'theory', for [N=4:20:4] absfile u (($1==N)?$2:1/0):3:4 w yerrorbars ls (N/4+1) title sprintf('$N=$%d', N)
 
 set out 'heatcapacity.tex'
 set ylabel '$C/J^2$'
