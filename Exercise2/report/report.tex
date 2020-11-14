@@ -1,4 +1,4 @@
-% !TeX spellcheck = en_GB
+%!TeX spellcheck = en_GB
 % Die erste (unkommentierte) Zeile im Dokument legt immer die
 % Dokumentklasse fest
 \documentclass{scrartcl} 
@@ -26,7 +26,24 @@
 \begin{document}
 	\maketitle
 \section{The 2D-Ising-model}
-Hamiltonian, expected values for magnetization and epsilon
+We want to expand our solution of the Ising model in one dimension to two dimensions. For this the Hamiltoninan stays unchanged 
+\begin{equation}
+H(s)=-J\sum_{\langle i,j\rangle }s_is_j-h\sum_{\langle i,j\rangle }s_i
+\label{eq:hamiltonianising}
+\end{equation}
+
+Here $J$ is the coupling between the nearest-neighbour-spins, $h$ is the value of the external magnetic field and the sum is over the entire lattice of size $\Lambda=N_x \cdot N_y$. In our simulations we always choose $N=N_x=N_y$.
+We also know the theoretical expectation values for the  absolute value of the magnetization $|m|$ and the average energy per site $\epsilon$ when there is no external field present:
+\begin{equation}
+\epsilon=-J\coth(2J)\left( 1+\frac{2}{\pi}(2\tanh^2(2J)-1)K(4\sinh^2(2J)/\cosh^4(2J))\right) 
+\end{equation}
+\begin{equation}
+|m|=\left( 1-\frac{1}{\sinh(2J)}\right)^{1/8} \text{ if } J<J_c,\quad 0 \text{ else}   
+\end{equation}
+ with $K(m)$ the incomplete elliptic integral of the first kind and the critical coupling $J_c=\frac{1}{2}\log(1+\sqrt{2})$. We simulate the elliptic integral with the gsl\_special-functions~\cite{gsldoc_sf}.
+ 
+ Contrary to out simulation of the Ising model in one dimension, we do not do simple sampling here, but instead we do importance sampling. For this, we do a sweep of the entire lattice and perform an accept-reject step at each site: We propose a spin flip $s\rightarrow-s$ and accept it with probability $\min \left[1, \exp(-\Delta H/k_BT)\right]$, where $\Delta H$ is the change in energy due to the spin flip.  
+%Hamiltonian, expected values for magnetization and epsilon
 
 \section{Deliberations}
 \subsection{Numerical cost of calculation}
@@ -41,7 +58,7 @@ Possible: only use nearest neighbours, as shown in lecture for 1D: effort only d
 \subsection{determining errors}
 
 \section{simulation}
-In the implementation of the simulation gsl\_matrix objects get used to save the state of the largest lattice and views on these get used to create smaller lattices (see \cite{gsldoc_mat}). For each parameter set (N,h,J) a large amount of thermalization sweeps get made and afterwards several measurements of the wanted physical variable take place with single sweeps in between. A Sweep in this case means scanning through the complete lattice and performing a Metropolis-Hastings step at each site. The thermalization steps are needed to make sure the measurements take place on configurations which resemble the given parameter set according to the boltzmann distribution. To improve the run time the function energy\_change got implemented. It calculates $\Delta S$ by only using the parts of the Hamiltonian which change when $s_{i,j}$ changes to $-s_{i,j}$, these parts consist of the energy of $s_{i,j}$ in the external magnetic field and the coppling energy with the 4 neighbours.
+In the implementation of the simulation gsl\_matrix objects are used to save the state of the largest lattice and views on these are used to create smaller lattices (see \cite{gsldoc_mat}). For each parameter set (N,h,J) a large amount of thermalization sweeps are made and afterwards several measurements of the wanted physical variable take place with single sweeps in between. A Sweep in this case means scanning through the complete lattice and performing a Metropolis-Hastings step at each site. The thermalization steps are needed to make sure the measurements take place on configurations which resemble the given parameter set according to the boltzmann distribution. To improve the run time the function energy\_change was implemented. It calculates $\Delta S$ by only using the parts of the Hamiltonian which change when $s_{i,j}$ changes to $-s_{i,j}$, these parts consist of the energy of $s_{i,j}$ in the external magnetic field and the coppling energy with the 4 neighbours.
 So in total $\Delta S$ simplifies to:
 \begin{equation}
 	\Delta S=2 s_{i,j}\left(\dfrac{h}{T}+\dfrac{J}{T}(s_{i+1,j}+s_{i-1,j}+s_{i,j+1}+s_{i,j-1})\right)
@@ -53,11 +70,28 @@ So in total $\Delta S$ simplifies to:
 \subsection{$\langle m\rangle$ for fixed $J$ and varying $h$}
 plot, description
 
-\subsection{$\langle \epsilon\rangle$ for fixed $h$ and varying $J$}
+	\begin{figure}[htbp]
+		\input{magnetizationfixJ}
+		\caption{Magnetization for two differerent values of fixed $J$}
+		\label{fig:magfixJ}
+	\end{figure}
+
+\subsection{$\langle \epsilon\rangle$ for fixed $h=0$ and varying $J$}
 plot, description, comparison literature
+	\begin{figure}[htbp]
+		\input{avenergy}
+		\caption{Average energy per site for $h=0$}
+		\label{fig:energy}
+	\end{figure}
 
 \subsection{$\langle |m|\rangle$ for fixed $h$ and varying $J$}
 plot, description, comparison literature
+
+	\begin{figure}[htbp]
+		\input{absmagnetization}
+		\caption{Modulus of magnetization for $h=0$}
+		\label{fig:absmag}
+	\end{figure}
 see sharp drop, phase transition
 \paragraph{$\langle |m|\rangle$ vs. $\langle m\rangle$}
 For $h=0$: everything cancels out, m=0 everywhere because simulation randomly flops between positive and negative behaviour, even at ordered phase due to finite length.
