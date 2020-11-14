@@ -27,8 +27,8 @@ double C_expected(double J){
 int main(int argc, char **argv){
 	double J;
 	FILE *epsilonvalues=fopen("epsilonexpected.txt", "w");
-	for (int i=25; i<=200; i+=1){
-		J=i/100.0;
+	for (int i=250; i<=2000; i+=1){
+		J=i/1000.0;
 		fprintf(epsilonvalues, "%f\t%f\t%f\n", J, epsilon_expected(J), C_expected(J));
 	}
 	fclose(epsilonvalues);
