@@ -11,7 +11,7 @@ set style line 6 lc 5 lt 7 pt 4#4 gut
 
 set style line 8 lc 2 lt 7 pt 11
 
-magnetization(J)=(1-1/(sinh(2*J))**4)**(1.0/8.0)+0*(J<0.441)
+magnetization(J)=0*(J<0.4406)+(1-1/(sinh(2*J))**4)**(1.0/8.0)*(J>0.4406)
 epsilonfile='epsilonexpected.txt'
 datafile='../data/N_J_h.dat'
 #datafile N J h m m_err e e_err
