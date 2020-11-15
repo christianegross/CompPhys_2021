@@ -26,7 +26,7 @@
 \begin{document}
 	\maketitle
 \section{The 2D-Ising-model}
-We want to expand our solution of the Ising model in one dimension to two dimensions. For this the Hamiltoninan stays unchanged 
+We want to expand our solution of the Ising model in one dimension to two dimensions. The theory was given in thelectures and on the exercise sheet. For the transfer to two dimensions the Hamiltonian stays unchanged: 
 \begin{equation}
 H(s)=-J\sum_{\langle i,j\rangle }s_is_j-h\sum_{\langle i,j\rangle }s_i
 \label{eq:hamiltonianising}
@@ -40,9 +40,9 @@ We also know the theoretical expectation values for the  absolute value of the m
 \begin{equation}
 |m|=\left( 1-\frac{1}{\sinh(2J)}\right)^{1/8} \text{ if } J<J_c,\quad 0 \text{ else}   
 \end{equation}
- with $K(m)$ the incomplete elliptic integral of the first kind and the critical coupling $J_c=\frac{1}{2}\log(1+\sqrt{2})$. We simulate the elliptic integral with the gsl\_special-functions~\cite{gsldoc_sf}.
+ with $K(m)$ the incomplete elliptic integral of the first kind and the critical coupling $J_c=\frac{1}{2}\log(1+\sqrt{2})$. We simulate the elliptic integrals with the gsl\_special-functions~\cite{gsldoc_sf}.
  
- Contrary to our simulation of the Ising model in one dimension, we do not do simple sampling here, but instead we do importance sampling. For this, we do a sweep of the entire lattice and perform an accept-reject step at each site: We propose a spin flip $s\rightarrow-s$ and accept it with probability $\min \left[1, \exp(-\Delta H/k_BT)\right]$, where $\Delta H$ is the change in energy due to the spin flip.  
+ Contrary to our simulation of the Ising model in one dimension, we do not do simple sampling here, but instead we do importance sampling with the Metropolis-Hastings-algorithm. For this, we do a sweep of the entire lattice and perform an accept-reject step at each site: We propose a spin flip $s\rightarrow-s$ and accept it with probability $\min \left[1, \exp(-\Delta H/k_BT)\right]$, where $\Delta H$ is the change in energy due to the spin flip.  
 %Hamiltonian, expected values for magnetization and epsilon
 
 We furthermore know the theoretical value for the heat capacity:
@@ -56,11 +56,11 @@ where $E$ is the incomplete elliptical of the second kind and $\kappa=\frac{2\si
 Before starting the simulations, we have to think about several aspects in our code:
 \subsection{Numerical cost of calculation}
 \paragraph{Energy}
-Determining th energy of a given spin configuration means determining the hamiltonian with eq.~\ref{eq:hamiltonianising}. For this we need to sum over all lattice points, so the numerical cost of this is proportional to the system size $\Lambda$.
+Determining the energy of a given spin configuration means determining the hamiltonian with eq.~\ref{eq:hamiltonianising}. For this we need to sum over all lattice points, so the numerical cost of this is proportional to the system size $\Lambda$.
 % Have to iterate over all lattice points: effort proportional lambda.
 
 \paragraph{Change in energy for one spin flip}
-The naive approach to calculating the energy difference if one spin is flipped would be to calculate the hamiltoninan before and after the flip and subtract the results. This would scale with $\Lambda$. However, as was shown in the lectures, subtracting the hamiltonians leaves only the interactions with the nearest neighbours, because these are the only couplings we consider. There are four nearest neighbours in two dimensions, no matter how large the lattice is. so, the numerical cost of this calculation is constant, regardless of $\Lambda$.
+The naive approach to calculating the energy difference if one spin is flipped would be to calculate the hamiltoninan before and after the flip and subtract the results. This would scale with $\Lambda$. However, as was shown in the lectures, subtracting the hamiltonians leaves only the interactions with the nearest neighbours and the external field, because these are the only couplings we consider. There are four nearest neighbours in two dimensions, no matter how large the lattice is. so, the numerical cost of this calculation is constant, regardless of $\Lambda$.
 %naive: calculate two Hamiltonians, subtract: scales with lambda. 
 %Possible: only use nearest neighbours, as shown in lecture for 1D: effort only depends ion dimension, not lattice size.
 
@@ -68,7 +68,7 @@ The naive approach to calculating the energy difference if one spin is flipped w
 We expect a phase transition to occur at $J=J_c$ and $h=0$: for smaller $J$, the magnetization will be zero and the spins will be randomly disributed. For $J>J_c$, most of the spins will be pointing in one direction and the magnetization will be much closer to one than to zero and measurable. The drop in magnetization is quite steep in theory, however, due to our finite lattice sizes, it is to be expected that this effect will be smeared out and we will see a continuous curve~\cite{YangMagnetization}\cite{binderheermann}.
 %critical J: phase transition from randomly ordered to ordered.
 
-\subsection{Determining errors}
+\subsection{Determining expectation values and their errors}
 
 Because we are doing importance sampling, we do not need to consider the partition function and can calculate expectation values as simple arithmetic means. This gives us:
 \begin{equation}
@@ -82,6 +82,7 @@ Because we are doing importance sampling, we do not need to consider the partiti
 x is the observable we want to measure, so $m$ or $\epsilon$. We know these error estimates are a bit off due to correlation in the data, however for this sheet, no other methods of estimating errors were introduced in the lectures.
 
 \subsection{Heat capacity}
+\label{subsec:heattheory}
 
 From the sheet we know we can calculate $C$ as $C=\Lambda\cdot(\langle \epsilon^2\rangle-\langle \epsilon\rangle^2)$. So we need to measure the quantity $\langle \epsilon^2\rangle-\langle \epsilon\rangle^2$. However, looking at eq.~\ref{eq:error} we see that we have already calculated this as the error of $\epsilon$ and thus only need to multiply the square of the value we have already used with the system size $\Lambda$.
 
@@ -89,7 +90,7 @@ From the sheet we know we can calculate $C$ as $C=\Lambda\cdot(\langle \epsilon^
 
 Our code can be found in the github-repository \url{https://github.com/christianegross/CompPhys\_2021}. The simulation of the Ising model is in Exercise2/src/main/main.c, the calculations for the expected heat capacity and average energy are in Exercise2/report/epsilonexpected.c and the gnuplotscript for the plots is in Exercise2/report/plot.gp.
 
-In the implementation of the simulation gsl\_matrix objects are used to save the state of the largest lattice and views on these are used to create smaller lattices (see \cite{gsldoc_mat}). For each parameter set (N,h,J) a large amount of thermalization sweeps are made and afterwards several measurements of the wanted physical variable take place with single sweeps in between. A Sweep in this case means scanning through the complete lattice and performing a Metropolis-Hastings step at each site. The thermalization steps are needed to make sure the measurements take place on configurations which resemble the given parameter set according to the boltzmann distribution. To improve the run time the function energy\_change was implemented. It calculates $\Delta S$ by only using the parts of the Hamiltonian which change when $s_{i,j}$ changes to $-s_{i,j}$, these parts consist of the energy of $s_{i,j}$ in the external magnetic field and the coupling energy with the 4 neighbours.
+In the implementation of the simulation gsl\_matrix objects are used to save the state of the largest lattice and views on these are used to create smaller lattices (see \cite{gsldoc_mat}). For each parameter set (N,h,J) a large amount of thermalization sweeps are made and afterwards several measurements of the wanted physical variable take place with single sweeps in between. A sweep in this case means scanning through the complete lattice and performing a Metropolis-Hastings step at each site. The thermalization steps are needed to make sure the measurements take place on configurations which resemble the given parameter set according to the boltzmann distribution. To improve the run time the function energy\_change was implemented. It calculates $\Delta S$ by only using the parts of the Hamiltonian which change when $s_{i,j}$ changes to $-s_{i,j}$, these parts consist of the energy of $s_{i,j}$ in the external magnetic field and the coupling energy with the 4 neighbours.
 So in total $\Delta S$ simplifies to:
 \begin{equation}
 	\Delta S=2 s_{i,j}\left(\dfrac{h}{T}+\dfrac{J}{T}(s_{i+1,j}+s_{i-1,j}+s_{i,j+1}+s_{i,j-1})\right)
@@ -101,46 +102,67 @@ So in total $\Delta S$ simplifies to:
 For all our results, we did the measurements with 1000 thermalisation steps and 2000 measurement steps per data point.
 
 \subsection{$\langle m\rangle$ for fixed $J$ and varying $h$}
-In fig.~\ref{fig:magfixJ}, our results are plotted for varying $h$ and $J=0.3$ and $J=0.8$. For $J=0.3<J_c$ we see a behaviour that is very similar to that of the ising model in one dimension: For $h=-1$, the magnetization is -1. It grows with $h$ and rises steeply in the region around $h=0$ and then grows slower, coming to $m=1$ at $h=1$. the rise is minimally less steep for $N=4$, all the measurements of the other $N$ lie on top of each other. The errors are bigger for smaller $N$ and biggest around $h=1$.
- 
-For $J=0.8>J_c$, the behaviour is quite different: From $h=-1$ to $h=-0.3$, the magnetization is minus one. Above that, the magnetization jumps to one, no value in between is seen. This underlines the phase transition that occurs at $J=J_c$: Below that critical value, the external magnetic field determines the strength of the magnetization as well as the direction of the spins. Above the critical coupling, the absolute value of the magnetization is fixed and can't be changed by external influences, the external fiel can only flip all spins at once.
 
-	\begin{figure}[htbp]
-		\input{magnetizationfixJ}
-		\caption{Magnetization for two differerent values of fixed $J$}
-		\label{fig:magfixJ}
-	\end{figure}
+\begin{figure}[htbp]
+	\input{magnetizationfixJ}
+	\caption{Magnetization for two differerent values of fixed $J$}
+	\label{fig:magfixJ}
+\end{figure}
+
+In fig.~\ref{fig:magfixJ}, our results are plotted for varying $h$ and $J=0.3$ and $J=0.8$. For $J=0.3<J_c$ we see a behaviour that is very similar to that of the Ising model in one dimension: For $h=-1$, the magnetization is -1. It grows with $h$ and rises steeply in the region around $h=0$ and then grows slower, coming to $m=1$ at $h=1$. the rise is minimally less steep for $N=4$, all the measurements of the other $N$ lie on top of each other. The errors are bigger for smaller $N$ and biggest around $h=1$.
+ 
+For $J=0.8>J_c$, the behaviour is quite different: From $h=-1$ to $h=-0.3$, the magnetization is minus one. Above that, the magnetization jumps to one, only one value in between is seen for $N=20$, with a very large error. The errors for al other data points are so small we can't even see them. This underlines the phase transition that occurs at $J=J_c$: Below that critical value, the external magnetic field determines the strength of the magnetization as well as the direction of the spins. Above the critical coupling, the absolute value of the magnetization is fixed and can't be changed by external influences, the external fiel can only flip all spins at once.
+
 
 \subsection{$\langle \epsilon\rangle$ for fixed $h=0$ and varying $J$}
-We expect the average energy per site to fall monotonously, with a little curve at small J that then becomes a straight line. Up to about $J=0.45$, the values for $N=4$ are a bit below the expectation, the measurements for the other $N$ are at or above the expectation. The difference between the different $N$ is pretty small. From $J\approx0.45$, the measurements for all $N$ are below the expectations, but come closer with growing $J$. At $J=2$, the measurements lie on top of the expectation. 
+We expect the average energy per site to fall monotonously, with a little curve at small J that then becomes a straight line. Up to about $J=0.45$, the values for $N=4$ are a bit below the expectation, the measurements for the other $N$ are at or above the expectation. The difference between the different $N$ is pretty small. From $J\approx0.45$, the measurements for all $N$ are below the expectations, but come closer with growing $J$. At $J=2$, the measurements lie on top of the expectation. the errors fall with growing $J$ and are smaller for bigger $N$.
+
 	\begin{figure}[htbp]
 		\input{avenergy}
 		\caption{Average energy per site for $h=0$}
 		\label{fig:energy}
 	\end{figure}
 
-\subsection{$\langle |m|\rangle$ for fixed $h$ and varying $J$}
-plot, description, comparison literature
+\subsection{$\langle |m|\rangle$ for fixed $h=0$ and varying $J$}
+%plot, description, comparison literature
+In fig.~\ref{fig:absmag} our results for varying $J$ at $h=0$ are plotted. The connection of the points forms a continuous line for all $N$. For $J^{-1}<J_c^{-1}$, all points lie on the curve of the expected value, or very close to it. This is not the case for $J^{-1}>J_c^{-1}$, where we expect the mangetization to first have a step at $J=J_c$ and then be zero.. This is not the case for our measurements, the fall is not a step but a decline which gradually gets less steep for rising $J^{-1}$. The fall is steeper for bigger $N$. The errors are larger for smaller $N$ and grow for bigger $J^{-1}$.
 
+We see there is indeed a phase transition, but it is smeared out due to the finite lattice size.
 	\begin{figure}[htbp]
 		\input{absmagnetization}
 		\caption{Modulus of magnetization for $h=0$}
 		\label{fig:absmag}
 	\end{figure}
-see sharp drop, phase transition
+%see sharp drop, phase transition
+
+
 \paragraph{$\langle |m|\rangle$ vs. $\langle m\rangle$}
-For $h=0$: everything cancels out, m=0 everywhere because simulation randomly flops between positive and negative behaviour, even at ordered phase due to finite length.
-Use absolute value of m so it can't cancel out.
+We saw that the connection of the measurements of $\langle |m|\rangle$ form a continuous line. This would not be the case for $\langle m\rangle$, instead we would see random switches between positive and negative magnetization, or even that the magnetization cancels out to zero. This is due to the fact that we only have a finite lattice size, and so a transition between to ordered states has a non-zero probability.
+%For $h=0$: everything cancels out, m=0 everywhere because simulation randomly flops between positive and negative behaviour, even at ordered phase due to finite length.
+%Use absolute value of m so it can't cancel out.
 
 \paragraph{thermodynamical limit}
 
-\subsection{heat capacity}
+Below the critical coupling, our simulation approximates the thermodynamical limit quite well, above it, however, it does not. Our simulation is closer to the thermodynamical limit for growing $N$, but even at $N=20$, our biggest $N$, we see a big difference just above $J_c^{-1}$. We also notice that the measurements do not get closer to the thermodynamical limit linearly, but rather the approach is slower the bigger $N$ gets. This means we would need much larger lattice sizes to reproduce the thermadynamical limit.
+
+\subsection{Heat capacity}
+
+Our measurements as well as the expectation are plotted in fig.~\ref{fig:heat}. We expect a peak in the heat capacity around the critical coupling, and for it to fall to about zero away from the critical point. Our measurements also have a peak, however it is not nearly as high as the expected peak and the position of the peak is shifted to larger $J^{-1}$ for smaller $N$. The height of the peak is also smaller for smaller $N$. We see that our peak is higher for $N=16$ than for $N=20$, this is probably because we measured at the highest point for $N=16$, but did not capture the highest point for $N=20$ with our distribution of $J$.
+
+For $J^{-1}<J_c^{-1}$, our measurements are only a little bit above the expected value, however, for $J^{-1}>J_c^{-1}$, they are much bigger than the expectation, especially for smaller $N$. Here we see again that there is a phase transition, but it is smeared out.
 
 	\begin{figure}[htbp]
 		\input{heatcapacity}
 		\caption{Heat capacity for $h=0$}
 		\label{fig:heat}
 	\end{figure}
+	
+\subsection{Conclusion}
+We see that importance sampling is a powerful tool that can get us close to the thermodynamical limit. We also needed fewer measuremetns to get a meaningful value than we did in simple sampling, even though we had to do thermalisation steps. Our lattice sizes were already big enough to see that there is a phase transition, but closer study of phenomena close to the transition point would require much larger lattices and thus more computation time.
+
+
+
+
 
 \newpage	
 \listoffigures

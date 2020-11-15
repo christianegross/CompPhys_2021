@@ -67,7 +67,7 @@ set xrange [1:4]
 plot epsilonfile u (1/$1):3 w lines ls 1 title 'theory', for [N=4:20:4] datafile u (($1==N&&$3==0)?1/$2:1/0):($7*$7*N*N/$2/$2) ls (N/4+1) title sprintf('N=%d', N)
 
 clear
-set ter epslatex size 15 cm, 10.6cm color colortext
+set ter epslatex size 15 cm, 10cm color colortext
 #.tex for easy inputting in report
 
 unset title
@@ -80,8 +80,22 @@ set key top right
 
 plot epsilonfile u 1:2 w lines ls 1 title 'theory', for [N=4:20:4] datafile u (($1==N&&$3==0)?$2:1/0):6:7 w yerrorbars ls (N/4+1) title sprintf('$N=$%d', N)
 
+set xrange [0.25:1]
+set key top right
+set out 'magnetizationh0.tex'
+set xlabel '$J^{-1}$'
+set xrange [1:4]
+set key top right
 
-set ter epslatex size 15 cm, 20cm color colortext
+plot magnetization(1/x) ls 1 title 'theory', for [N=4:20:4] datafile u (($1==N&&$3==0)?(1/$2):1/0):4:5 w yerrorbars ls (N/4+1) title sprintf('$N=$%d', N)
+
+set out 'absmagnetization.tex'
+set ylabel '$\langle |m|\rangle$'
+
+plot magnetization(1/x) ls 1 title 'theory', for [N=4:20:4] absfile u (($1==N)?(1/$2):1/0):3:4 w yerrorlines ls (N/4+1) title sprintf('$N=$%d', N)
+
+set ter epslatex size 15 cm, 21cm color colortext
+
 set out 'magnetizationfixJ.tex'
 
 set key top left
@@ -101,21 +115,9 @@ plot for [N=4:20:4] datafile u (($1==N&&$2==0.8)?$3:1/0):4:5 w yerrorbars ls (N/
 unset title
 unset multiplot
 
-set ter epslatex size 15 cm, 10.6cm color colortext
-set xrange [0.25:1]
-set key bottom right
-set out 'magnetizationh0.tex'
-set xlabel '$J$'
-set xrange [0.25:1]
-set key bottom right
+set ter epslatex size 15 cm, 9.5cm color colortext
 
-plot magnetization(x) ls 1 title 'theory', for [N=4:20:4] datafile u (($1==N&&$3==0)?$2:1/0):4:5 w yerrorbars ls (N/4+1) title sprintf('$N=$%d', N)
-
-set out 'absmagnetization.tex'
-set ylabel '$\langle |m|\rangle$'
-
-plot magnetization(x) ls 1 title 'theory', for [N=4:20:4] absfile u (($1==N)?$2:1/0):3:4 w yerrorbars ls (N/4+1) title sprintf('$N=$%d', N)
-
+set tmargin at screen 0.99
 set out 'heatcapacity.tex'
 set ylabel '$C/J^2$'
 set xlabel '$J^{-1}$'
