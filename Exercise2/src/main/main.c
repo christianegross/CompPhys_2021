@@ -43,6 +43,7 @@ void generate_random_state(gsl_matrix_int* lattice, gsl_rng *generator){
 /**
  * @fn double b_hamiltonian(gsl_matrix_int* lattice, double h_T, double J_T);
  * @brief Calculates the beta*hamiltonian of the given configuration, implements periodic boundary conditions with modulus
+ * @note at the moment, beta=1 for alle measurements, so not considered
  *
  *
  * @param lattice	Matrix of Spins
@@ -85,7 +86,7 @@ double mean_spin(gsl_matrix_int* lattice){
 
 /**
  * @fn double energy_change(gsl_matrix_int* lattice, int i, int j, double h_T, double J_T);
- * @brief calculates the change in energy if the sppin at position (i, j) in the lattice is flipped
+ * @brief calculates the change in energy if the spin at position (i, j) in the lattice is flipped
  * 
  * @param lattice	Matrix of Spins
  * @param i			x-position of given spin(row)
@@ -151,7 +152,7 @@ int main(int argc, char **argv){
 	double h_T_max=1.;
 	double J_T_max=2.;
 	int therm_sweeps=1000;
-	int amount_meas=300;
+	int amount_meas=2000;
 	
 	double magnetization=0;
 	double squared_mean=0;
@@ -196,7 +197,7 @@ int main(int argc, char **argv){
 		 * @note	Use a sub matrix as the lattice in the following calculations
 		 */
 		lattice=gsl_matrix_int_submatrix (lattice_mem, 0, 0, N, N);
-		for(J_T=0.25;J_T<J_T_max+0.01;J_T+=0.05){
+		for(J_T=0.25;J_T<J_T_max+0.01;J_T+=0.025){
 			for(h_T=1;h_T>-h_T_max-0.01;h_T-=0.1){
 				/**
 				 * @note	Thermalization
@@ -225,11 +226,14 @@ int main(int argc, char **argv){
 					avr_energy_ps+=energy_ps->data[k];
 					avr_squared_energy_ps+=energy_ps->data[k]*energy_ps->data[k];
 				}
+				/**
+				 *@note calculation of expectation value and error 
+				 */
 				magnetization/=amount_meas;
 				squared_mean/=amount_meas;
 				avr_energy_ps/=amount_meas;
 				avr_squared_energy_ps/=amount_meas;
-				if(h_T<0.001&&h_T>-0.001){
+				if(h_T<0.001&&h_T>-0.001){//abs only relevant for h=0
 					abs_magnetization/=amount_meas;
 					fprintf (savedata_abs_m, "%d\t%f\t%f\t%f\t\n",N,J_T,abs_magnetization,sqrt (fabs(squared_mean-abs_magnetization*abs_magnetization)));
 				}
