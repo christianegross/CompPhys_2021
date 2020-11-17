@@ -55,6 +55,9 @@ int main(int argc, char **argv){
 	 * @var prob				Probability to accept a proposed phi'
 	 * @var N_md				#steps in leap frog
 	 * @var mean_magnetization	mean magnetization
+	 * @var var_magnetization	Variance of the magnetization
+	 * @var mean_energy_p_site	mean energy per site
+	 * @var var_energy_p_site	Variance of the energy per site
 	 * @var accept_rate			acceptance rate
 	 * @var amount_ar			amount of accept/reject steps
 	 */
@@ -74,6 +77,9 @@ int main(int argc, char **argv){
 	double prob=1;
 	int N_md=4;
 	double mean_magnetization=0;
+	double var_magnetization=0;
+	double mean_energy_p_site=0;
+	double var_energy_p_site=0;
 	double accept_rate=0;
 	int amount_ar=0;
 	
@@ -95,7 +101,7 @@ int main(int argc, char **argv){
 	FILE * converge_data=fopen ("data/converge.dat", "w");
 	fprintf(converge_data,"#N_md\tH_rel_delta\n");
 	FILE * raw_data=fopen ("data/raw.dat", "w");
-	fprintf(raw_data,"#N\tJ\t<m>\n");
+	fprintf(raw_data,"#N\tJ\t<m>\t<m>_errt<epsilon>\t<epsilon>_err\n");
 	
 	
 	/**
@@ -115,7 +121,9 @@ int main(int argc, char **argv){
 		for(J_T=0.2;J_T<2.0001;J_T+=0.01){
 			J_hat_T=J_T/((double)N);
 			mean_magnetization=0;
-			
+			var_magnetization=0;
+			mean_energy_p_site=0;
+			var_energy_p_site=0;
 			/**
 			 * @note	Thermalization:
 			 * 			1. sample p
@@ -153,7 +161,11 @@ int main(int argc, char **argv){
 				mean_magnetization+=magnetizations->data[i];
 			}
 			mean_magnetization/=amount_conf;
-			fprintf (raw_data,"%d\t%f\t%f\n",N,J_T,mean_magnetization);
+			for(int i=0; i<amount_conf;i++){
+				var_magnetization+=(magnetizations->data[i]-mean_magnetization)*(magnetizations->data[i]-mean_magnetization);
+			}
+			var_magnetization/=amount_conf;
+			fprintf (raw_data,"%d\t%f\t%f\t%f\n",N,J_T,mean_magnetization,sqrt (var_magnetization));
 		}
 	}
 	
