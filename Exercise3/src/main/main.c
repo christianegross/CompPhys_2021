@@ -86,21 +86,21 @@ double mean_spin(gsl_matrix_int* lattice){
 }
 
 void leapfrog(double p_0,double phi_0,double* p_f,double* phi_f, int N_md,
-			   double beta, double J_hat, double h, int N){
+			   double J_hat_T, double h_T, int N){
 	double epsilon=1/((double)N_md);
 	*p_f=p_0;
 	*phi_f=phi_0;
 	*phi_f=*phi_f+*p_f*epsilon/2;
 	for(int i=1;i<N_md;i++){
-		*p_f=*p_f-epsilon*(*phi_f/(beta*J_hat)-N*tanh (beta*h+*phi_f));
+		*p_f=*p_f-epsilon*(*phi_f/(J_hat_T)-N*tanh (h_T+*phi_f));
 		*phi_f=*phi_f+*p_f*epsilon;
 	}
-	*p_f=*p_f-epsilon*(*phi_f/(beta*J_hat)-N*tanh (beta*h+*phi_f));
+	*p_f=*p_f-epsilon*(*phi_f/(J_hat_T)-N*tanh (h_T+*phi_f));
 	*phi_f=*phi_f+*p_f*epsilon/2;
 }
 
-double art_hamiltonian(double p,double phi,double beta, double J_hat, double h, int N){
-	return p*p/2.+phi*phi/(2.*beta*J_hat)-log (2.*cosh (beta*h+phi))*N;
+double art_hamiltonian(double p,double phi, double J_hat_T, double h_T, int N){
+	return p*p/2.+phi*phi/(2.*J_hat_T)-log (2.*cosh (h_T+phi))*N;
 }
 
 
@@ -118,13 +118,14 @@ int main(int argc, char **argv){
 	 */
 	int N_x_max=20;
 	int N_y_max=20;
+	
+	int therm_steps=500;
+	int amount_meas=5000;
 
 	int N=10;
-	double Temp=1;
-	double beta=1./Temp;
-	double J=1;
-	double J_hat=J/N;
-	double h=0.5;
+	double J_T=1;
+	double J_hat_T=J_T/N;
+	double h_T=0.5;
 	
 	
 	//set and allocate random number generator
@@ -137,6 +138,7 @@ int main(int argc, char **argv){
 	 * @note	Allocate blocks for several measurements
 	 * 			and allocate memory for the largest lattice and set its initial state randomly
 	 */
+	gsl_block * set_of_phis=gsl_block_alloc (amount_meas);
 	gsl_matrix_int* lattice_mem=gsl_matrix_int_alloc (N_x_max, N_y_max);
 	generate_random_state(lattice_mem,generator);
 	//gsl_matrix_int_view lattice;
@@ -146,29 +148,52 @@ int main(int argc, char **argv){
 	 */
 	FILE * converge_data=fopen ("data/converge.dat", "w");
 	fprintf(converge_data,"#N_md\tH_rel_delta\n");
+	FILE * raw_data=fopen ("data/raw.dat", "w");
+	fprintf(raw_data,"#phi\n");
 	
 	double p_0=1;
 	double phi_0=1;
 	double p_f=0;
 	double phi_f=0;
 	double delta=0;
-	double H_0=art_hamiltonian (p_0, phi_0,  beta,  J_hat,  h,  N);
+	double prob=1;
+	int N_md=40;
+	double H_0=art_hamiltonian (p_0, phi_0,  J_hat_T,  h_T,  N);
 	for(int i=2;i<101;i++){
-		leapfrog (p_0, phi_0, &p_f, &phi_f, i, beta,  J_hat,  h,  N);
-		delta=(art_hamiltonian (p_f, phi_f,  beta,  J_hat,  h,  N)-H_0)/H_0;
+		leapfrog (p_0, phi_0, &p_f, &phi_f, i,  J_hat_T, h_T,  N);
+		delta=(art_hamiltonian (p_f, phi_f,  J_hat_T,  h_T,  N)-H_0)/H_0;
 		fprintf (converge_data,"%d\t%.10f\n",i , fabs(delta));
 		
 	}
-	freopen ("data/test.dat", "w",converge_data);
-	for(int i=0;i<10000;i++){
-		fprintf (converge_data,"%.10f\n",gsl_ran_ugaussian (generator));
+	
+	for(int i=0;i<therm_steps;i++){
+		p_0=gsl_ran_ugaussian (generator);
+		H_0=art_hamiltonian (p_0, phi_0,  J_hat_T,  h_T,  N);
+		leapfrog (p_0, phi_0, &p_f, &phi_f, N_md,  J_hat_T, h_T,  N);
+		prob=exp(H_0-art_hamiltonian (p_f, phi_f,  J_hat_T,  h_T,  N));
+		if(gsl_rng_uniform(generator)<prob){
+			phi_0=phi_f;
+		}
 	}
+	for(int i=0;i<amount_meas;i++){
+		p_0=gsl_ran_ugaussian (generator);
+		H_0=art_hamiltonian (p_0, phi_0,  J_hat_T,  h_T,  N);
+		leapfrog (p_0, phi_0, &p_f, &phi_f, N_md,  J_hat_T, h_T,  N);
+		prob=exp(H_0-art_hamiltonian (p_f, phi_f,  J_hat_T,  h_T,  N));
+		if(gsl_rng_uniform(generator)<prob){
+			phi_0=phi_f;
+		}
+		set_of_phis->data[i]=phi_0;
+		fprintf (raw_data,"%.10f\n",phi_0);
+	}
+	
 	
 	
 	/**
 	 * @note	Cleanup
 	 */
 	fclose (converge_data);
+	fclose (raw_data);
 	gsl_rng_free (generator);
 	gsl_matrix_int_free (lattice_mem);
 	return 0;

@@ -31,8 +31,11 @@ unset logscale x
 unset logscale y
 
 set out 'test.pdf'
-binwidth=0.1
+binwidth=0.01
 bin(x,width)=width*floor(x/width)+width/2.0
 set boxwidth binwidth
-f(x)=1/sqrt(2*3.1415)*exp(-x**2/2)
-plot '../data/test.dat' using (bin($1,binwidth)):(0.001) smooth freq with boxes,f(x)
+
+f(x,J,h,N)=1/sqrt(2*3.1415*J/N)*exp(-x**2/(2*J/N)+N*log(2*cosh(h+x)))/5000000
+plot '../data/raw.dat' using (bin($1,binwidth)):(0.0002) smooth freq with boxes,f(x,1.,0.5,10.)
+plot f(x,1.,0.5,10.)
+
