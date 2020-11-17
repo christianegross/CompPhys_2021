@@ -111,11 +111,11 @@ For all our results, we did the measurements with 1000 thermalisation steps and 
 
 In fig.~\ref{fig:magfixJ}, our results are plotted for varying $h$ and $J=0.3$ and $J=0.8$. For $J=0.3<J_c$ we see a behaviour that is very similar to that of the Ising model in one dimension: For $h=-1$, the magnetization is -1. It grows with $h$ and rises steeply in the region around $h=0$ and then grows slower, coming to $m=1$ at $h=1$. The rise is minimally less steep for $N=4$, all the measurements of the other $N$ lie on top of each other. The errors are bigger for smaller $N$ and biggest around $h=0$.
  
-For $J=0.8>J_c$, the behaviour is quite different: From $h=-1$ to $h=-0.3$, the magnetization is minus one. Above that, the magnetization jumps to one, only one value in between is seen for $N=20$, with a very large error. The errors for al other data points are so small we can't even see them. This underlines the phase transition that occurs at $J=J_c$: Below that critical value, the external magnetic field determines the strength of the magnetization as well as the direction of the spins. Above the critical coupling, the absolute value of the magnetization is fixed and can't be changed by external influences, the external field can only flip all spins at once.
+For $J=0.8>J_c$, the behaviour is quite different: From $h=-1$ to $h=-0.3$, the magnetization is minus one. Above that, the magnetization jumps to one, only one value in between is seen for $N=20$, with a very large error. The errors for all other data points are so small we can't even see them. This underlines the phase transition that occurs at $J=J_c$: Below that critical value, the external magnetic field determines the strength of the magnetization as well as the direction of the spins. Above the critical coupling, the absolute value of the magnetization is fixed and can't be changed by external influences, the external field can only flip all spins at once.
 
 
 \subsection{$\langle \epsilon\rangle$ for fixed $h=0$ and varying $J$}
-We expect the average energy per site to fall monotonously, with a little curve at small J that then becomes a straight line. Up to about $J=0.45$, the values for $N=4$ are a bit below the expectation, the measurements for the other $N$ are at or above the expectation. The difference between the different $N$ is pretty small. From $J\approx0.45$, the measurements for all $N$ are below the expectations, but come closer with growing $J$. At $J=2$, the measurements lie on top of the expectation. the errors fall with growing $J$ and are smaller for bigger $N$.
+We expect the average energy per site to fall monotonously, with a little curve at small J that then becomes a straight line. Up to about $J=0.45$, the values for $N=4$ are a bit below the expectation, the measurements for the other $N$ are at or above the expectation. The difference between the different $N$ is pretty small. From $J\approx0.45$, the measurements for all $N$ are below the expectations, but come closer with growing $J$. At $J=2$, the measurements lie on top of the expectation. The errors fall with growing $J$ and are smaller for bigger $N$.
 
 	\begin{figure}[htbp]
 		\input{avenergy}
@@ -125,7 +125,7 @@ We expect the average energy per site to fall monotonously, with a little curve 
 
 \subsection{$\langle |m|\rangle$ for fixed $h=0$ and varying $J$}
 %plot, description, comparison literature
-In fig.~\ref{fig:absmag} our results for varying $J$ at $h=0$ are plotted. The connection of the points forms a continuous line for all $N$. For $J^{-1}<J_c^{-1}$, all points lie on the curve of the expected value, or very close to it. This is not the case for $J^{-1}>J_c^{-1}$, where we expect the mangetization to first have a step at $J=J_c$ and then be zero.. This is not the case for our measurements, the fall is not a step but a decline which gradually gets less steep for rising $J^{-1}$. The fall is steeper for bigger $N$. The errors are larger for smaller $N$ and grow for bigger $J^{-1}$.
+In fig.~\ref{fig:absmag} our results for varying $J$ at $h=0$ are plotted. The connection of the points forms a continuous line for all $N$. For $J^{-1}<J_c^{-1}$, all points lie on the curve of the expected value, or very close to it. This is not the case for $J^{-1}>J_c^{-1}$, where we expect the magnetization to first have a step at $J=J_c$ and then be zero.. This is not the case for our measurements, the fall is not a step but a decline which gradually gets less steep for rising $J^{-1}$. The fall is steeper for bigger $N$. The errors are larger for smaller $N$ and grow for bigger $J^{-1}$.
 
 We see there is indeed a phase transition, but it is smeared out due to the finite lattice size.
 	\begin{figure}[htbp]
@@ -137,7 +137,7 @@ We see there is indeed a phase transition, but it is smeared out due to the fini
 
 
 \paragraph{$\langle |m|\rangle$ vs. $\langle m\rangle$}
-We saw that the connection of the measurements of $\langle |m|\rangle$ form a continuous line. This would not be the case for $\langle m\rangle$, instead we would see random switches between positive and negative magnetization, or even that the magnetization cancels out to zero. This is due to the fact that we only have a finite lattice size, and so a transition between to ordered states has a non-zero probability.
+We saw that the connection of the measurements of $\langle |m|\rangle$ form a continuous line. This would not be the case for $\langle m\rangle$, instead we would see random switches between positive and negative magnetization, or even that the magnetization cancels out to zero. This is due to the fact that we only have a finite lattice size, and so a transition between two ordered states has a non-zero probability.
 %For $h=0$: everything cancels out, m=0 everywhere because simulation randomly flops between positive and negative behaviour, even at ordered phase due to finite length.
 %Use absolute value of m so it can't cancel out.
 
@@ -158,7 +158,7 @@ For $J^{-1}<J_c^{-1}$, our measurements are only a little bit above the expected
 	\end{figure}
 	
 \subsection{Conclusion}
-We see that importance sampling is a powerful tool that can get us close to the thermodynamical limit. We also needed fewer measuremetns to get a meaningful value than we did in simple sampling, even though we had to do thermalisation steps. Our lattice sizes were already big enough to see that there is a phase transition, but closer study of phenomena close to the transition point would require much larger lattices and thus more computation time.
+We see that importance sampling is a powerful tool that can get us close to the thermodynamical limit. We also needed fewer measurements to get a meaningful value than we did in simple sampling, even though we had to do thermalisation steps. Our lattice sizes were already big enough to see that there is a phase transition, but closer study of phenomena close to the transition point would require much larger lattices and thus more computation time.
 
 
 
