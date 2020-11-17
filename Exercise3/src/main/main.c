@@ -114,16 +114,14 @@ int main(int argc, char **argv){
 	 * @var h_T					Externel magnetic field/Temperatur
 	 * @var J_T					Coppling strength/Temperatur
 	 * @var therm_sweeps		#thermalization sweeps
-	 * @var amount_meas			#measurements
+	 * @var amount_conf			#measurements
 	 */
-	int N_x_max=20;
-	int N_y_max=20;
 	
 	int therm_steps=500;
-	int amount_meas=5000;
+	int amount_conf=5000;
 
-	int N=10;
-	double J_T=1;
+	int N=5;
+	double J_T=0.2;
 	double J_hat_T=J_T/N;
 	double h_T=0.5;
 	
@@ -138,10 +136,8 @@ int main(int argc, char **argv){
 	 * @note	Allocate blocks for several measurements
 	 * 			and allocate memory for the largest lattice and set its initial state randomly
 	 */
-	gsl_block * set_of_phis=gsl_block_alloc (amount_meas);
-	gsl_matrix_int* lattice_mem=gsl_matrix_int_alloc (N_x_max, N_y_max);
-	generate_random_state(lattice_mem,generator);
-	//gsl_matrix_int_view lattice;
+	gsl_block * set_of_phis=gsl_block_alloc (amount_conf);
+	gsl_block * magnetizations=gsl_block_alloc (amount_conf);
 	
 	/**
 	 * @note	Open file streams to save data into
@@ -149,15 +145,18 @@ int main(int argc, char **argv){
 	FILE * converge_data=fopen ("data/converge.dat", "w");
 	fprintf(converge_data,"#N_md\tH_rel_delta\n");
 	FILE * raw_data=fopen ("data/raw.dat", "w");
-	fprintf(raw_data,"#phi\n");
+	fprintf(raw_data,"#N\tJ\t<m>\n");
 	
 	double p_0=1;
-	double phi_0=1;
+	double phi_0=2;
 	double p_f=0;
 	double phi_f=0;
 	double delta=0;
 	double prob=1;
-	int N_md=40;
+	int N_md=4;
+	double mean_magnetization=0;
+	double accept_rate=0;
+	int amount_ar=0;
 	double H_0=art_hamiltonian (p_0, phi_0,  J_hat_T,  h_T,  N);
 	for(int i=2;i<101;i++){
 		leapfrog (p_0, phi_0, &p_f, &phi_f, i,  J_hat_T, h_T,  N);
@@ -165,27 +164,41 @@ int main(int argc, char **argv){
 		fprintf (converge_data,"%d\t%.10f\n",i , fabs(delta));
 		
 	}
+	for(N=5;N<21;N+=5){
+		for(J_T=0.2;J_T<2.0001;J_T+=0.01){
+			J_hat_T=J_T/((double)N);
+			mean_magnetization=0;
+			for(int i=0;i<therm_steps;i++){
+				p_0=gsl_ran_ugaussian (generator);
+				H_0=art_hamiltonian (p_0, phi_0,  J_hat_T,  h_T,  N);
+				leapfrog (p_0, phi_0, &p_f, &phi_f, N_md,  J_hat_T, h_T,  N);
+				prob=exp(H_0-art_hamiltonian (p_f, phi_f,  J_hat_T,  h_T,  N));
+				if(gsl_rng_uniform(generator)<prob){
+					phi_0=phi_f;
+				}
+			}
+			
+			for(int i=0;i<amount_conf;i++){
+				p_0=gsl_ran_ugaussian (generator);
+				H_0=art_hamiltonian (p_0, phi_0,  J_hat_T,  h_T,  N);
+				leapfrog (p_0, phi_0, &p_f, &phi_f, N_md,  J_hat_T, h_T,  N);
+				prob=exp(H_0-art_hamiltonian (p_f, phi_f,  J_hat_T,  h_T,  N));
+				if(gsl_rng_uniform(generator)<prob){
+					phi_0=phi_f;
+					accept_rate+=1.;
+				}
+				amount_ar++;
+				set_of_phis->data[i]=phi_0;
+				magnetizations->data[i]=tanh (h_T+set_of_phis->data[i]);
+				mean_magnetization+=magnetizations->data[i];
+			}
+			mean_magnetization/=amount_conf;
+			fprintf (raw_data,"%d\t%f\t%f\n",N,J_T,mean_magnetization);
+		}
+	}
 	
-	for(int i=0;i<therm_steps;i++){
-		p_0=gsl_ran_ugaussian (generator);
-		H_0=art_hamiltonian (p_0, phi_0,  J_hat_T,  h_T,  N);
-		leapfrog (p_0, phi_0, &p_f, &phi_f, N_md,  J_hat_T, h_T,  N);
-		prob=exp(H_0-art_hamiltonian (p_f, phi_f,  J_hat_T,  h_T,  N));
-		if(gsl_rng_uniform(generator)<prob){
-			phi_0=phi_f;
-		}
-	}
-	for(int i=0;i<amount_meas;i++){
-		p_0=gsl_ran_ugaussian (generator);
-		H_0=art_hamiltonian (p_0, phi_0,  J_hat_T,  h_T,  N);
-		leapfrog (p_0, phi_0, &p_f, &phi_f, N_md,  J_hat_T, h_T,  N);
-		prob=exp(H_0-art_hamiltonian (p_f, phi_f,  J_hat_T,  h_T,  N));
-		if(gsl_rng_uniform(generator)<prob){
-			phi_0=phi_f;
-		}
-		set_of_phis->data[i]=phi_0;
-		fprintf (raw_data,"%.10f\n",phi_0);
-	}
+	accept_rate/=amount_ar;
+	printf ("Acceptance Rate:%f\n",accept_rate);
 	
 	
 	
@@ -195,6 +208,6 @@ int main(int argc, char **argv){
 	fclose (converge_data);
 	fclose (raw_data);
 	gsl_rng_free (generator);
-	gsl_matrix_int_free (lattice_mem);
+	gsl_block_free (set_of_phis);
 	return 0;
 }
