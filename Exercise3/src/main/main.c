@@ -11,6 +11,7 @@
 #include <gsl/gsl_block.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_rng.h>//random number generator
+#include <gsl/gsl_randist.h>
 #include "math.h"//exp-Function
 #include <sys/time.h>//measuring of wallclock execution time
 
@@ -84,6 +85,23 @@ double mean_spin(gsl_matrix_int* lattice){
 	return sum_of_spins/lattice->size1/lattice->size2;
 }
 
+void leapfrog(double p_0,double phi_0,double* p_f,double* phi_f, int N_md,
+			   double beta, double J_hat, double h, int N){
+	double epsilon=1/((double)N_md);
+	*p_f=p_0;
+	*phi_f=phi_0;
+	*phi_f=*phi_f+*p_f*epsilon/2;
+	for(int i=1;i<N_md;i++){
+		*p_f=*p_f-epsilon*(*phi_f/(beta*J_hat)-N*tanh (beta*h+*phi_f));
+		*phi_f=*phi_f+*p_f*epsilon;
+	}
+	*p_f=*p_f-epsilon*(*phi_f/(beta*J_hat)-N*tanh (beta*h+*phi_f));
+	*phi_f=*phi_f+*p_f*epsilon/2;
+}
+
+double art_hamiltonian(double p,double phi,double beta, double J_hat, double h, int N){
+	return p*p/2.+phi*phi/(2.*beta*J_hat)-log (2.*cosh (beta*h+phi))*N;
+}
 
 
 int main(int argc, char **argv){
@@ -100,22 +118,14 @@ int main(int argc, char **argv){
 	 */
 	int N_x_max=20;
 	int N_y_max=20;
-	int N=4;
-	int lambda=N*N;
-	double h_T=-1;
-	double J_T=0.25;
-	double h_T_max=1.;
-	double J_T_max=2.;
-	int therm_sweeps=1000;
-	int amount_meas=2000;
-	
-	double magnetization=0;
-	double squared_mean=0;
-	double abs_magnetization=0;
-	double avr_energy_ps=0;
-	double avr_squared_energy_ps=0;
-	
 
+	int N=10;
+	double Temp=1;
+	double beta=1./Temp;
+	double J=1;
+	double J_hat=J/N;
+	double h=0.5;
+	
 	
 	//set and allocate random number generator
 	int seed=2;//use fixed seed: result should be exactly reproduced using the same seed
@@ -127,29 +137,39 @@ int main(int argc, char **argv){
 	 * @note	Allocate blocks for several measurements
 	 * 			and allocate memory for the largest lattice and set its initial state randomly
 	 */
-	gsl_block *means_spin=gsl_block_alloc(amount_meas);
-	gsl_block *energy_ps=gsl_block_alloc(amount_meas);
 	gsl_matrix_int* lattice_mem=gsl_matrix_int_alloc (N_x_max, N_y_max);
 	generate_random_state(lattice_mem,generator);
-	gsl_matrix_int_view lattice;
+	//gsl_matrix_int_view lattice;
 	
 	/**
 	 * @note	Open file streams to save data into
 	 */
-	FILE * savedata=fopen ("data/N_J_h.dat", "w");
-	fprintf(savedata,"#N\tJ\th\t<m>\t<m>_err\t<e>\t<e>_err\n");
-	FILE * savedata_abs_m=fopen ("data/abs_m.dat", "w");
-	fprintf(savedata_abs_m,"#N\tJ\t<|m|>\t<|m|>_err\n");
+	FILE * converge_data=fopen ("data/converge.dat", "w");
+	fprintf(converge_data,"#N_md\tH_rel_delta\n");
+	
+	double p_0=1;
+	double phi_0=1;
+	double p_f=0;
+	double phi_f=0;
+	double delta=0;
+	double H_0=art_hamiltonian (p_0, phi_0,  beta,  J_hat,  h,  N);
+	for(int i=2;i<101;i++){
+		leapfrog (p_0, phi_0, &p_f, &phi_f, i, beta,  J_hat,  h,  N);
+		delta=(art_hamiltonian (p_f, phi_f,  beta,  J_hat,  h,  N)-H_0)/H_0;
+		fprintf (converge_data,"%d\t%.10f\n",i , fabs(delta));
+		
+	}
+	freopen ("data/test.dat", "w",converge_data);
+	for(int i=0;i<10000;i++){
+		fprintf (converge_data,"%.10f\n",gsl_ran_ugaussian (generator));
+	}
 	
 	
 	/**
 	 * @note	Cleanup
 	 */
-	gsl_block_free (means_spin);
-	gsl_block_free (energy_ps);
+	fclose (converge_data);
 	gsl_rng_free (generator);
 	gsl_matrix_int_free (lattice_mem);
-	fclose (savedata);
-	fclose (savedata_abs_m);
 	return 0;
 }
