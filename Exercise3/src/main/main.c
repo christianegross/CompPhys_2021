@@ -35,9 +35,61 @@ void leapfrog(double p_0,double phi_0,double* p_f,double* phi_f, int N_md,
 	*phi_f=*phi_f+*p_f*epsilon/2;
 }
 
-double art_hamiltonian(double p,double phi, double J_hat_T, double h_T, int N){
+inline double art_hamiltonian(double p,double phi, double J_hat_T, double h_T, int N){
 	return p*p/2.+phi*phi/(2.*J_hat_T)-log (2.*cosh (h_T+phi))*N;
 }
+
+
+/**
+ * @fn 		inline void binning(gsl_block *measurements, gsl_block *binneddata, int lengthofbin)
+ * @brief 	takes data points in measurements and writes bins over lengthofbin in binneddata
+ * 
+ * @note 	inline makes execution time faster
+ * 
+ * @param measurements 	determind through algorithm, correlated
+ * @param binneddata 	holds results from binning
+ * @param lengthofbin	determins how many elements are in one bin, so also has a role in how many elements there are in binneddata
+ */
+inline void binning(gsl_block *measurements, gsl_block *binneddata, int lengthofbin){
+	double bincontent=0;
+	//assertion if lengths of bins, measurements fit together
+	int numberofbins=measurements->size/lengthofbin;
+	if (numberofbins!=binneddata->size){fprintf(stderr, "Gave wrong lengths! %d number of bins to be calculated, but storage allocated for %lu!", numberofbins, binneddata->size);}
+	for (int bin=0; bin<numberofbins; bin+=1){
+		bincontent=0;
+		for (int datapoint=0; datapoint<lengthofbin; datapoint+=1){
+			bincontent+=measurements->data[bin*lengthofbin+datapoint];
+		}
+		binneddata->data[numberofbins]=bincontent/lengthofbin;
+	}
+}
+
+double makebootstrapreplica(gsl_block * measurements, gsl_rng * generator){
+	double replica=0;
+	int randomnumber;
+	for (int datapoint=0; datapoint<measurements->size; datapoint+=1){
+		randomnumber=gsl_rng_uniform_int(generator, measurements->size);
+		replica+=measurements->data[randomnumber];
+	}
+	return replica/measurements->size;
+}
+
+void bootstrap(gsl_block *measurements, gsl_rng *generator, int R, double *mean, double *variance){
+	*mean=0;
+	*variance=0;
+	gsl_block *replicalist=gsl_block_alloc(R);
+	for (int i=0; i<R; i+=1){
+		replicalist->data[i]=makebootstrapreplica(measurements, generator);
+		*mean+=replicalist->data[i];
+	}
+	*mean/=R;
+	for (int i=0; i<R; i+=1){
+		*variance+=(*mean-replicalist->data[i])*(*mean-replicalist->data[i]);
+	}
+	*variance/=R-1;
+	}
+		
+
 
 
 int main(int argc, char **argv){
