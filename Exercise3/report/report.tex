@@ -1,0 +1,120 @@
+%!TeX spellcheck = en_UK
+% Die erste (unkommentierte) Zeile im Dokument legt immer die
+% Dokumentklasse fest
+\documentclass{scrartcl} 
+
+% Präambel:
+% Einbinen von zusätzlichen Paketen. Falls für eine Datei keine Endung
+% explizit angegeben wird, benutzt LaTeX '.tex'. Im Folgenden wird
+% also die Datei 'edv_pakete.tex' eingebunden.
+\input{edv_pakete}
+
+
+% Verzeichnisse mit Abbildungen; kann gestrichen werden,
+% falls Sie dies schon in edv_pakete.tex definiert haben:
+%\graphicspath{{../report}}
+
+\addbibresource{refs.bib} %Hinzufügen einer Literaturdatenbank aus dem angegebenen Verzeichnis
+
+% Titel, Autor und Datum
+\title{Computational Physics}
+\subtitle{Exercise 3}
+\date{\today}
+\author{Christiane Groß, Nico Dichter}
+
+% Jetzt startet das eigentliche Dokument
+\begin{document}
+	\maketitle
+\section{The long range Ising model}
+We want to look at the long range Ising model, where an interaction with all other lattice points is considered. The theory was given in the lectures and on the exercise sheet. Inserting $\hat{J}=J/N$ to get normalizable solutions, we have: 
+\begin{equation}
+H_I(s)=-\frac{1}{2}\hat{J}\sum_{i,j}s_is_j-h\sum_{i,j}s_i
+\label{eq:hamiltonianising}
+\end{equation}
+
+To be able to use HMC, we need to work in continuous space and the derivations on the sheet give us for $J>0$, using the Hubbard-Stratonovich-transformation:
+
+\begin{equation}
+Z=\sum_{\{s_i=\pm1\}}\exp(-\beta H_I(s,h))=
+\int_{-\infty}^{\infty}\frac{\mathrm{d} \phi}{\sqrt{2\pi\beta\hat{J}}}
+\exp\left( -\frac{\phi^2}{2\beta\hat{J}}+N\log\left( 2\cosh(\beta h\pm\phi)\right) \right) 
+\label{eq:partfunc}
+\end{equation}
+
+
+We always choose $+\phi$ in the argument of the $\cosh$ and introduce the effective action:
+\begin{equation}
+S(\phi)=\frac{\phi^2}{2\beta\hat{J}}-N\log\left( 2\cosh(\beta h+\phi)\right)
+\end{equation}
+
+and the effective Hamiltonian:
+\begin{equation}
+H(\phi, p)=\frac{p^2}{2}+S(\phi)
+\end{equation}
+
+\subsection{HMC}
+
+\section{Deliberations}
+
+\subsection{Observables}
+We need to transform our observables into continuous functions of $\phi$.
+
+\[\begin{array}{>{\displaystyle}r>{\displaystyle}c>{\displaystyle}l}
+
+Z&=&\int_{-\infty}^{\infty}\frac{\mathrm{d} \phi}{\sqrt{2\pi\beta\hat{J}}}exp(-S(\phi))\\
+
+%\langle O\rangle&=&\frac{1}{Z}\int_{-\infty}^{\infty}\frac{\mathrm{d} \phi}{\sqrt{2\pi\beta\hat{J}}}O(\phi)\exp(-S(\phi))\\
+
+\dpd{\log(Z)}{x}&=&\frac{1}{Z}\dpd{Z}{x}=
+-\frac{1}{Z}\int_{-\infty}^{\infty}\frac{\mathrm{d} \phi}{\sqrt{2\pi\beta\hat{J}}}\exp(-S(\phi))\left( \dpd{S(\phi)}{x}+\sqrt{2\pi\beta\hat{J}}\dpd{}{x}\frac{1}{\sqrt{2\pi\beta\hat{J}}}\right) \\
+
+\langle m\rangle&=&\frac{1}{Z}\int_{-\infty}^{\infty}\frac{\mathrm{d} \phi}{\sqrt{2\pi\beta\hat{J}}}m(\phi)\exp(-S(\phi))\\
+&=&\frac{1}{N\beta}\dpd{\log(Z)}{h}=
+-\frac{1}{NZ\beta}\int_{-\infty}^{\infty}\frac{\mathrm{d} \phi}{\sqrt{2\pi\beta\hat{J}}}\dpd{S(\phi)}{h}\exp(-S(\phi))\\
+
+\Rightarrow m(\phi)&=&-\frac{1}{N\beta}\dpd{S(\phi)}{h}\\
+&=&(-)^2\frac{1}{N\beta}\frac{2N\beta\sinh(\beta h+\phi)}{2\cosh(\beta h+\phi)}\\
+&=&\tanh(\beta h+\phi)\\
+
+\text{analoguously } \langle \epsilon\rangle&=&-\frac{1}{N}\dpd{\log(Z)}{\beta}=
+(-)^2\frac{1}{NZ}\int_{-\infty}^{\infty}\frac{\mathrm{d} \phi}{\sqrt{2\pi\beta\hat{J}}}\exp(-S(\phi))
+\left( \dpd{S(\phi)}{\beta}+\sqrt{2\pi\beta\hat{J}}\dpd{}{\beta}\frac{1}{\sqrt{2\pi\beta\hat{J}}}\right)\\
+
+\Rightarrow \epsilon(\phi)&=&\frac{1}{N}\left( \dpd{S(\phi)}{\beta}+\sqrt{2\pi\beta\hat{J}}\dpd{}{\beta}\frac{1}{\sqrt{2\pi\beta\hat{J}}}\right)\\
+&=&-\frac{\phi^2}{2\beta^2 N\hat{J}}-\frac{2Nh\sinh(\beta h+\phi)}{N2\cosh(\beta h+\phi)}-\frac{2\pi\hat{J}}{2\pi\hat{J}\beta}\\
+
+&=&-h\tanh(\beta h+\phi)-\frac{\phi^2}{2\beta^2 N\hat{J}}-\frac{1}{\beta}\\
+
+\Rightarrow \beta\epsilon(\phi)&=&-\beta h\tanh(\beta h+\phi)-\frac{\phi^2}{2\beta N\hat{J}}-1\\
+
+\end{array}\]
+
+We can insert these definitions into our code. we will not calculate $\langle \epsilon\rangle$ but instead $\langle \beta\epsilon\rangle$, because this allows us to absorb $\beta$ into $\hat{J}$ and $h$, and is also the form of the analytical solutions given on the sheet.
+
+
+
+\subsection{Equations of Motion}
+
+\subsection{Leapfrog}
+
+\subsection{Error estimation}
+Binning to reduce correlation
+Bootstrap to estimate error
+
+\section{Simulation}
+
+\subsection{choosing bin length}
+
+\section{Results}
+
+\subsection{Convergence of leapfrog}
+plot description tuning of acceptance rate
+\subsection{Magnetization}
+plot description
+\subsection{Average energy per site}
+plot description
+
+\newpage	
+\listoffigures
+\printbibliography
+\end{document}
