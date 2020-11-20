@@ -84,11 +84,11 @@ set ter epslatex size 15cm, 10cm color colortext
 set out 'converge_t.tex'
 set title 'Convergence check'
 set xlabel '$N_{md}$'
-set ylabel '$|\Delta|$'
+set ylabel '$|\frac{H[p_f,\phi_f]-H[p_0,\phi_0]}{H[p_0,\phi_0]}|$'
 set logscale y
 set grid
 
-plot convergefile u 1:2 ls 2 title 'theory'
+plot convergefile u 1:2 ls 2 title 'Leapfrog error'
 unset logscale y
 
 set xrange [0.2:2]
