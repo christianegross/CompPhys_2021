@@ -1,7 +1,7 @@
 %!PS-Adobe-2.0 EPSF-2.0
 %%Title: converge_t.tex
-%%Creator: gnuplot 5.0 patchlevel 3
-%%CreationDate: Fri Nov 20 19:06:39 2020
+%%Creator: gnuplot 5.2 patchlevel 2
+%%CreationDate: Fri Nov 20 22:02:39 2020
 %%DocumentFonts: 
 %%BoundingBox: 50 50 475 333
 %%EndComments
@@ -438,42 +438,39 @@ systemdict /pdfmark known not {
 SDict begin [
   /Title (converge_t.tex)
   /Subject (gnuplot plot)
-  /Creator (gnuplot 5.0 patchlevel 3)
-  /Author (christiane)
+  /Creator (gnuplot 5.2 patchlevel 2)
 %  /Producer (gnuplot)
 %  /Keywords ()
-  /CreationDate (Fri Nov 20 19:06:39 2020)
+  /CreationDate (Fri Nov 20 22:02:39 2020)
   /DOCINFO pdfmark
 end
 } ifelse
 %
-% Support for boxed text - Ethan A Merritt May 2005
+% Support for boxed text - Ethan A Merritt Sep 2016
 %
 /InitTextBox { userdict /TBy2 3 -1 roll put userdict /TBx2 3 -1 roll put
            userdict /TBy1 3 -1 roll put userdict /TBx1 3 -1 roll put
 	   /Boxing true def } def
-/ExtendTextBox { Boxing
-    { gsave dup false charpath pathbbox
+/ExtendTextBox { dup type /stringtype eq
+    { Boxing { gsave dup false charpath pathbbox
       dup TBy2 gt {userdict /TBy2 3 -1 roll put} {pop} ifelse
       dup TBx2 gt {userdict /TBx2 3 -1 roll put} {pop} ifelse
       dup TBy1 lt {userdict /TBy1 3 -1 roll put} {pop} ifelse
       dup TBx1 lt {userdict /TBx1 3 -1 roll put} {pop} ifelse
-      grestore } if } def
+      grestore } if }
+    {} ifelse} def
 /PopTextBox { newpath TBx1 TBxmargin sub TBy1 TBymargin sub M
                TBx1 TBxmargin sub TBy2 TBymargin add L
 	       TBx2 TBxmargin add TBy2 TBymargin add L
 	       TBx2 TBxmargin add TBy1 TBymargin sub L closepath } def
 /DrawTextBox { PopTextBox stroke /Boxing false def} def
-/FillTextBox { gsave PopTextBox 1 1 1 setrgbcolor fill grestore /Boxing false def} def
+/FillTextBox { gsave PopTextBox fill grestore /Boxing false def} def
 0 0 0 0 InitTextBox
 /TBxmargin 20 def
 /TBymargin 20 def
 /Boxing false def
 /textshow { ExtendTextBox Gshow } def
 %
-% redundant definitions for compatibility with prologue.ps older than 5.0.2
-/LTB {BL [] LCb DL} def
-/LTb {PL [] LCb DL} def
 end
 %%EndProlog
 %%Page: 1 1
@@ -508,11 +505,31 @@ LTb
 31 0 V
 6732 0 R
 -31 0 V
-1342 1134 M
+1342 997 M
 31 0 V
 6732 0 R
 -31 0 V
-1342 1259 M
+-6732 77 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 60 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 48 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 41 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 36 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 32 R
 31 0 V
 6732 0 R
 -31 0 V
@@ -537,11 +554,31 @@ LTb
 31 0 V
 6732 0 R
 -31 0 V
-1342 1748 M
+1342 1612 M
 31 0 V
 6732 0 R
 -31 0 V
-1342 1874 M
+-6732 77 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 59 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 49 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 41 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 36 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 31 R
 31 0 V
 6732 0 R
 -31 0 V
@@ -566,11 +603,31 @@ LTb
 31 0 V
 6732 0 R
 -31 0 V
-1342 2363 M
+1342 2227 M
 31 0 V
 6732 0 R
 -31 0 V
-1342 2489 M
+-6732 77 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 59 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 49 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 41 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 36 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 31 R
 31 0 V
 6732 0 R
 -31 0 V
@@ -595,11 +652,31 @@ LTb
 31 0 V
 6732 0 R
 -31 0 V
-1342 2978 M
+1342 2841 M
 31 0 V
 6732 0 R
 -31 0 V
-1342 3103 M
+-6732 77 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 60 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 48 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 42 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 35 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 32 R
 31 0 V
 6732 0 R
 -31 0 V
@@ -624,11 +701,31 @@ LTb
 31 0 V
 6732 0 R
 -31 0 V
-1342 3593 M
+1342 3456 M
 31 0 V
 6732 0 R
 -31 0 V
-1342 3718 M
+-6732 77 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 60 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 48 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 41 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 36 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 31 R
 31 0 V
 6732 0 R
 -31 0 V
@@ -653,11 +750,31 @@ LTb
 31 0 V
 6732 0 R
 -31 0 V
-1342 4207 M
+1342 4071 M
 31 0 V
 6732 0 R
 -31 0 V
-1342 4333 M
+-6732 77 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 59 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 49 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 41 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 36 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 31 R
 31 0 V
 6732 0 R
 -31 0 V
@@ -682,11 +799,31 @@ LTb
 31 0 V
 6732 0 R
 -31 0 V
-1342 4822 M
+1342 4686 M
 31 0 V
 6732 0 R
 -31 0 V
-1342 4947 M
+-6732 76 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 60 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 49 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 41 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 35 R
+31 0 V
+6732 0 R
+-31 0 V
+-6732 32 R
 31 0 V
 6732 0 R
 -31 0 V
@@ -763,7 +900,9 @@ LTb
 LTa
 LCa setrgbcolor
 3371 704 M
-0 4303 V
+0 4020 V
+0 220 R
+0 63 V
 stroke
 1.000 UL
 LTb
@@ -779,7 +918,9 @@ LTb
 LTa
 LCa setrgbcolor
 4047 704 M
-0 4303 V
+0 4020 V
+0 220 R
+0 63 V
 stroke
 1.000 UL
 LTb
@@ -898,6 +1039,7 @@ Z stroke
 1.000 UP
 1.000 UL
 LTb
+% Begin plot #1
 1.000 UP
 1.000 UL
 LTb
@@ -1006,7 +1148,9 @@ LC0 setrgbcolor
 7970 1203 TriU
 8037 1198 TriU
 8105 1193 TriU
-2693 4834 TriU
+3749 4834 TriU
+LTw
+% End plot #1
 2.000 UL
 LTb
 LCb setrgbcolor

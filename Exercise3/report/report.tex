@@ -120,6 +120,14 @@ this ensures we minimize the effects of correlation on our data and also get a r
 %Bootstrap to estimate error
 
 \section{Simulation}
+In the implementation of the simulation gsl\_vector objects  and views on these are used to accomplish proper binning (see \cite{gsldoc_mat}). 
+
+At first the convergence of the leap frog algorithm gets tested and the result is shown in fig. \ref{fig:converge}. Then for each parameter set (N,J) ($h=0.5$ fixed) a large amount of thermalization steps are made and afterwards several measurements of the wanted physical variable take place. A step in this case means to sample a conjugated momentum from the normal distribution and performing the leap frog algorithm with this momentum. Afterwards the relative change in total energy is calculated and an accept/reject takes place with the acceptance probability of:
+\begin{equation}
+	P_{acc.}=\min(1,\exp(\cal{H} (\texttt{q},\phi)-\cal H (\texttt{q}',\phi')))
+\end{equation} 
+It has to be noted, that in case of rejection the configuration $\phi$ gets added again to the list of generated configurations.
+The thermalization steps are needed to make sure the measurements take place on configurations which resemble the given parameter set. The generation of the initial set of observables take place after each step. To lower the correlation binning was used on top of this initial set. At end bootstrap was used to estimate an appropriate error on top of the binned data.
 
 \subsection{choosing bin length}
 

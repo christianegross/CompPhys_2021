@@ -9,7 +9,7 @@
 #include <gsl/gsl_randist.h>//pull random number from gaussian
 #include "math.h"//exp-Function
 #include <gsl/gsl_vector.h>
-
+double art_hamiltonian(double p,double phi, double J_hat_T, double h_T, int N);
 
 /**
  * @fn void leapfrog(double p_0,double phi_0,double* p_f,double* phi_f, int N_md,
