@@ -1,0 +1,76 @@
+%!TeX spellcheck = en_UK
+% Die erste (unkommentierte) Zeile im Dokument legt immer die
+% Dokumentklasse fest
+\documentclass{scrartcl} 
+
+% Präambel:
+% Einbinen von zusätzlichen Paketen. Falls für eine Datei keine Endung
+% explizit angegeben wird, benutzt LaTeX '.tex'. Im Folgenden wird
+% also die Datei 'edv_pakete.tex' eingebunden.
+\input{edv_pakete}
+
+
+% Verzeichnisse mit Abbildungen; kann gestrichen werden,
+% falls Sie dies schon in edv_pakete.tex definiert haben:
+%\graphicspath{{../report}}
+
+\addbibresource{refs.bib} %Hinzufügen einer Literaturdatenbank aus dem angegebenen Verzeichnis
+
+% Titel, Autor und Datum
+\title{Computational Physics}
+\subtitle{Exercise 3}
+\date{\today}
+\author{Christiane Groß, Nico Dichter}
+
+% Jetzt startet das eigentliche Dokument
+\begin{document}
+	\maketitle
+\section{The long range Ising model}
+We want to look at the long range Ising model, where an interaction with all other lattice points is considered. The theory was given in the lectures and on the exercise sheet. Inserting $\hat{J}=J/N$ to get normalizable solutions, we have: 
+\begin{equation}
+H(s)=-\frac{1}{2}\hat{J}\sum_{i,j}s_is_j-h\sum_{\langle i,j\rangle }s_i
+\label{eq:hamiltonianising}
+\end{equation}
+
+To be able to use HMC, we need to work in continuous space and the derivations on the sheet give us for $J>0$, using the Hubbard-Stratonovich-transformation:
+
+\begin{equation}
+Z=\sum_{\{s_i=\pm1\}}\exp(-\beta H(s,h))=
+\int_{-\infty}^{\infty}\frac{\mathrm{d} \phi}{\sqrt{2\pi\beta\hat{J}}}
+\exp\left( -\frac{\phi^2}{2\beta\hat{J}}+N\log\left( 2\cosh(\beta h\pm\phi)\right) \right) 
+\label{eq:partfunc}
+\end{equation}
+
+effective action 
+effective hamiltonian
+
+\subsection{HMC}
+
+\section{Deliberations}
+\subsection{Observables}
+
+\subsection{Equations of Motion}
+
+\subsection{Leapfrog}
+
+\subsection{Error estimation}
+Binning to reduce correlation
+Bootstrap to estimate error
+
+\section{Simulation}
+
+\subsection{choosing bin length}
+
+\section{Results}
+
+\subsection{Convergence of leapfrog}
+plot description tuning of acceptance rate
+\subsection{Magnetization}
+plot description
+\subsection{Average energy per site}
+plot description
+
+\newpage	
+\listoffigures
+\printbibliography
+\end{document}
