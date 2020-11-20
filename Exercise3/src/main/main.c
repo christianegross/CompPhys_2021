@@ -195,8 +195,8 @@ int main(int argc, char **argv){
 	/**
 	 * @note	Itterate through different sets of N/J
 	 */
-	for(N=20;N<21;N+=5){
-		for(J_T=0.2;J_T<2.0001;J_T+=0.1){
+	for(N=5;N<21;N+=5){
+		for(J_T=0.2;J_T<2.0001;J_T+=0.05){
 			J_hat_T=J_T/((double)N);
 			mean_magnetization=0;
 			var_magnetization=0;
@@ -236,7 +236,7 @@ int main(int argc, char **argv){
 				amount_ar++;
 				set_of_phis->data[i]=phi_0;
 				magnetizations->data[i]=tanh (h_T+set_of_phis->data[i]);
-				energies->data[i]=-(set_of_phis->data[i])*(set_of_phis->data[i])/2/N/J_hat_T-tanh (h_T+set_of_phis->data[i]);
+				energies->data[i]=-(set_of_phis->data[i])*(set_of_phis->data[i])/2/N/J_hat_T-h_T*tanh (h_T+set_of_phis->data[i])-1;
 			}
 			/**
 			 * @note	analyse measured data for magnetization and energy:
