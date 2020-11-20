@@ -12,12 +12,20 @@
 
 
 /**
- * @fn double mean_spin(gsl_matrix_int* lattice);
- * @brief Calculates the mean over all spins in the given configuration
+ * @fn void leapfrog(double p_0,double phi_0,double* p_f,double* phi_f, int N_md,
+			   double J_hat_T, double h_T, int N);
+ * @brief Integrates using the force equations of the hamiltonian, by N_md steps
+ * 			(using leap frog algorithm)
  *
- * @param lattice	Matrix of Spins
+ * @param p_0		Intial momentum
+ * @param phi_0		Intial "position"
+ * @param p_f		Final momentum
+ * @param phi_f		Final "position"
+ * @param N_md		#steps in leap frog
+ * @param J_hat_T	J_T/N
+ * @param h_T=h/T	Strength of external field
+ * @param N			Size of the lattice
  * 
- * @return mean over all spins
  *
  */
 void leapfrog(double p_0,double phi_0,double* p_f,double* phi_f, int N_md,
