@@ -1,5 +1,5 @@
 #Christiane Gross, Nico Dichter
-#Exercise 2 Computational Physics WS20/21
+#Exercise 3 Computational Physics WS20/21
 #script for plotting theoretical and experimental results of magnetization and energy
 
 set style line 1 lc 7 lt 7 pt 7 #ps 0.2
@@ -14,7 +14,7 @@ set style line 8 lc 2 lt 7 pt 11
 #used definitons for expected values from sheet
 binomial(n,k)			=n!/k!/(n-k)!
 smallf(J,h,x)			=exp(0.5*J*x**2+h*x)
-Z(N, J, h)				=exp(0.5*J)*(sum [i=0:N] binomial(N, i)*smallf(J,h,(N-2*i)))
+Z(N, J, h)				=(sum [i=0:N] binomial(N, i)*smallf(J,h,(N-2*i)))
 betaepsilon(N,J,h)		=-1.0/N/Z(N,J,h)*(sum [i=0:N] binomial(N, i)*(0.5*J*(N-2*i)**2+h*(N-2*i))*smallf(J,h,N-2*i))
 magnetization(N,J,h)	=1.0/N/Z(N,J,h)*(sum [i=0:N] binomial(N, i)*(N-2*i)*smallf(J,h,N-2*i))
 
@@ -52,7 +52,7 @@ set ylabel 'error'
 do for[n=4:20:1]{
 set title sprintf("J=%f", n/10.0)
 #print(n/10.0)
-plot '../data/raw.dat' u ($2==n/10.0?$7:1/0):4 
+#plot '../data/raw.dat' u ($2==n/10.0?$7:1/0):4 
 }
 
 unset logscale x
@@ -62,11 +62,11 @@ set out 'magnetization.pdf'
 set title 'magnetization'
 set xlabel 'J'
 set ylabel 'magnetization'
-plot for [N=5:20:5] magnetization(N,x,0.5) ls (N/5) title sprintf("N=%d",N)
+plot for [N=5:20:5] magnetization(N,x/N,0.5) ls (N/5) title sprintf("N=%d",N), for [N=5:20:5] datafile using ($1==N&&$7==64?$2:1/0):3:4 w yerrorbars ls (N/5) title ''
 
 
 set out 'energy.pdf'
 set title 'energy'
 set xlabel 'J'
 set ylabel 'energy'
-plot for [N=5:20:5] betaepsilon(N,x,0.5) ls (N/5) title sprintf("N=%d",N)
+plot for [N=5:20:5] betaepsilon(N,x/N,0.5) ls (N/5) title sprintf("N=%d",N), for [N=5:20:5] datafile using ($1==N&&$7==64?$2:1/0):5:6 w yerrorbars ls (N/5) title ''
