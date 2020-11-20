@@ -27,12 +27,12 @@ set ter pdfcairo size 4in, 4in
 set out 'converge.pdf'
 set title 'Convergence check'
 set xlabel 'N_{md}'
-set ylabel '|delta|'
+set ylabel '|\Delta|'
 set logscale y
 set logscale x
 set grid
 
-plot convergefile u 1:2 ls 2 title 'theory'
+plot convergefile u 1:2 ls 2 title 'Leapfrog error'
 unset logscale x
 unset logscale y
 
