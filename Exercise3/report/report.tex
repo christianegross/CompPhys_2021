@@ -1,4 +1,4 @@
-%!TeX spellcheck = en_UK
+%!TeX spellcheck = en_GB
 % Die erste (unkommentierte) Zeile im Dokument legt immer die
 % Dokumentklasse fest
 \documentclass{scrartcl} 
@@ -52,8 +52,6 @@ and the effective Hamiltonian:
 H(\phi, p)=\frac{p^2}{2}+S(\phi)
 \end{equation}
 
-\subsection{HMC}
-
 \section{Deliberations}
 
 \subsection{Observables}
@@ -76,6 +74,10 @@ Z&=&\int_{-\infty}^{\infty}\frac{\mathrm{d} \phi}{\sqrt{2\pi\beta\hat{J}}}exp(-S
 &=&(-)^2\frac{1}{N\beta}\frac{2N\beta\sinh(\beta h+\phi)}{2\cosh(\beta h+\phi)}\\
 &=&\tanh(\beta h+\phi)\\
 
+
+\end{array}\]
+\[\begin{array}{>{\displaystyle}r>{\displaystyle}c>{\displaystyle}l}
+
 \text{analoguously } \langle \epsilon\rangle&=&-\frac{1}{N}\dpd{\log(Z)}{\beta}=
 (-)^2\frac{1}{NZ}\int_{-\infty}^{\infty}\frac{\mathrm{d} \phi}{\sqrt{2\pi\beta\hat{J}}}\exp(-S(\phi))
 \left( \dpd{S(\phi)}{\beta}+\sqrt{2\pi\beta\hat{J}}\dpd{}{\beta}\frac{1}{\sqrt{2\pi\beta\hat{J}}}\right)\\
@@ -95,11 +97,27 @@ We can insert these definitions into our code. we will not calculate $\langle \e
 
 \subsection{Equations of Motion}
 
+To be able to use HMC, we need to evolve $p$ and $\phi$ along a trajectory along which $H$ is approximately constant. We do this by integrating over the equations of motion:
+
+\[\begin{array}{>{\displaystyle}r>{\displaystyle}c>{\displaystyle}l}
+\dot{p}&=&-\dpd{H}{phi}\\
+&=&\frac{\phi}{\beta \hat{J}}-N\tanh(\beta h+\phi)\\
+\dot{\phi}&=&\dpd{H}{p}=p
+\end{array}\]
+
+\subsection{HMC}
+
 \subsection{Leapfrog}
 
 \subsection{Error estimation}
-Binning to reduce correlation
-Bootstrap to estimate error
+When determining errors for our measurements, we use binning and bootstrapping instead of the naive standard deviation. 
+We do this as described in the lecture: First, we bin our data $O_i$ from $N$ measurements in $\lfloor N/l\rfloor$ bins $O^B_i=\frac{1}{l}\sum_{k=1}^l O_{(i-1)\cdot l+k}$. 
+
+From these new datapoints, we make $R$ bootstrap replicas. For each replica, we sample with replacement from the given $O_i^B$, and take the arithmetic mean over those chosen values to be the replica. At the end, we can estimate the mean and error of our measurements as the arithmetic mean and standard deviation over $R$ bootstrap replicas.
+
+this ensures we minimize the effects of correlation on our data and also get a realisitic error estimate.
+%Binning to reduce correlation
+%Bootstrap to estimate error
 
 \section{Simulation}
 
@@ -108,10 +126,26 @@ Bootstrap to estimate error
 \section{Results}
 
 \subsection{Convergence of leapfrog}
+
+\begin{figure}[htbp]
+	\input{converge_t.tex}
+	\caption{convergence of the leapfrog algorithm}
+	\label{fig:converge}
+\end{figure}
 plot description tuning of acceptance rate
 \subsection{Magnetization}
+\begin{figure}[htbp]
+	\input{magnetization_t.tex}
+	\caption{magnetization for different $N$}
+	\label{fig:magnetization}
+\end{figure}
 plot description
 \subsection{Average energy per site}
+\begin{figure}[htbp]
+	\input{energy_t.tex}
+	\caption{energy per site for different $N$}
+	\label{fig:energy}
+\end{figure}
 plot description
 
 \newpage	

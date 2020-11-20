@@ -1,5 +1,5 @@
 #Christiane Gross, Nico Dichter
-#Exercise 2 Computational Physics WS20/21
+#Exercise 3 Computational Physics WS20/21
 #script for plotting theoretical and experimental results of magnetization and energy
 
 set style line 1 lc 7 lt 7 pt 7 #ps 0.2
@@ -14,7 +14,7 @@ set style line 8 lc 2 lt 7 pt 11
 #used definitons for expected values from sheet
 binomial(n,k)			=n!/k!/(n-k)!
 smallf(J,h,x)			=exp(0.5*J*x**2+h*x)
-Z(N, J, h)				=exp(0.5*J)*(sum [i=0:N] binomial(N, i)*smallf(J,h,(N-2*i)))
+Z(N, J, h)				=(sum [i=0:N] binomial(N, i)*smallf(J,h,(N-2*i)))
 betaepsilon(N,J,h)		=-1.0/N/Z(N,J,h)*(sum [i=0:N] binomial(N, i)*(0.5*J*(N-2*i)**2+h*(N-2*i))*smallf(J,h,N-2*i))
 magnetization(N,J,h)	=1.0/N/Z(N,J,h)*(sum [i=0:N] binomial(N, i)*(N-2*i)*smallf(J,h,N-2*i))
 
@@ -48,25 +48,63 @@ plot f(x,1.,0.5,10.)
 set out 'bootstrap.pdf'
 set logscale x
 set xlabel 'length of bin'
-set ylabel 'error'
-do for[n=4:20:1]{
-set title sprintf("J=%f", n/10.0)
-#print(n/10.0)
-plot '../data/raw.dat' u ($2==n/10.0?$7:1/0):4 
+set ylabel 'error
+set key top left
+do for [size=5:20:5]{
+set title sprintf("magnetization, size=%d", size)
+plot for [n=4:20:2] '../data/raw.dat' u ($2==n/10.0&&$1==size?$7:1/0):4 w linespoints lc n title sprintf("J=%f",n/10.0)
+}
+do for [size=5:20:5]{
+set title sprintf("energy, size=%d", size)
+plot for [n=4:20:2] '../data/raw.dat' u ($2==n/10.0&&$1==size?$7:1/0):6 w linespoints lc n title sprintf("J=%f",n/10.0)
 }
 
 unset logscale x
 
 set xrange [0.2:2]
+set yrange[0:1]
 set out 'magnetization.pdf'
 set title 'magnetization'
 set xlabel 'J'
 set ylabel 'magnetization'
-plot for [N=5:20:5] magnetization(N,x,0.5) ls (N/5) title sprintf("N=%d",N)
-
+plot for [N=5:20:5] magnetization(N,x/N,0.5) ls (N/5) title sprintf("N=%d",N), for [N=5:20:5] datafile using ($1==N&&$7==64?$2:1/0):3:4 w yerrorbars ls (N/5) title ''
+unset yrange
 
 set out 'energy.pdf'
 set title 'energy'
 set xlabel 'J'
 set ylabel 'energy'
-plot for [N=5:20:5] betaepsilon(N,x,0.5) ls (N/5) title sprintf("N=%d",N)
+plot for [N=5:20:5] betaepsilon(N,x/N,0.5) ls (N/5) title sprintf("N=%d",N), for [N=5:20:5] datafile using ($1==N&&$7==64?$2:1/0):($5+1):6 w yerrorbars ls (N/5) title ''
+
+unset xrange
+unset yrange
+
+set ter epslatex size 15cm, 10cm color colortext
+
+set out 'converge_t.tex'
+set title 'Convergence check'
+set xlabel '$N_{md}$'
+set ylabel '$|\Delta|$'
+set logscale y
+set grid
+
+plot convergefile u 1:2 ls 2 title 'theory'
+unset logscale y
+
+set xrange [0.2:2]
+set yrange[0:1]
+set out 'magnetization_t.tex'
+set title ''
+set xlabel '$J$'
+set ylabel '$\langle m \rangle$'
+set key bottom right
+plot for [N=5:20:5] magnetization(N,x/N,0.5) ls (N/5) title '', for [N=5:20:5] datafile using ($1==N&&$7==64?$2:1/0):3:4 w yerrorbars ls (N/5) title sprintf("$N=$%d",N)
+unset yrange
+
+
+set out 'energy_t.tex'
+set title ''
+set xlabel '$J$'
+set ylabel '$\langle \beta\epsilon \rangle$'
+set key top right
+plot for [N=5:20:5] betaepsilon(N,x/N,0.5) ls (N/5) title '', for [N=5:20:5] datafile using ($1==N&&$7==64?$2:1/0):($5+1):6 w yerrorbars ls (N/5) title sprintf("$N=$%d",N)
