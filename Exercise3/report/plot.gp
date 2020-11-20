@@ -39,3 +39,13 @@ f(x,J,h,N)=1/sqrt(2*3.1415*J/N)*exp(-x**2/(2*J/N)+N*log(2*cosh(h+x)))/5000000
 #plot '../data/raw.dat' using (bin($1,binwidth)):(0.0002) smooth freq with boxes,f(x,1.,0.5,10.)
 plot f(x,1.,0.5,10.)
 
+set logscale x
+set out 'bootstrap.pdf'
+do for[n=4:20:1]{
+set title sprintf("J=%f", n/10.0)
+print(n/10.0)
+plot '../data/raw.dat' u ($2==n/10.0?$7:1/0):4 
+}
+
+unset logscale x
+#($2==n/10?$7:1/0)

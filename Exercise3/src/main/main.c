@@ -1,15 +1,14 @@
-//Exercise 3 for Computational Physics: Simulation of the 1D Ising-Model
+//Exercise 3 for Computational Physics: Simulation of the long range Ising-Model
 //Nico Dichter, Christiane Groß
 //16. November 2020-
-
-//computation would be faster with char instead of int in the arrays, however use int at first to get human readable output
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <gsl/gsl_block.h>
 #include <gsl/gsl_rng.h>//random number generator
-#include <gsl/gsl_randist.h>
+#include <gsl/gsl_randist.h>//pull random number from gaussian
 #include "math.h"//exp-Function
+#include <gsl/gsl_vector.h>
 
 
 /**
@@ -50,31 +49,51 @@ inline double art_hamiltonian(double p,double phi, double J_hat_T, double h_T, i
  * @param binneddata 	holds results from binning
  * @param lengthofbin	determins how many elements are in one bin, so also has a role in how many elements there are in binneddata
  */
-inline void binning(gsl_block *measurements, gsl_block *binneddata, int lengthofbin){
+inline void binning(gsl_block *measurements, gsl_vector *binneddata, int lengthofbin){
 	double bincontent=0;
 	//assertion if lengths of bins, measurements fit together
 	int numberofbins=measurements->size/lengthofbin;
+	//printf("numberofbins=%d\tnumberofelemtns=%lu\tlengthofbin=%d\n", numberofbins, binneddata->size, lengthofbin);
 	if (numberofbins!=binneddata->size){fprintf(stderr, "Gave wrong lengths! %d number of bins to be calculated, but storage allocated for %lu!", numberofbins, binneddata->size);}
+	//calculate content of single bin as arithmetic mean oover lengthofbin datapoints
 	for (int bin=0; bin<numberofbins; bin+=1){
 		bincontent=0;
 		for (int datapoint=0; datapoint<lengthofbin; datapoint+=1){
 			bincontent+=measurements->data[bin*lengthofbin+datapoint];
 		}
-		binneddata->data[numberofbins]=bincontent/lengthofbin;
+		gsl_vector_set(binneddata, bin, bincontent/lengthofbin);
 	}
 }
 
-double makebootstrapreplica(gsl_block * measurements, gsl_rng * generator){
+/**
+ * @fn makebootstrapreplica(gsl_block * measurements, gsl_rng * generator)
+ * @brief makes one bootstrapreplica out of the data in measurements
+ * 
+ * @param measurements contains all the measurements which can be used to calculate the replica
+ * @param generator random number generator which determines which elements of measurements are used to calaculate the replica
+ * 
+ * @return replica arithmetic mean of chosen measurements, one bootstrapreplica
+ */
+double makebootstrapreplica(gsl_vector * measurements, gsl_rng * generator){
 	double replica=0;
 	int randomnumber;
 	for (int datapoint=0; datapoint<measurements->size; datapoint+=1){
 		randomnumber=gsl_rng_uniform_int(generator, measurements->size);
-		replica+=measurements->data[randomnumber];
+		replica+=gsl_vector_get(measurements, randomnumber);
 	}
 	return replica/measurements->size;
 }
-
-void bootstrap(gsl_block *measurements, gsl_rng *generator, int R, double *mean, double *variance){
+/**
+ * @fn bootstrap(gsl_block *measurements, gsl_rng *generator, int R, double *mean, double *variance)
+ * @brief uses the bootstrapmethod to calculate mean and variance of the data in measurements
+ * 
+ * @param measurements contains all the datappoints which are used
+ * @param generator random number generator which determines which elements of measurements are used to calaculate the replica
+ * @param R number of replicas which are used to calculate mean and variance
+ * @param calculated mean over all replicas
+ * @param variance calculated variance over all replica
+ */ 
+void bootstrap(gsl_vector *measurements, gsl_rng *generator, int R, double *mean, double *variance){
 	*mean=0;
 	*variance=0;
 	gsl_block *replicalist=gsl_block_alloc(R);
@@ -82,11 +101,14 @@ void bootstrap(gsl_block *measurements, gsl_rng *generator, int R, double *mean,
 		replicalist->data[i]=makebootstrapreplica(measurements, generator);
 		*mean+=replicalist->data[i];
 	}
+	//calculate arithmetic mean over replicas
 	*mean/=R;
+	//calculate standard deviation of replicas
 	for (int i=0; i<R; i+=1){
 		*variance+=(*mean-replicalist->data[i])*(*mean-replicalist->data[i]);
 	}
 	*variance/=R-1;
+	gsl_block_free(replicalist);
 	}
 		
 
@@ -146,14 +168,15 @@ int main(int argc, char **argv){
 	 */
 	gsl_block * set_of_phis=gsl_block_alloc (amount_conf);
 	gsl_block * magnetizations=gsl_block_alloc (amount_conf);
-	
+	gsl_vector *binnedmagnetization_mem=gsl_vector_alloc(amount_conf);
+	gsl_vector_view binnedmagnetization;
 	/**
 	 * @note	Open file streams to save data into
 	 */
 	FILE * converge_data=fopen ("data/converge.dat", "w");
 	fprintf(converge_data,"#N_md\tH_rel_delta\n");
 	FILE * raw_data=fopen ("data/raw.dat", "w");
-	fprintf(raw_data,"#N\tJ\t<m>\t<m>_errt<epsilon>\t<epsilon>_err\n");
+	fprintf(raw_data,"#N\tJ\t<m>\t<m>_errt<epsilon>\t<epsilon>_err\tlofb\n");
 	
 	
 	/**
@@ -169,8 +192,8 @@ int main(int argc, char **argv){
 	/**
 	 * @note	Itterate through different sets of N/J
 	 */
-	for(N=5;N<21;N+=5){
-		for(J_T=0.2;J_T<2.0001;J_T+=0.01){
+	for(N=20;N<21;N+=5){
+		for(J_T=0.2;J_T<2.0001;J_T+=0.1){
 			J_hat_T=J_T/((double)N);
 			mean_magnetization=0;
 			var_magnetization=0;
@@ -212,12 +235,18 @@ int main(int argc, char **argv){
 				magnetizations->data[i]=tanh (h_T+set_of_phis->data[i]);
 				mean_magnetization+=magnetizations->data[i];
 			}
-			mean_magnetization/=amount_conf;
-			for(int i=0; i<amount_conf;i++){
-				var_magnetization+=(magnetizations->data[i]-mean_magnetization)*(magnetizations->data[i]-mean_magnetization);
+			for (int lengthofbin=2; lengthofbin<1023; lengthofbin*=2){
+				binnedmagnetization=gsl_vector_subvector(binnedmagnetization_mem, 0, magnetizations->size/lengthofbin);
+				binning(magnetizations, &binnedmagnetization.vector, lengthofbin);
+				bootstrap(&binnedmagnetization.vector, generator, 4*amount_conf, &mean_magnetization, &var_magnetization);
+				fprintf (raw_data,"%d\t%f\t%f\t%f\t%f\t%f\t%d\n",N,J_T,mean_magnetization,sqrt (var_magnetization), 1.0, 1.0, lengthofbin);
 			}
-			var_magnetization/=amount_conf;
-			fprintf (raw_data,"%d\t%f\t%f\t%f\n",N,J_T,mean_magnetization,sqrt (var_magnetization));
+			//~ mean_magnetization/=amount_conf;
+			//~ for(int i=0; i<amount_conf;i++){
+				//~ var_magnetization+=(magnetizations->data[i]-mean_magnetization)*(magnetizations->data[i]-mean_magnetization);
+			//~ }
+			//~ var_magnetization/=amount_conf;
+			//~ fprintf (raw_data,"%d\t%f\t%f\t%f\n",N,J_T,mean_magnetization,sqrt (var_magnetization));
 		}
 	}
 	
@@ -236,5 +265,7 @@ int main(int argc, char **argv){
 	fclose (raw_data);
 	gsl_rng_free (generator);
 	gsl_block_free (set_of_phis);
+	gsl_block_free (magnetizations);
+	gsl_vector_free(binnedmagnetization_mem);
 	return 0;
 }
