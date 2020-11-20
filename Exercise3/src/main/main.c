@@ -43,7 +43,7 @@ inline double art_hamiltonian(double p,double phi, double J_hat_T, double h_T, i
  * @fn 		inline void binning(gsl_block *measurements, gsl_block *binneddata, int lengthofbin)
  * @brief 	takes data points in measurements and writes bins over lengthofbin in binneddata
  * 
- * @note 	inline makes execution time faster
+ * @note 	inline makes execution time faster (proposes different implementation to the compiler)
  * 
  * @param measurements 	determind through algorithm, correlated
  * @param binneddata 	holds results from binning
