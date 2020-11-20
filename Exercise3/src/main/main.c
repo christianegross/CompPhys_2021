@@ -168,15 +168,18 @@ int main(int argc, char **argv){
 	 */
 	gsl_block * set_of_phis=gsl_block_alloc (amount_conf);
 	gsl_block * magnetizations=gsl_block_alloc (amount_conf);
-	gsl_vector *binnedmagnetization_mem=gsl_vector_alloc(amount_conf);
+	gsl_block * energies=gsl_block_alloc (amount_conf);
+	gsl_vector * binnedmagnetization_mem=gsl_vector_alloc(amount_conf);
 	gsl_vector_view binnedmagnetization;
+	gsl_vector * binnedenergy_mem=gsl_vector_alloc(amount_conf);
+	gsl_vector_view binnedenergy;
 	/**
 	 * @note	Open file streams to save data into
 	 */
 	FILE * converge_data=fopen ("data/converge.dat", "w");
 	fprintf(converge_data,"#N_md\tH_rel_delta\n");
 	FILE * raw_data=fopen ("data/raw.dat", "w");
-	fprintf(raw_data,"#N\tJ\t<m>\t<m>_errt<epsilon>\t<epsilon>_err\tlofb\n");
+	fprintf(raw_data,"#N\tJ\t<m>\t<m>_err\t<epsilon>\t<epsilon>_err\tlofb\n");
 	
 	
 	/**
@@ -233,20 +236,25 @@ int main(int argc, char **argv){
 				amount_ar++;
 				set_of_phis->data[i]=phi_0;
 				magnetizations->data[i]=tanh (h_T+set_of_phis->data[i]);
-				mean_magnetization+=magnetizations->data[i];
+				energies->data[i]=-(set_of_phis->data[i])*(set_of_phis->data[i])/2/N/J_hat_T-tanh (h_T+set_of_phis->data[i]);
 			}
+			/**
+			 * @note	analyse measured data for magnetization and energy:
+			 * 			binning to reduce correltations
+			 * 			bootstrapping to get a good error estimate
+			 * 	
+			 * @note	write binned data in vector instead of block, so size can be changed with subvector-view. 
+			 * 			block was tried, but led to problems with memory in reallocing.
+			 */ 
 			for (int lengthofbin=2; lengthofbin<1023; lengthofbin*=2){
 				binnedmagnetization=gsl_vector_subvector(binnedmagnetization_mem, 0, magnetizations->size/lengthofbin);
 				binning(magnetizations, &binnedmagnetization.vector, lengthofbin);
 				bootstrap(&binnedmagnetization.vector, generator, 4*amount_conf, &mean_magnetization, &var_magnetization);
-				fprintf (raw_data,"%d\t%f\t%f\t%f\t%f\t%f\t%d\n",N,J_T,mean_magnetization,sqrt (var_magnetization), 1.0, 1.0, lengthofbin);
+				binnedenergy=gsl_vector_subvector(binnedenergy_mem, 0, energies->size/lengthofbin);
+				binning(energies, &binnedenergy.vector, lengthofbin);
+				bootstrap(&binnedenergy.vector, generator, 4*amount_conf, &mean_energy_p_site, &var_energy_p_site);
+				fprintf (raw_data,"%d\t%f\t%f\t%f\t%f\t%f\t%d\n", N, J_T, mean_magnetization,sqrt (var_magnetization), mean_energy_p_site ,sqrt (var_energy_p_site), lengthofbin);
 			}
-			//~ mean_magnetization/=amount_conf;
-			//~ for(int i=0; i<amount_conf;i++){
-				//~ var_magnetization+=(magnetizations->data[i]-mean_magnetization)*(magnetizations->data[i]-mean_magnetization);
-			//~ }
-			//~ var_magnetization/=amount_conf;
-			//~ fprintf (raw_data,"%d\t%f\t%f\t%f\n",N,J_T,mean_magnetization,sqrt (var_magnetization));
 		}
 	}
 	
@@ -267,5 +275,7 @@ int main(int argc, char **argv){
 	gsl_block_free (set_of_phis);
 	gsl_block_free (magnetizations);
 	gsl_vector_free(binnedmagnetization_mem);
+	gsl_block_free (energies);
+	gsl_vector_free(binnedenergy_mem);
 	return 0;
 }
