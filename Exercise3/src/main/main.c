@@ -9,15 +9,23 @@
 #include <gsl/gsl_randist.h>//pull random number from gaussian
 #include "math.h"//exp-Function
 #include <gsl/gsl_vector.h>
-
+double art_hamiltonian(double p,double phi, double J_hat_T, double h_T, int N);
 
 /**
- * @fn double mean_spin(gsl_matrix_int* lattice);
- * @brief Calculates the mean over all spins in the given configuration
+ * @fn void leapfrog(double p_0,double phi_0,double* p_f,double* phi_f, int N_md,
+			   double J_hat_T, double h_T, int N);
+ * @brief Integrates using the force equations of the hamiltonian, by N_md steps
+ * 			(using leap frog algorithm)
  *
- * @param lattice	Matrix of Spins
+ * @param p_0		Intial momentum
+ * @param phi_0		Intial "position"
+ * @param p_f		Final momentum
+ * @param phi_f		Final "position"
+ * @param N_md		#steps in leap frog
+ * @param J_hat_T	J_T/N
+ * @param h_T=h/T	Strength of external field
+ * @param N			Size of the lattice
  * 
- * @return mean over all spins
  *
  */
 void leapfrog(double p_0,double phi_0,double* p_f,double* phi_f, int N_md,
@@ -136,7 +144,7 @@ int main(int argc, char **argv){
 	 * @var amount_ar			amount of accept/reject steps
 	 */
 	
-	int therm_steps=500;
+	int therm_steps=1000;
 	int amount_conf=5000;
 
 	int N=5;
@@ -149,7 +157,7 @@ int main(int argc, char **argv){
 	double phi_f=0;
 	double delta=0;
 	double prob=1;
-	int N_md=4;
+	int N_md=6;
 	double mean_magnetization=0;
 	double var_magnetization=0;
 	double mean_energy_p_site=0;
@@ -196,7 +204,9 @@ int main(int argc, char **argv){
 	 * @note	Itterate through different sets of N/J
 	 */
 	for(N=5;N<21;N+=5){
-		for(J_T=0.2;J_T<2.0001;J_T+=0.05){
+		phi_0=0;
+		printf("calculations for N=%d...\n", N);
+		for(J_T=0.2;J_T<2.01;J_T+=0.1){
 			J_hat_T=J_T/((double)N);
 			mean_magnetization=0;
 			var_magnetization=0;
@@ -236,7 +246,7 @@ int main(int argc, char **argv){
 				amount_ar++;
 				set_of_phis->data[i]=phi_0;
 				magnetizations->data[i]=tanh (h_T+set_of_phis->data[i]);
-				energies->data[i]=-(set_of_phis->data[i])*(set_of_phis->data[i])/2/N/J_hat_T-h_T*tanh (h_T+set_of_phis->data[i])-1;
+				energies->data[i]=-(set_of_phis->data[i])*(set_of_phis->data[i])/2/N/J_hat_T-h_T*tanh (h_T+set_of_phis->data[i])+0.5/N;
 			}
 			/**
 			 * @note	analyse measured data for magnetization and energy:
@@ -246,7 +256,7 @@ int main(int argc, char **argv){
 			 * @note	write binned data in vector instead of block, so size can be changed with subvector-view. 
 			 * 			block was tried, but led to problems with memory in reallocing.
 			 */ 
-			for (int lengthofbin=2; lengthofbin<1023; lengthofbin*=2){
+			for (int lengthofbin=16; lengthofbin<1023; lengthofbin*=2){
 				binnedmagnetization=gsl_vector_subvector(binnedmagnetization_mem, 0, magnetizations->size/lengthofbin);
 				binning(magnetizations, &binnedmagnetization.vector, lengthofbin);
 				bootstrap(&binnedmagnetization.vector, generator, 4*amount_conf, &mean_magnetization, &var_magnetization);
