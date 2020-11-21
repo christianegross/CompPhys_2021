@@ -79,10 +79,11 @@ plot for [N=5:20:5] betaepsilon(N,x/N,0.5) ls (N/5) title sprintf("N=%d",N), for
 unset xrange
 unset yrange
 
-set ter epslatex size 15cm, 10cm color colortext
+set ter epslatex size 15cm, 9.5cm color colortext
 
+set tmargin at screen 0.98
 set out 'converge_t.tex'
-set title 'Convergence check'
+set title ''
 set xlabel '$N_{md}$'
 set ylabel '$|\frac{H[p_f,\phi_f]-H[p_0,\phi_0]}{H[p_0,\phi_0]}|$'
 set logscale y
@@ -109,3 +110,14 @@ set xlabel '$J$'
 set ylabel '$\langle \beta\epsilon \rangle$'
 set key top right
 plot for [N=5:20:5] betaepsilon(N,x/N,0.5) ls (N/5) title '', for [N=5:20:5] datafile using ($1==N&&$7==64?$2:1/0):($5):6 w yerrorbars ls (N/5) title sprintf("$N=$%d",N)
+unset xrange
+
+set out 'bootstrap_t.tex'
+set logscale x
+unset grid
+set xrange [1:512]
+set xlabel 'length of bin'
+set ylabel '$\sigma(\langle m\rangle)$'
+set key top left
+set title ''
+plot for [n=2:20:2] '../data/bootstrapbinlength.dat' u ($2==n/10.0&&$1==15?$7:1/0):4 w linespoints lc n title sprintf("J=%f",n/10.0)

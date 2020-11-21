@@ -42,14 +42,20 @@ Z=\sum_{\{s_i=\pm1\}}\exp(-\beta H_I(s,h))=
 \end{equation}
 
 
-We always choose $+\phi$ in the argument of the $\cosh$ and introduce the effective action:
+We always choose $+\phi$ in the argument of the $\cosh$ and introduce the artificial action:
 \begin{equation}
 S(\phi)=\frac{\phi^2}{2\beta\hat{J}}-N\log\left( 2\cosh(\beta h+\phi)\right)
 \end{equation}
 
-and the effective Hamiltonian:
+and the artificial Hamiltonian:
 \begin{equation}
 H(\phi, p)=\frac{p^2}{2}+S(\phi)
+\end{equation}
+
+In this system, we can calculate Observables through: 
+\begin{equation}
+\langle O\rangle=\frac{1}{Z}\int_{-\infty}^{\infty}\frac{\mathrm{d} \phi}{\sqrt{2\pi\beta\hat{J}}}O(\phi)\exp(-S(\phi))
+\label{eq:observable}
 \end{equation}
 
 \section{Deliberations}
@@ -109,7 +115,11 @@ To be able to use HMC, we need to evolve $p$ and $\phi$ along a trajectory along
 
 \subsection{HMC}
 
+We want to calculate integrals like in eq.~\ref{eq:observable}. To do this, we want to generate  a Markov-Chain that has the stationary distribution $\exp(-S(\phi))/\sqrt{2\pi\beta\hat{J}}$, which we do with the Hybrid Monte Carlo algorithm as described on the sheet. First, we choose a $p$ randomly sampled from a normal distribution, calculate the artificial Hamiltonian $H(p, \phi)$ and evolve $p, \phi$ with the equations of motion with the help of a molecular dynamic integrator. We propose this change in $p,\phi$ and calculate the new Hamiltonian. We then accept this proposal with the Probability $\min(1, \exp(-\Delta H))$. As shown in the lectures this ensures our $\phi$ follow the desired distribution after a thermalisation phase.
+
 \subsection{Leapfrog}
+
+When evolving the equations of motion, we use the leapfrog integrator, as described on the sheet: One step in the integral means taking the variable $x$ to $x'=x+\epsilon\dpd{x}{t}$. We want to evolve both $p$ and $\phi$ and do this by using results from the step of one variable to evolve the other. We start with a half-step in $\phi$, then do $N_{md}$ combinations of one step in $p$ and one step in $\phi$ and end with a last step in $p$ and a last half-step in $\phi$, so we have done $N_{md}$ steps in both variables.
 
 \subsection{Error estimation}
 When determining errors for our measurements, we use binning and bootstrapping instead of the naive standard deviation. 
@@ -122,16 +132,34 @@ This ensures we minimize the effects of correlation on our data and also get a r
 %Bootstrap to estimate error
 
 \section{Simulation}
+Our code is in the github-repo \url{https://github.com/christianegross/CompPhys\_2021}. the simulation istself is in Exercise3/src/main/main.c, the gnuplotscript, wehere we have also implemented the expectations for the magnetization and energy are in Exercise3/report/plot.gp.
 In the implementation of the simulation gsl\_vector objects  and views on these are used to accomplish proper binning (see \cite{gsldoc_mat}). 
 
-At first the convergence of the leap frog algorithm gets tested and the result is shown in fig. \ref{fig:converge}. Then for each parameter set (N,J) ($h=0.5$ fixed) a large amount of thermalization steps are made and afterwards several measurements of the wanted physical variable take place. A step in this case means to sample a conjugated momentum from the normal distribution and performing the leap frog algorithm with this momentum. Afterwards the relative change in total energy is calculated and an accept/reject takes place with the acceptance probability of:
+At first the convergence of the leap frog algorithm is tested and the result is shown in fig. \ref{fig:converge}. Then for each parameter set (N,J) ($h=0.5$ fixed) a large amount of thermalization steps are made and afterwards several measurements of the wanted physical variable take place. A step in this case means to sample a conjugated momentum from the normal distribution and performing the leap frog algorithm with this momentum. Afterwards the relative change in total energy is calculated and an accept/reject takes place with the acceptance probability of:
 \begin{equation}
 	P_{acc.}=\min(1,\exp(\cal{H} (\texttt{q},\phi)-\cal H (\texttt{q}',\phi')))
 \end{equation} 
 It has to be noted, that in case of rejection the configuration $\phi$ gets added again to the list of generated configurations.
 The thermalization steps are needed to make sure the measurements take place on configurations which resemble the given parameter set. The generation of the initial set of observables take place after each step. To lower the correlation binning was used on top of this initial set. At the end bootstrap was used to estimate an appropriate error on top of the binned data.
 
-\subsection{choosing bin length}
+\subsection{Choosing bin length}
+
+We do some pre-measurements with many bin lenghts and compare the resulting errors, plotted in fig.~\ref{fig:bootstrap}.
+
+We see that for most $J$ the errors do not vary much with the bin length, they only rise a bit. For $J=0.4$ we see a big change in the error, but it plateaus staring at bn length 32. To ensure we are in this plateauing region, we choose the bin length $64$ for all our future analysis.
+
+%The errors are quite small for all $N$, but for smaller $N$, but they rise for smaller $N$.
+\begin{figure}[htbp]
+	\input{bootstrap_t.tex}
+	\caption[error for different bin lengths]{error from the bootstrapping of binned data for several bin lengths for $N=15$}
+	\label{fig:bootstrap}
+\end{figure}
+
+\begin{figure}[htbp]
+	\input{converge_t.tex}
+	\caption{convergence of the leapfrog algorithm}
+	\label{fig:converge}
+\end{figure}
 
 \section{Results}
 
@@ -141,21 +169,17 @@ The convergence of our leapfrog algorithm is shown in fig.~\ref{fig:converge}. Q
 
 Depending on our starting parameters, $\Delta$ is sheifted by about one order of magneitude, which also explains why our values are different from the ones on the sheet.
 We see that our leapfrog algorithm converges quite nicely and so we can use it for the rest of our calculations.
-\begin{figure}[htbp]
-	\input{converge_t.tex}
-	\caption{convergence of the leapfrog algorithm}
-	\label{fig:converge}
-\end{figure}
 
-Our acceptance rates are quite high for large $N_{md}$, so we choose $N_{md}=4$ to get an acceptance rate of about 70\%. This is in the range of acceptance rates we aim for.
+
+Our acceptance rates are quite high for large $N_{md}$, so we choose $N_{md}=4$ to get an acceptance rate of about 90\%. This is a bit higher than the range of acceptance rates we aim for, but the results do not follow our expectations as good for smaller $N_{md}$.
 %plot description tuning of acceptance rate
 \subsection{Magnetization}
 
-The analytical expectation and our measurements for the magnetization are plotted in fig.~\ref{fig:magnetization}. We expect the magnetization to be about $0.5$ for $J=0.2$, and then rise monotonuously. This rise gets less steep for growing $J$, and does not reach $m=1$. For smaller $N$, we expect the magnetization to be smaller and its rise to be less steep than for larger $N$, however the distance between the lines decreases for growing $N$.
+The analytical expectation and our measurements for the magnetization are plotted in fig.~\ref{fig:magnetization}. We expect the magnetization to be about $0.5$ for $J=0.2$, and then rise monotonously. This rise gets less steep for growing $J$, and does not reach $m=1$. For smaller $N$, we expect the magnetization to be smaller and its rise to be less steep than for larger $N$, however the distance between the lines decreases for growing $N$.
 
-Almost all of our measurements lie on the expected curves, there are some outliers for small $J$. 
+Almost all of our measurements lie on the expected curves, there are some outliers for small $J$ or small $N$. The erorrs are quite small for all $J$, and a bit bigger when the measurements are further away from the curve.
 
-The errors are quite small for all $N$, but for smaller $N$, but they rise for smaller $N$.
+The errors are quite small for all $N$, but they rise for smaller $N$.
 \begin{figure}[htbp]
 	\input{magnetization_t.tex}
 	\caption{magnetization for different $N$}
@@ -165,13 +189,19 @@ The errors are quite small for all $N$, but for smaller $N$, but they rise for s
 
 \subsection{Average energy per site}
 
-The expected values and our measurements for $\langle \beta\epsilon\rangle$ are plotted in fig.~\ref{fig:energy}. We expect $\langle \beta\epsilon\rangle\approx-0.3$ for $J=0.2$, and for the enrgy to decrease monotonuosly, with almost a constant descent. We also expect the energy levels of the different $N$ to grow further apart for growing $J$, and for the energy to be higher for smaller $N$.
+The expected values and our measurements for $\langle \beta\epsilon\rangle$ are plotted in fig.~\ref{fig:energy}. We expect $\langle \beta\epsilon\rangle\approx-0.3$ for $J=0.2$, and for the energy to decrease monotonously, with almost a constant descent. We also expect the energy levels of the different $N$ to grow further apart for growing $J$, and for the energy to be higher for smaller $N$.
+
+Again, our measurements fit are close to the expectations, most points lie on the expected curve. there are some outliers for small $J$ and the ponts with $N=5$ seem to \enquote{wobble} around the expected curve a bit, but still have the same behavior.
+The errors are quite small, even for those points which do not lie on the curve.
+  
 \begin{figure}[htbp]
 	\input{energy_t.tex}
 	\caption{energy per site for different $N$}
 	\label{fig:energy}
 \end{figure}
-plot description
+%plot description
+
+The results for the average energy per site are not as close to the expectation as those for the magnetization, however both reproduce the analytical results, and thus show that the HMC-algorithm coupled with leapfrog can be quite a powerful tool.
 
 \newpage	
 \listoffigures
