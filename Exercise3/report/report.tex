@@ -91,7 +91,7 @@ Z&=&\int_{-\infty}^{\infty}\frac{\mathrm{d} \phi}{\sqrt{2\pi\beta\hat{J}}}exp(-S
 
 \end{array}\]
 
-We can insert these definitions into our code. we will not calculate $\langle \epsilon\rangle$ but instead $\langle \beta\epsilon\rangle$, because this allows us to absorb $\beta$ into $\hat{J}$ and $h$, and is also the form of the analytical solutions given on the sheet.
+We can insert these definitions into our code. We will not calculate $\langle \epsilon\rangle$ but instead $\langle \beta\epsilon\rangle$, because this allows us to absorb $\beta$ into $\hat{J}$ and $h$, and is also the form of the analytical solutions given on the sheet.
 
 
 
@@ -115,7 +115,7 @@ We do this as described in the lecture: First, we bin our data $O_i$ from $N$ me
 
 From these new datapoints, we make $R$ bootstrap replicas. For each replica, we sample with replacement from the given $O_i^B$, and take the arithmetic mean over those chosen values to be the replica. At the end, we can estimate the mean and error of our measurements as the arithmetic mean and standard deviation over $R$ bootstrap replicas.
 
-this ensures we minimize the effects of correlation on our data and also get a realisitic error estimate.
+This ensures we minimize the effects of correlation on our data and also get a realisitic error estimate.
 %Binning to reduce correlation
 %Bootstrap to estimate error
 
@@ -127,19 +127,30 @@ this ensures we minimize the effects of correlation on our data and also get a r
 
 \subsection{Convergence of leapfrog}
 
+The convergence of our leapfrog algorithm is shown in fig.~\ref{fig:converge}. Qualitatively, it behaves the same as the expected one on the sheet: We start with a high value of $\Delta$, and it gets smaller with each step we add to the algorithm. Qunatitatively, our values of $\Delta$ are about two orders of magnitude larger than those on the sheet, but we do not know what was simulated in the example on the sheet, so this most likely explains any differences.
+We see that our leapfrog algorithm converges quite nicely and so we can use it for the rest of our calculations.
 \begin{figure}[htbp]
 	\input{converge_t.tex}
 	\caption{convergence of the leapfrog algorithm}
 	\label{fig:converge}
 \end{figure}
-plot description tuning of acceptance rate
+
+Our acceptance rates are quite high for large $N_{md}$, so we choose $N_{md}=4$ to get an acceptance rate of about 70\%. This is in the range of acceptance rates we aim for.
+%plot description tuning of acceptance rate
 \subsection{Magnetization}
+
+The analytical expectation and our measurements for the magnetization are plotted in fig.~\ref{fig:magnetization}. We expect the magnetization to be about $0.5$ for $J=0.2$, and then rise monotonuously. This rise gets less steep for growing $J$, and does not reach $m=1$. For smaller $N$, we expect the magnetization to be smalelr and its rise to be less steep than for larger $N$, however the diatnde between the lines decreases for growing $N$.
+
+Almost all of our measurements lie on the expected curves, there are some outliers for small $J$. 
+
+The errors are quite small for all $N$, but for smaller $N$, but they rise for smaller $N$.
 \begin{figure}[htbp]
 	\input{magnetization_t.tex}
 	\caption{magnetization for different $N$}
 	\label{fig:magnetization}
 \end{figure}
-plot description
+%plot description
+
 \subsection{Average energy per site}
 \begin{figure}[htbp]
 	\input{energy_t.tex}

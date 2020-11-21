@@ -50,13 +50,13 @@ set logscale x
 set xlabel 'length of bin'
 set ylabel 'error
 set key top left
-do for [size=5:20:5]{
+do for [size=15:20:5]{
 set title sprintf("magnetization, size=%d", size)
-plot for [n=4:20:2] '../data/raw.dat' u ($2==n/10.0&&$1==size?$7:1/0):4 w linespoints lc n title sprintf("J=%f",n/10.0)
+plot for [n=4:40:1] '../data/bootstrapbinlength.dat' u ($2==n/20.0&&$1==size?$7:1/0):4 w linespoints lc n title sprintf("J=%f",n/20.0)
 }
-do for [size=5:20:5]{
+do for [size=15:20:5]{
 set title sprintf("energy, size=%d", size)
-plot for [n=4:20:2] '../data/raw.dat' u ($2==n/10.0&&$1==size?$7:1/0):6 w linespoints lc n title sprintf("J=%f",n/10.0)
+plot for [n=4:40:1] '../data/bootstrapbinlength.dat' u ($2==n/20.0&&$1==size?$7:1/0):6 w linespoints lc n title sprintf("J=%f",n/20.0)
 }
 
 unset logscale x
