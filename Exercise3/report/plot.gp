@@ -14,8 +14,8 @@ set style line 8 lc 2 lt 7 pt 11
 #used definitons for expected values from sheet
 binomial(n,k)			=n!/k!/(n-k)!
 smallf(J,h,x)			=exp(0.5*J*x**2+h*x)
-Z(N, J, h)				=(sum [i=0:N] binomial(N, i)*smallf(J,h,(N-2*i)))
-betaepsilon(N,J,h)		=-1.0/N/Z(N,J,h)*(sum [i=0:N] binomial(N, i)*(0.5*J*(N-2*i)**2+h*(N-2*i))*smallf(J,h,N-2*i))
+Z(N, J, h)				=(sum [i=0:N] (binomial(N, i)*smallf(J,h,(N-2*i))))
+betaepsilon(N,J,h)		=-1.0/N/Z(N,J,h)*(sum [i=0:N] (binomial(N, i)*(0.5*J*(N-2*i)**2+h*(N-2*i))*smallf(J,h,N-2*i)))
 magnetization(N,J,h)	=1.0/N/Z(N,J,h)*(sum [i=0:N] binomial(N, i)*(N-2*i)*smallf(J,h,N-2*i))
 
 convergefile='../data/converge.dat'
@@ -50,13 +50,13 @@ set logscale x
 set xlabel 'length of bin'
 set ylabel 'error
 set key top left
-do for [size=5:20:5]{
+do for [size=15:20:5]{
 set title sprintf("magnetization, size=%d", size)
-plot for [n=4:20:2] '../data/raw.dat' u ($2==n/10.0&&$1==size?$7:1/0):4 w linespoints lc n title sprintf("J=%f",n/10.0)
+plot for [n=2:20:1] '../data/bootstrapbinlength.dat' u ($2==n/10.0&&$1==size?$7:1/0):4 w linespoints lc n title sprintf("J=%f",n/10.0)
 }
-do for [size=5:20:5]{
+do for [size=15:20:5]{
 set title sprintf("energy, size=%d", size)
-plot for [n=4:20:2] '../data/raw.dat' u ($2==n/10.0&&$1==size?$7:1/0):6 w linespoints lc n title sprintf("J=%f",n/10.0)
+plot for [n=2:20:1] '../data/bootstrapbinlength.dat' u ($2==n/10.0&&$1==size?$7:1/0):6 w linespoints lc n title sprintf("J=%f",n/10.0)
 }
 
 unset logscale x
@@ -74,22 +74,24 @@ set out 'energy.pdf'
 set title 'energy'
 set xlabel 'J'
 set ylabel 'energy'
-plot for [N=5:20:5] betaepsilon(N,x/N,0.5) ls (N/5) title sprintf("N=%d",N), for [N=5:20:5] datafile using ($1==N&&$7==64?$2:1/0):($5+1):6 w yerrorbars ls (N/5) title ''
+plot for [N=5:20:5] betaepsilon(N,x/N,0.5) ls (N/5) title sprintf("N=%d",N), for [N=5:20:5] datafile using ($1==N&&$7==64?$2:1/0):($5):6 w yerrorbars ls (N/5) title ''
 
 unset xrange
 unset yrange
 
-set ter epslatex size 15cm, 10cm color colortext
+set ter epslatex size 15cm, 9.5cm color colortext
 
+set tmargin at screen 0.98
 set out 'converge_t.tex'
-set title 'Convergence check'
+set title ''
 set xlabel '$N_{md}$'
 set ylabel '$|\frac{H[p_f,\phi_f]-H[p_0,\phi_0]}{H[p_0,\phi_0]}|$'
 set logscale y
 set grid
-
+set format y "$10^{%T}$"
 plot convergefile u 1:2 ls 2 title 'Leapfrog error'
 unset logscale y
+set format
 
 set xrange [0.2:2]
 set yrange[0:1]
@@ -107,4 +109,15 @@ set title ''
 set xlabel '$J$'
 set ylabel '$\langle \beta\epsilon \rangle$'
 set key top right
-plot for [N=5:20:5] betaepsilon(N,x/N,0.5) ls (N/5) title '', for [N=5:20:5] datafile using ($1==N&&$7==64?$2:1/0):($5+1):6 w yerrorbars ls (N/5) title sprintf("$N=$%d",N)
+plot for [N=5:20:5] betaepsilon(N,x/N,0.5) ls (N/5) title '', for [N=5:20:5] datafile using ($1==N&&$7==64?$2:1/0):($5):6 w yerrorbars ls (N/5) title sprintf("$N=$%d",N)
+unset xrange
+
+set out 'bootstrap_t.tex'
+set logscale x
+unset grid
+set xrange [1:512]
+set xlabel 'length of bin'
+set ylabel '$\sigma(\langle m\rangle)$'
+set key top left
+set title ''
+plot for [n=2:20:2] '../data/bootstrapbinlength.dat' u ($2==n/10.0&&$1==15?$7:1/0):4 w linespoints lc n title sprintf("J=%f",n/10.0)
