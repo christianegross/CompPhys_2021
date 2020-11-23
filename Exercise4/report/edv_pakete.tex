@@ -1,0 +1,85 @@
+% Die erste Zeile im Dokument legt immer die Dokumentklasse fest
+%\documentclass[notitlepage]{scrreprt}
+    % Die wichtigsten Dokumentklassen:
+    %   scrbook, scrreprt, scrartcl, beamer, standalone
+    % Einige gängige Optionen für \documentclass:
+    %   ngerman
+    %   titlepage, notitlepage
+    %   onecolumn, twocolumn
+    %   oneside, twoside
+    %wird in Hauptdatei festgelegt
+
+% Präambel
+
+% Einige KOMA-Script-Optionen
+\KOMAoptions{fontsize=12pt,paper=a4}      %Schriftgröße, Papierformat
+\KOMAoptions{DIV=11}                      % Parameter mit dem man den Seitenrand ändern kann
+\KOMAoptions{listof=totoc}
+
+% Hier werden einige Pakete eingebunden
+\usepackage[utf8]{inputenc}               % Direkte Eingabe von ä usw. Input=Eingabe
+\usepackage[T1]{fontenc}                  % Font Kodierung für die Ausgabe Font=Ausgabe
+\usepackage[english]{babel}               % Verschiedenste sprach-spezifische Extras, ngerman für neue deutsche Rechtschreibung, auch UK oder US möglich
+\usepackage[autostyle=true]{csquotes}     % Intelligente Anführungszeichen, arbeitet mit Babel zusammen
+%
+
+\usepackage{amsmath}%Mathedarstellung
+\usepackage{commath}%Mathedarstellung
+%\usepackage{IEEEtrantools}%IEEEeqnarray
+%
+\usepackage{siunitx}   % Intelligentes Setzen von Zahlen und Einheiten
+%\sisetup{locale = DE}  % Deutsch als locale für die Zahlen und Einheiten
+%http://tex.stackexchange.com/questions/2291/how-do-i-change-the-enumerate-list-format-to-use-letters-instead-of-the-defaul
+
+\usepackage{enumitem}%erlaubt u.A. die Aufzählung mit Buchstaben, gefunden auf http://tex.stackexchange.com/questions/2291/how-do-i-change-the-enumerate-list-format-to-use-letters-instead-of-the-defaul
+%
+\usepackage[varg]{txfonts}                % Schönere Schriftart, muss nach amsmath, damit keine Fehlermeldung kommt
+\usepackage{graphicx} %einbinden von Figuren/Bildern
+\graphicspath{{figs/}} % Stammverzeichnis der verwendeten Bilder, muss im selben Ordner wie Hauptdatei sein
+%
+\usepackage[backend=biber, style=numeric, sorting=none]{biblatex}
+%Verwenden von \cite in \footnote: Bibliographie drucken lassen, mehrmals kompilieren
+\usepackage{hyperref}%erzeugt klickbare Elemente
+\usepackage[all]{hypcap}%hyperref-befehle springen zum oberen Rand des Bildes
+% Zum Einbinden von Programmcode verwenden wir das listings-Paket
+\usepackage{listings}
+
+% Für Syntax-Highlighting:
+\usepackage{xcolor}
+
+% Die folgenden listings-Einstellungen sind nötig, um
+% deutsche Umlaute und die Tilde (~) in listings-Umgebungen
+% verwenden zu können.
+\lstset{
+    basicstyle=\ttfamily,    
+    literate={~} {$\sim$}{1} % set tilde as a literal
+    {ö}{{\"o}}1
+    {ä}{{\"a}}1
+    {ü}{{\"u}}1
+    {ß}{{\ss}}1
+    {Ö}{{\"O}}1
+    {Ä}{{\"A}}1
+    {Ü}{{\"U}}1
+}
+
+% Farben für Code-Syntaxhighlighting und Weiteres festlegen:
+\lstset{
+    % Keine besondere Markierung für Leerzeichen in Codes
+    showspaces=false,               
+    showstringspaces=false,         
+    % Farebn für Code-Kommentare und Schlüsselworte:
+    commentstyle=\color{red},       % comment style
+    keywordstyle=\color{blue},      % keyword style
+    stringstyle=\color{orange},		% string style
+    breaklines=true,
+    numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
+    numbersep=5pt,                   % how far the line-numbers are from the code
+    stepnumber=5, 					%how often there are line numbers in code listings
+    tabsize=4, 						%default tabsize set to 4 spaces
+    %language=python,
+    }
+%gefunden auf https://en.wikibooks.org/wiki/LaTeX/Source_Code_Listings
+%eigene Kommandos/Abürzungen
+\newcommand{\tb}{\textbackslash}
+\newcommand{\txt}{\texttt}
+
