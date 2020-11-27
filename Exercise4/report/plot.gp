@@ -22,5 +22,9 @@ set out 'test.pdf'
 
 set xlabel 'step'
 set ylabel 'magnetization'
+set xrange [0:500]
 plot datafile4 u 0:1 ls 1 ps 0.1 title 'N_{md}=4' ,datafile100 u 0:1 ls 2 ps 0.1 title 'N_{md}=100'
+unset xrange
 plot correlationfile4 u 0:1 ls 1 ps 0.1 title 'N_{md}=4', correlationfile100 u 0:1 ls 2 ps 0.1 title 'N_{md}=100'
+
+plot 'test.txt' u 1 with lines dt 3 title 'everything', 'test.txt' every :::0::0 u 1 with lines dt 2 title 'zeroeth block', 'test.txt' every :::1::1 u 1 with lines title 'first block'
