@@ -12,10 +12,15 @@ set style line 6 lc 5 lt 7 pt 4#4 gut
 set style line 8 lc 2 lt 7 pt 11
 
 datafile4='../data/magnetizationnmd4.dat'
+correlationfile4='../data/magnetizationcorrelationnmd4.dat'
+
+datafile100='../data/magnetizationnmd100.dat'
+correlationfile100='../data/magnetizationcorrelationnmd100.dat'
 
 set terminal pdfcairo size 4in, 4in
 set out 'test.pdf'
 
 set xlabel 'step'
 set ylabel 'magnetization'
-plot datafile4 u 0:1 ls 1 ps 0.1 title 'N_{md}=4'
+plot datafile4 u 0:1 ls 1 ps 0.1 title 'N_{md}=4' ,datafile100 u 0:1 ls 2 ps 0.1 title 'N_{md}=100'
+plot correlationfile4 u 0:1 ls 1 ps 0.1 title 'N_{md}=4', correlationfile100 u 0:1 ls 2 ps 0.1 title 'N_{md}=100'

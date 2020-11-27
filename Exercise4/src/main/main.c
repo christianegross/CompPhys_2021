@@ -129,6 +129,21 @@ void autocorrelation(gsl_block *measurements, gsl_block *results, double mean){
 	 * make block, calculate gamma with tau=0, write (0,1) to results
 	 * for range of tau: calculate gamma, divide by gamma(0), write (tau, gamma/gamma) to reaults
 	 */
+	double czero=0;
+	double ctime=0;
+	for (int i=0; i<measurements->size; i+=1){
+		 czero+=(measurements->data[i]-mean)*(measurements->data[i]-mean);
+	}
+	czero/=measurements->size;
+	results->data[0]=1;
+	for (int time=1; time<results->size; time+=1){
+		ctime=0;
+		for (int i=0; i<measurements->size-time; i+=1){
+		 ctime+=(measurements->data[i]-mean)*(measurements->data[i+time]-mean);
+		}
+		ctime/=(measurements->size-time);
+		results->data[time]=ctime/czero;
+	}
 }
 
 int main(int argc, char **argv){
@@ -167,9 +182,10 @@ int main(int argc, char **argv){
 	double H_0;
 	double delta=0;
 	double prob=1;
-	int N_md=4;
+	int N_md=100;
 	double mean_magnetization=0;
 	double var_magnetization=0;
+	double simple_mean_magnetization=0;
 	double mean_energy_p_site=0;
 	double var_energy_p_site=0;
 	double accept_rate=0;
@@ -191,6 +207,7 @@ int main(int argc, char **argv){
 	gsl_vector_view binnedmagnetization;
 	gsl_vector * binnedenergy_mem=gsl_vector_alloc(amount_conf);
 	gsl_vector_view binnedenergy;
+	gsl_block * magnetizationcorrelation =gsl_block_alloc((int)amount_conf/4);
 	/**
 	 * @note	Open file streams to save data into
 	 */
@@ -198,7 +215,8 @@ int main(int argc, char **argv){
 	fprintf(converge_data,"#N_md\tH_rel_delta\n");
 	FILE * raw_data=fopen ("data/raw.dat", "w");
 	fprintf(raw_data,"#N\tJ\t<m>\t<m>_err\t<epsilon>\t<epsilon>_err\tlofb\n");
-	FILE * magnetization_nmd4=fopen ("data/magnetizationnmd4.dat", "w");
+	FILE * magnetization_nmd4=fopen ("data/magnetizationnmd100.dat", "w");
+	FILE * magnetizationcorrelation_nmd4=fopen("data/magnetizationcorrelationnmd100.dat", "w");
 	
 
 	mean_magnetization=0;
@@ -239,8 +257,11 @@ int main(int argc, char **argv){
 		amount_ar++;
 		set_of_phis->data[i]=phi_0;
 		magnetizations->data[i]=tanh (h_T+set_of_phis->data[i]);
+		simple_mean_magnetization+=magnetizations->data[i];
 		energies->data[i]=-(set_of_phis->data[i])*(set_of_phis->data[i])/2/N/J_hat_T-h_T*tanh (h_T+set_of_phis->data[i])+0.5/N;
 	}
+	simple_mean_magnetization/=amount_conf;
+	autocorrelation(magnetizations, magnetizationcorrelation, simple_mean_magnetization);
 	/**
 	 * @note	analyse measured data for magnetization and energy:
 	 * 			binning to reduce correltations
@@ -266,6 +287,7 @@ int main(int argc, char **argv){
 	accept_rate/=amount_ar;
 	printf ("Acceptance Rate:%f\n",accept_rate);
 	gsl_block_fprintf(magnetization_nmd4, magnetizations, "%f");
+	gsl_block_fprintf(magnetizationcorrelation_nmd4, magnetizationcorrelation, "%f");
 	
 	
 	
@@ -274,11 +296,14 @@ int main(int argc, char **argv){
 	 */
 	fclose (converge_data);
 	fclose (raw_data);
+	fclose (magnetization_nmd4);
+	fclose (magnetizationcorrelation_nmd4);
 	gsl_rng_free (generator);
 	gsl_block_free (set_of_phis);
 	gsl_block_free (magnetizations);
 	gsl_vector_free(binnedmagnetization_mem);
 	gsl_block_free (energies);
 	gsl_vector_free(binnedenergy_mem);
+	gsl_block_free(magnetizationcorrelation);
 	return 0;
 }
