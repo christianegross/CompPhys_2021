@@ -1,0 +1,66 @@
+%!TeX spellcheck = en_UK
+% Die erste (unkommentierte) Zeile im Dokument legt immer die
+% Dokumentklasse fest
+\documentclass{scrartcl} 
+
+% Präambel:
+% Einbinen von zusätzlichen Paketen. Falls für eine Datei keine Endung
+% explizit angegeben wird, benutzt LaTeX '.tex'. Im Folgenden wird
+% also die Datei 'edv_pakete.tex' eingebunden.
+\input{edv_pakete}
+
+
+% Verzeichnisse mit Abbildungen; kann gestrichen werden,
+% falls Sie dies schon in edv_pakete.tex definiert haben:
+%\graphicspath{{../report}}
+
+\addbibresource{refs.bib} %Hinzufügen einer Literaturdatenbank aus dem angegebenen Verzeichnis
+
+% Titel, Autor und Datum
+\title{Computational Physics}
+\subtitle{Exercise 4}
+\date{\today}
+\author{Christiane Groß, Nico Dichter}
+
+% Jetzt startet das eigentliche Dokument
+\begin{document}
+	\maketitle
+\section{Error Analysis of a Markov Chain}
+\subsection{Simulated Model}
+We want to analyse the Markov-chains produced when looking at the magnetization of long-range Ising-model simulated with the Hybrid Monte Carlo algorithm. We already implemented this algorithm in exercise 3, and it describes N spins that all interact with each other and with the external magnetic field. For the analysis of the errors, we only look at the internal coupling $\beta J=0.1$ and the external magnetic field $\beta h=0.5$ for $N=5$ spins. 
+ 
+In the HMC algorithm, we evolve a given $\phi$ and a $p$ sampled from a normal distribution according to their equations of motion with the help of a molecular dynamics integrator, in our case a leapfrog integrator, to $\phi', p'$ and accepting these new values with a probability of $\min(1, \exp(H(\phi, p)-H(\phi', p')))$. Here we look at the differences that occur when using a different number of steps in the leapfrog algorithm, specifically $N_{md}=4$ and $N_{md}=100$.
+
+From these $\phi$ we can then calculate the magnetization $m=\tanh(\beta h+\phi)$.
+
+\subsection{Autocorrelation}
+
+Because we produce the magnetization with the value of $\phi$ from the last measurement, we know these measurements are autocorrelated. We measure this correlation by calculating the autocorrelation function as given in the lecture:
+\[
+C(\tau)=\frac{1}{N-|\tau|}\sum_{i=1}^{N-|\tau|}(O_i-\bar{\mu})(O_{i+|\tau|}-\bar{\mu})\]
+
+Here $N$ is the number of measurements, the $O_i$ are a single measurement, and $\bar{\mu}$ is the estimated mean. To make visualotsation and comparison easier, we look at the normalised autocorrelation function, \[
+\Gamma(\tau)=\frac{C(\tau)}{C(0)}
+\]
+
+\subsection{Binning}
+
+Trying to reduce the autocorrelation, we do not look at single measurements any more, but instead we form blocks, also called bins, of the measurements.
+
+\subsection{Bootstrapping}
+
+\section{Implementation}
+
+\section{Results}
+
+\subsection{Comparison of Markov Chains with different $N_{md}$}
+
+\subsection{Autocorrelation of the measurements}
+
+\subsection{Naive Standard errors of the blocked measurements}
+
+\subsection{Bootstraperrors of the blocked measurements}
+\newpage	
+\listoffigures
+\printbibliography
+\end{document}
