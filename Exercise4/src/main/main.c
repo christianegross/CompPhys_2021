@@ -295,8 +295,8 @@ int main(int argc, char **argv){
 
 		autocorrelation (&binnedmagnetization.vector, binnedcorrelation, simple_mean_magnetization_binned);
 		gsl_vector_fprintf(magnetizationcorrelation_nmd4, binnedcorrelation, "%f");
-		for(int i=1;i<10;i*=2){
-			N_bs=i*amount_conf;
+		for(int i=1;i<50000;i*=2){
+			N_bs=2*i;
 			bootstrap(&binnedmagnetization.vector, generator, N_bs, &mean_magnetization, &var_magnetization);
 			fprintf(magnetizationerrorstability_nmd100,"%d\t%f\t%f\n",N_bs,mean_magnetization,sqrt (var_magnetization));
 		}
