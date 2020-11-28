@@ -278,6 +278,9 @@ int main(int argc, char **argv){
 		binnedmagnetization=gsl_vector_subvector(binnedmagnetization_mem, 0, magnetizations->size/lengthofbin);
 		binning(magnetizations, &binnedmagnetization.vector, lengthofbin);
 		
+		/**
+		 * @note	Analyse blocked data
+		 */
 		var_magnetization_binned=0;
 		for(int i=0;i<(&binnedmagnetization.vector)->size;i++){
 			simple_mean_magnetization_binned+=gsl_vector_get (&binnedmagnetization.vector, i);
@@ -287,6 +290,7 @@ int main(int argc, char **argv){
 			var_magnetization_binned+=(simple_mean_magnetization_binned-gsl_vector_get (&binnedmagnetization.vector, i))*(simple_mean_magnetization_binned-gsl_vector_get (&binnedmagnetization.vector, i));
 		}
 		var_magnetization_binned/=((&binnedmagnetization.vector)->size-1)*(magnetizations->size/lengthofbin);
+
 		autocorrelation (&binnedmagnetization.vector, binnedcorrelation, simple_mean_magnetization_binned);
 		gsl_vector_fprintf(magnetizationcorrelation_nmd4, binnedcorrelation, "%f");
 		bootstrap(&binnedmagnetization.vector, generator, N_bs, &mean_magnetization, &var_magnetization);
