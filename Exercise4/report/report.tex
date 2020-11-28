@@ -26,6 +26,7 @@
 \begin{document}
 	\maketitle
 \section{Error Analysis of a Markov Chain}
+All of our calculations are based on definitions and principles introduced in the lectures or on the exercise sheets.
 \subsection{Simulated Model}
 We want to analyse the Markov-chains produced when looking at the magnetization of long-range Ising-model simulated with the Hybrid Monte Carlo algorithm. We already implemented this algorithm in exercise 3, and it describes N spins that all interact with each other and with the external magnetic field. For the analysis of the errors, we only look at the internal coupling $\beta J=0.1$ and the external magnetic field $\beta h=0.5$ for $N=5$ spins. 
  
@@ -45,21 +46,80 @@ Here $N$ is the number of measurements, the $O_i$ are a single measurement, and 
 
 \subsection{Binning}
 
-Trying to reduce the autocorrelation, we do not look at single measurements any more, but instead we form blocks, also called bins, of the measurements.
+Trying to reduce the autocorrelation, we do not look at single measurements any more, but instead we form blocks, also called bins, of the measurements. For $N$ measurements, we cann form $\lfloor N/l \rfloor$ blocks of length $l$, where the k-th block is defined as \[O_k^B=\frac{1}{l}\sum_{i=0}^{l-1}O_{(k\cdot l)+i}\].
 
 \subsection{Bootstrapping}
 
+%From these new datapoints, we make $R$ bootstrap replicas. For each replica, we sample with replacement from the given $O_i^B$, and take the arithmetic mean over those chosen values to be the replica. At the end, we can estimate the mean and error of our measurements as the arithmetic mean and standard deviation over $R$ bootstrap replicas.
+
+For a realistic error estimate, we would need to perform several sets of measurements and compare their means. Because this is not possible, we simulate $R$ sets of measurements by making so called bootstrap replicas: For one replica, we randomly sample with replacement from our measurements. If we have $N$ measurements $x_i$, we draw $N$ samples $x_i^s$. The arithmetic mean of these samples, $\mu^s_j=\frac{1}{N}\sum_{i=0}^{N-1}x_i^s$, is one replica.
+
+From our replica, we calculate the mean $\bar{\mu}$ and the error $\bar{\sigma}$ of our measurements as the simple arithmetic mean and the simple standard deviation of the replica.
+\[
+\bar{\mu}=\frac{1}{R}\sum_{j=0}^{R-1}\mu^s_j\]
+
+
+\[
+\bar{\sigma}^2=\frac{1}{R-1}\sum_{j=0}^{R-1}(\mu^s_j-\bar{\mu})^2
+\]
+
 \section{Implementation}
+Our code is in the github-repo \url{https://github.com/christianegross/CompPhys\_2021}. The simulation itself is in Exercise4/src/main/main.c, the gnuplotscript, where we have also implemented the expectations for the magnetization and energy is in Exercise4/report/plot.gp.
 
 \section{Results}
 
 \subsection{Comparison of Markov Chains with different $N_{md}$}
 
+\begin{figure}[htbp]
+	\input{markovchaincomparison.tex}
+	\caption{Comparison of two Markov Chains with the same parameters except for $N_{md}=4, 100$}
+	\label{fig:markovchaincomparison}
+\end{figure}
+
+
+
 \subsection{Autocorrelation of the measurements}
+
+
+\begin{figure}[htbp]
+	\input{simplecorrelation.tex}
+	\caption{Autocorrelation of the Markov Chains from fig.~\ref{fig:markovchaincomparison}.}
+	\label{fig:simplecorrelation}
+\end{figure}
+
+\begin{figure}[htbp]
+	\input{correlationbinnmd4.tex}
+	\caption{Autocorrelation of the blocked Markov Chains for $N_{md}=4$}
+	\label{fig:correlationbinnmd4}
+\end{figure}
+
+\begin{figure}[htbp]
+	\input{correlationbinnmd100.tex}
+	\caption{Autocorrelation of the blocked Markov Chains for $N_{md}=100$}
+	\label{fig:correlationbinnmd100}
+\end{figure}
 
 \subsection{Naive Standard errors of the blocked measurements}
 
+\begin{figure}[htbp]
+	\input{naiveerrorbinned.tex}
+	\caption{Naive error of the blocked data}
+	\label{fig:naiveerrorbinned}
+\end{figure}
+
 \subsection{Bootstraperrors of the blocked measurements}
+
+\begin{figure}[htbp]
+	\input{bootstraperrorbinned.tex}
+	\caption{Bootsstrap error of the blocked data for $N_bs=4\cdot N$}
+	\label{fig:bootstraperrorbinned}
+\end{figure}
+
+\begin{figure}[htbp]
+	\input{errorstabilitynmd100.tex}
+	\caption{Stability of the bootstrap errors for different binlengths and $N_{bs}$, for $N_{md}=100$}
+	\label{fig:errorstabilitynmd100}
+\end{figure}
 \newpage	
 \listoffigures
 \printbibliography
