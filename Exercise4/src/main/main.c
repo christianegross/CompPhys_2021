@@ -169,7 +169,7 @@ int main(int argc, char **argv){
 	 */
 	
 	int therm_steps=2000;
-	int amount_conf=5000;
+	int amount_conf=12800;
 
 	int N=5;
 	double J_T=0.1;
@@ -180,7 +180,6 @@ int main(int argc, char **argv){
 	double p_f=0;
 	double phi_f=0;
 	double H_0;
-	double delta=0;
 	double prob=1;
 	int N_md=100;
 	double mean_magnetization=0;
@@ -211,11 +210,9 @@ int main(int argc, char **argv){
 	/**
 	 * @note	Open file streams to save data into
 	 */
-	FILE * converge_data=fopen ("data/converge.dat", "w");
-	fprintf(converge_data,"#N_md\tH_rel_delta\n");
 	FILE * raw_data=fopen ("data/raw.dat", "w");
 	fprintf(raw_data,"#N\tJ\t<m>\t<m>_err\t<epsilon>\t<epsilon>_err\tlofb\n");
-	FILE * magnetization_nmd4=fopen ("data/magnetizationnmd100.dat", "w");
+	FILE * magnetization_nmd100=fopen ("data/magnetizationnmd100.dat", "w");
 	FILE * magnetizationcorrelation_nmd4=fopen("data/magnetizationcorrelationnmd100.dat", "w");
 	
 
@@ -261,6 +258,7 @@ int main(int argc, char **argv){
 		energies->data[i]=-(set_of_phis->data[i])*(set_of_phis->data[i])/2/N/J_hat_T-h_T*tanh (h_T+set_of_phis->data[i])+0.5/N;
 	}
 	simple_mean_magnetization/=amount_conf;
+	printf ("simple_mean_magnetization:%f\n",simple_mean_magnetization);
 	autocorrelation(magnetizations, magnetizationcorrelation, simple_mean_magnetization);
 	/**
 	 * @note	analyse measured data for magnetization and energy:
@@ -286,7 +284,7 @@ int main(int argc, char **argv){
 	 */
 	accept_rate/=amount_ar;
 	printf ("Acceptance Rate:%f\n",accept_rate);
-	gsl_block_fprintf(magnetization_nmd4, magnetizations, "%f");
+	gsl_block_fprintf(magnetization_nmd100, magnetizations, "%f");
 	gsl_block_fprintf(magnetizationcorrelation_nmd4, magnetizationcorrelation, "%f");
 	
 	
@@ -294,9 +292,8 @@ int main(int argc, char **argv){
 	/**
 	 * @note	Cleanup
 	 */
-	fclose (converge_data);
 	fclose (raw_data);
-	fclose (magnetization_nmd4);
+	fclose (magnetization_nmd100);
 	fclose (magnetizationcorrelation_nmd4);
 	gsl_rng_free (generator);
 	gsl_block_free (set_of_phis);
