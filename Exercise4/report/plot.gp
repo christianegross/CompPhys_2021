@@ -80,6 +80,9 @@ plot datafile4 using 7:6 ls 1 w lp title '$N_{md}=4$', datafile100 using 7:6 ls 
 set out 'bootstraperrorbinned.tex'
 plot datafile4 using 7:4 ls 1 w lp title '$N_{md}=4$', datafile100 using 7:4 ls 2 w lp title '$N_{md}=100$'
 
+set out 'errorbinnedcompare.tex'
+plot datafile100 using 7:4 ls 1 w lp title 'bootstrap',datafile100 using 7:6 ls 2 w lp title 'naive'
+
 
 set out 'errorstabilitynmd100.tex'
 set xlabel '$N_{bs}$'
