@@ -23,8 +23,22 @@ set out 'test.pdf'
 set xlabel 'step'
 set ylabel 'magnetization'
 set xrange [0:500]
-plot datafile4 u 0:1 ls 1 ps 0.1 title 'N_{md}=4' ,datafile100 u 0:1 ls 2 ps 0.1 title 'N_{md}=100'
+#plot datafile4 u 0:1 ls 1 ps 0.1 title 'N_{md}=4' ,datafile100 u 0:1 ls 2 ps 0.1 title 'N_{md}=100'
 unset xrange
-plot correlationfile4 u 0:1 ls 1 ps 0.1 title 'N_{md}=4', correlationfile100 u 0:1 ls 2 ps 0.1 title 'N_{md}=100'
+set ylabel 'Correlation'
+#plot correlationfile4 u 0:1 ls 1 ps 0.1 title 'N_{md}=4', correlationfile100 u 0:1 ls 2 ps 0.1 title 'N_{md}=100'
 
 plot 'test.txt' u 1 with lines dt 3 title 'everything', 'test.txt' every :::0::0 u 1 with lines dt 2 title 'zeroeth block', 'test.txt' every :::1::1 u 1 with lines title 'first block'
+
+do for [n=0:6]{
+set title sprintf('binlength=%d', 2**n)
+#plot correlationfile100 every :::n::n u 1 ls 1 title ''
+}
+
+
+set xrange [0:100]
+set title 'N_md=100'
+plot for [n=0:6] correlationfile100 every :::n::n u 1 ls n w lines title sprintf('binlength=%d', 2**n)
+
+set title 'N_md=4'
+plot for [n=0:6] correlationfile4 every :::n::n u 1 ls n w lines title sprintf('binlength=%d', 2**n)
