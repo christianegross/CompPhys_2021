@@ -183,7 +183,7 @@ int main(int argc, char **argv){
 	double phi_f=0;
 	double H_0;
 	double prob=1;
-	int N_md=4;
+	int N_md=100;
 	double mean_magnetization=0;
 	double var_magnetization=0;
 	double var_magnetization_binned=0;
@@ -210,10 +210,10 @@ int main(int argc, char **argv){
 	/**
 	 * @note	Open file streams to save data into
 	 */
-	FILE * raw_data=fopen ("data/raw4.dat", "w");
+	FILE * raw_data=fopen ("data/raw100.dat", "w");
 	fprintf(raw_data,"#N\tJ\t<m>\t<m>_err\t<m>_err_bin\t<epsilon>\t<epsilon>_err\tlofb\n");
-	FILE * magnetization_nmd4=fopen ("data/magnetizationnmd4.dat", "w");
-	FILE * magnetizationcorrelation_nmd4=fopen("data/magnetizationcorrelationnmd4.dat", "w");
+	FILE * magnetization_nmd4=fopen ("data/magnetizationnmd100.dat", "w");
+	FILE * magnetizationcorrelation_nmd4=fopen("data/magnetizationcorrelationnmd100.dat", "w");
 	
 
 	mean_magnetization=0;
@@ -282,6 +282,7 @@ int main(int argc, char **argv){
 		 * @note	Analyse blocked data
 		 */
 		var_magnetization_binned=0;
+		simple_mean_magnetization_binned=0;
 		for(int i=0;i<(&binnedmagnetization.vector)->size;i++){
 			simple_mean_magnetization_binned+=gsl_vector_get (&binnedmagnetization.vector, i);
 		}
