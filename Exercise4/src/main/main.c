@@ -211,10 +211,10 @@ int main(int argc, char **argv){
 	 * @note	Open file streams to save data into
 	 */
 	FILE * raw_data=fopen ("data/raw100.dat", "w");
-	fprintf(raw_data,"#N\tJ\t<m>\t<m>_err\t<m>_err_bin\t<epsilon>\t<epsilon>_err\tlofb\n");
+	fprintf(raw_data,"#N\tJ\t<m>\t<m>_err\t<m>_bin\t<m>_err_bin\tlofb\n");
 	FILE * magnetization_nmd4=fopen ("data/magnetizationnmd100.dat", "w");
 	FILE * magnetizationcorrelation_nmd4=fopen("data/magnetizationcorrelationnmd100.dat", "w");
-	
+	FILE * magnetizationerrorstability_nmd100=fopen("data/magnetizationerrorstabilitynmd100.dat", "w");
 
 	mean_magnetization=0;
 	var_magnetization=0;
@@ -275,6 +275,7 @@ int main(int argc, char **argv){
 	 */ 
 	for (int lengthofbin=2; lengthofbin<65; lengthofbin*=2){
 		fprintf (magnetizationcorrelation_nmd4, "\n#%d\n",lengthofbin);
+		fprintf (magnetizationerrorstability_nmd100, "\n#%d\tN_bs\t<m>\t<m>_err\n",lengthofbin);
 		binnedmagnetization=gsl_vector_subvector(binnedmagnetization_mem, 0, magnetizations->size/lengthofbin);
 		binning(magnetizations, &binnedmagnetization.vector, lengthofbin);
 		
@@ -294,6 +295,12 @@ int main(int argc, char **argv){
 
 		autocorrelation (&binnedmagnetization.vector, binnedcorrelation, simple_mean_magnetization_binned);
 		gsl_vector_fprintf(magnetizationcorrelation_nmd4, binnedcorrelation, "%f");
+		for(int i=1;i<50000;i*=2){
+			N_bs=2*i;
+			bootstrap(&binnedmagnetization.vector, generator, N_bs, &mean_magnetization, &var_magnetization);
+			fprintf(magnetizationerrorstability_nmd100,"%d\t%f\t%f\n",N_bs,mean_magnetization,sqrt (var_magnetization));
+		}
+		N_bs=4*amount_conf;
 		bootstrap(&binnedmagnetization.vector, generator, N_bs, &mean_magnetization, &var_magnetization);
 		
 		fprintf (raw_data,"%d\t%f\t%f\t%f\t%f\t%f\t%d\n", N, J_T, mean_magnetization,sqrt (var_magnetization), simple_mean_magnetization_binned, sqrt (var_magnetization_binned), lengthofbin);
@@ -315,6 +322,7 @@ int main(int argc, char **argv){
 	fclose (raw_data);
 	fclose (magnetization_nmd4);
 	fclose (magnetizationcorrelation_nmd4);
+	fclose (magnetizationerrorstability_nmd100);
 	gsl_rng_free (generator);
 	gsl_vector_free (set_of_phis);
 	gsl_vector_free (magnetizations);
