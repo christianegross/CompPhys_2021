@@ -64,13 +64,15 @@ From our replica, we calculate the mean $\bar{\mu}$ and the error $\bar{\sigma}$
 \]
 
 \section{Implementation}
-Our code is in the github-repo \url{https://github.com/christianegross/CompPhys\_2021}. The simulation itself is in Exercise4/src/main/main.c, the gnuplotscript, where we have also implemented the expectations for the magnetization and energy is in Exercise4/report/plot.gp. Compared to the state of the code at the end of exercise 3 the following things got added. 
+Our code is in the github-repo \url{https://github.com/christianegross/CompPhys\_2021}. The simulation itself is in Exercise4/src/main/main.c, the gnuplotscript is in Exercise4/report/plot.gp. Compared to the state of the code at the end of exercise 3 the following things were added:
 
-The output of the specific trajectories of the magnetization got implemented. Further more the autocorrelation function got added to analyze the  correlation of our raw data set and compare it to the blocked data. For deeper analyze the naive standard error got implemented after binning of the raw data and a stability test got implemented to test for the right amount of bootstrap replicas. The trajectories data set makes use of "gsl\_block" objects \cite{gsldoc_blk}) and all of the other data sets get saved in "gsl\_vector" objects (see \cite{gsldoc_mat}).
+The output of the specific trajectories of the magnetization was implemented. Further more the autocorrelation function was added to analyze the correlation of our raw data set and compare it to the blocked data. For deeper analysis the naive standard error was calculated after binning of the raw data and a stability test was implemented to test for the right amount of bootstrap replicas. The trajectories data set makes use of "gsl\_block" objects \cite{gsldoc_blk}) and all of the other data sets are saved in "gsl\_vector" objects (see \cite{gsldoc_mat}).
 
 \section{Results}
 
 \subsection{Comparison of Markov Chains with different $N_{md}$}
+
+For the given parameters, $\beta J=0.1$, $\beta h=0.5$ and $n=5$, the first $500$ trajectories for the Markov-Chain of $m$ are plotted in fig.~\ref{fig:markovchaincomparison}. When comparing the trajectories for $N_{md}=4$ and $N_{md}=100$, we can immediately see that the acceptance rate is lower for smaller $N_{md}$: We see several times that the magnetization does not change for several Monte-Carlo-steps, the points form a line. This is backed by our calculations of the acceptance rate, which is almost $1$ for $N_{md}=100$ and closer to $0.6$ for $N_{md}=4$. The trajectory with $N_{md}=100$ seems to fluctuate more and more extremely, but both trajectories are centered around the region between $0.35$ and $0.65$, and the simple mean over the measurements is in good agreement with the expected value.
 
 \begin{figure}[htbp]
 	\input{markovchaincomparison.tex}
@@ -81,7 +83,7 @@ The output of the specific trajectories of the magnetization got implemented. Fu
 
 
 \subsection{Autocorrelation of the measurements}
-The straightforward estimator for the normalized autocorrelation function of the Markov Chains from fig.~\ref{fig:markovchaincomparison} shown in fig. \ref{fig:simplecorrelation} behaves mostly as expected. For less molecular dynamics steps the correlation falls of slower compared to more molecular dynamics steps. This is because of the larger dependency of adjacent configurations in MC time-space, when they can only differ by a small amount of steps. In particular both cases follow an exponential decay in terms of the MC time. Especially in the case of $N_{md}=100$ it has to be noted that after falling under a threshold of approx $\Gamma_{thr}\approx0.08$ the correlation can still fluctuate in this sector, this is because of the statistical nature of the sampling technique. For later comparison the autocorrelation time of Markov Chains from fig.~\ref{fig:markovchaincomparison} can be estimated to be $\tau_{MC}\approx 7$. 
+The straightforward estimator for the normalized autocorrelation function of the Markov Chains from fig.~\ref{fig:markovchaincomparison} shown in fig.~\ref{fig:simplecorrelation} behaves mostly as expected. For less molecular dynamics steps the correlation falls off slower compared to more molecular dynamics steps. This is because of the larger dependency of adjacent configurations in MC time-space, when they can only differ by a small amount of steps. In particular both cases follow an exponential decay in terms of the MC time. Especially in the case of $N_{md}=100$ it has to be noted that after falling under a threshold of approx $\Gamma_{thr}\approx0.08$ the correlation can still fluctuate in this sector, this is because of the statistical nature of the sampling technique. For later comparison the autocorrelation time of Markov Chains from fig.~\ref{fig:markovchaincomparison} can be estimated to be $\tau_{MC}\approx 7$. 
 
 \begin{figure}[htbp]
 	\input{simplecorrelation.tex}
@@ -94,7 +96,7 @@ The straightforward estimator for the normalized autocorrelation function of the
 %	\caption{Autocorrelation of the blocked Markov Chains for $N_{md}=4$}
 %	\label{fig:correlationbinnmd4}
 %\end{figure}
-As expected the Autocorrelation of the blocked Markov Chains for $N_{md}=100$ shown in fig. \ref{fig:correlationbinnmd100} falls of much more quickly for larger bin sizes. Again fluctuations can be observed after the correlation surpasses a certain threshold and these fluctuations are larger for larger bin sizes.
+As expected the autocorrelation of the blocked Markov Chains for $N_{md}=100$ shown in fig. \ref{fig:correlationbinnmd100} falls of much more quickly for larger bin sizes. Again fluctuations can be observed after the correlation surpasses a certain threshold and these fluctuations are larger for larger bin sizes.
 \begin{figure}[htbp]
 	\input{correlationbinnmd100.tex}
 	\caption{Autocorrelation of the blocked Markov Chains for $N_{md}=100$}
@@ -110,6 +112,7 @@ As expected the Autocorrelation of the blocked Markov Chains for $N_{md}=100$ sh
 %\end{figure}
 
 \subsection{Errors of the blocked measurements}
+The naive error of the estimates rises for larger binlengths, showing that autocorrelation indeed leads us to underestimate the error. The error rises slower for larger binlengths, but we cannot yet recognize a plateau.
 The naive standard error of the blocked data shows to be a good estimator in these simulations, because the bootstrap error does not differ much from it, regardless of the bin size (compare fig. \ref{fig:errorbinnedcompare}). This can be explained by the large amount of initial samples, which leads to a large amount of binned data points.
 \begin{figure}[htbp]
 	\input{errorbinnedcompare.tex}
@@ -128,6 +131,8 @@ The stability test of the bootstrap errors for different binlengths and $N_{bs}$
 	\caption{Stability of the bootstrap errors for different binlengths and $N_{bs}$, for $N_{md}=100$}
 	\label{fig:errorstabilitynmd100}
 \end{figure}
+
+If we had to do the calculations from sheet 3 again, we would probably choose to block our data with a binlength of $64$ or maybe even $128$ and would use about $1024$ bootstrap replicas per measurement.
 \newpage	
 \listoffigures
 \printbibliography
