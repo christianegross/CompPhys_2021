@@ -40,13 +40,13 @@ Because we produce the magnetization with the value of $\phi$ from the last meas
 \[
 C(\tau)=\frac{1}{N-|\tau|}\sum_{i=1}^{N-|\tau|}(O_i-\bar{\mu})(O_{i+|\tau|}-\bar{\mu})\]
 
-Here $N$ is the number of measurements, the $O_i$ are a single measurement, and $\bar{\mu}$ is the estimated mean. To make visualotsation and comparison easier, we look at the normalised autocorrelation function, \[
+Here $N$ is the number of measurements, the $O_i$ are a single measurement, and $\bar{\mu}$ is the estimated mean. To make visualization and comparison easier, we look at the normalised autocorrelation function, \[
 \Gamma(\tau)=\frac{C(\tau)}{C(0)}
 \]
 
 \subsection{Binning}
 
-Trying to reduce the autocorrelation, we do not look at single measurements any more, but instead we form blocks, also called bins, of the measurements. For $N$ measurements, we cann form $\lfloor N/l \rfloor$ blocks of length $l$, where the k-th block is defined as \[O_k^B=\frac{1}{l}\sum_{i=0}^{l-1}O_{(k\cdot l)+i}\].
+Trying to reduce the autocorrelation, we do not look at single measurements any more, but instead we form blocks, also called bins, of the measurements. For $N$ measurements, we can form $\lfloor N/l \rfloor$ blocks of length $l$, where the k-th block is defined as \[O_k^B=\frac{1}{l}\sum_{i=0}^{l-1}O_{(k\cdot l)+i}\].
 
 \subsection{Bootstrapping}
 
@@ -64,7 +64,9 @@ From our replica, we calculate the mean $\bar{\mu}$ and the error $\bar{\sigma}$
 \]
 
 \section{Implementation}
-Our code is in the github-repo \url{https://github.com/christianegross/CompPhys\_2021}. The simulation itself is in Exercise4/src/main/main.c, the gnuplotscript, where we have also implemented the expectations for the magnetization and energy is in Exercise4/report/plot.gp.
+Our code is in the github-repo \url{https://github.com/christianegross/CompPhys\_2021}. The simulation itself is in Exercise4/src/main/main.c, the gnuplotscript, where we have also implemented the expectations for the magnetization and energy is in Exercise4/report/plot.gp. Compared to the state of the code at the end of exercise 3 the following things got added. 
+
+The output of the specific trajectories of the magnetization got implemented. Further more the autocorrelation function got added to analyze the  correlation of our raw data set and compare it to the blocked data. For deeper analyze the naive standard error got implemented after binning of the raw data and a stability test got implemented to test for the right amount of bootstrap replicas. The trajectories data set makes use of "gsl\_block" objects \cite{gsldoc_blk}) and all of the other data sets get saved in "gsl\_vector" objects (see \cite{gsldoc_mat}).
 
 \section{Results}
 
@@ -79,7 +81,7 @@ Our code is in the github-repo \url{https://github.com/christianegross/CompPhys\
 
 
 \subsection{Autocorrelation of the measurements}
-
+The straightforward estimator for the normalized autocorrelation function of the Markov Chains from fig.~\ref{fig:markovchaincomparison} shown in fig. \ref{fig:simplecorrelation} behaves mostly as expected. For less molecular dynamics steps the correlation falls of slower compared to more molecular dynamics steps. This is because of the larger dependency of adjacent configurations in MC time-space, when they can only differ by a small amount of steps. In particular both cases follow an exponential decay in terms of the MC time. Especially in the case of $N_{md}=100$ it has to be noted that after falling under a threshold of approx $\Gamma_{thr}\approx0.08$ the correlation can still fluctuate in this sector, this is because of the statistical nature of the sampling technique. For later comparison the autocorrelation time of Markov Chains from fig.~\ref{fig:markovchaincomparison} can be estimated to be $\tau_{MC}\approx 7$. 
 
 \begin{figure}[htbp]
 	\input{simplecorrelation.tex}
@@ -92,7 +94,7 @@ Our code is in the github-repo \url{https://github.com/christianegross/CompPhys\
 %	\caption{Autocorrelation of the blocked Markov Chains for $N_{md}=4$}
 %	\label{fig:correlationbinnmd4}
 %\end{figure}
-
+As expected the Autocorrelation of the blocked Markov Chains for $N_{md}=100$ shown in fig. \ref{fig:correlationbinnmd100} falls of much more quickly for larger bin sizes. Again fluctuations can be observed after the correlation surpasses a certain threshold and these fluctuations are larger for larger bin sizes.
 \begin{figure}[htbp]
 	\input{correlationbinnmd100.tex}
 	\caption{Autocorrelation of the blocked Markov Chains for $N_{md}=100$}
@@ -108,7 +110,7 @@ Our code is in the github-repo \url{https://github.com/christianegross/CompPhys\
 %\end{figure}
 
 \subsection{Errors of the blocked measurements}
-
+The naive standard error of the blocked data shows to be a good estimator in these simulations, because the bootstrap error does not differ much from it, regardless of the bin size (compare fig. \ref{fig:errorbinnedcompare}). This can be explained by the large amount of initial samples, which leads to a large amount of binned data points.
 \begin{figure}[htbp]
 	\input{errorbinnedcompare.tex}
 	\caption{Comparison of the naive and bootstrap error for $N_{bs}=4\cdot N$ and $N_{md}=100$}
@@ -120,7 +122,7 @@ Our code is in the github-repo \url{https://github.com/christianegross/CompPhys\
 %	\caption{Bootsstrap error of the blocked data for $N_bs=4\cdot N$}
 %	\label{fig:bootstraperrorbinned}
 %\end{figure}
-
+The stability test of the bootstrap errors for different binlengths and $N_{bs}$, for $N_{md}=100$ (shown in fig. \ref{fig:errorstabilitynmd100}) shows very nicely the convergence of the errors to values specific to  the bin size. The convergence is approximately done at $N_{bs}\approx 1024$.
 \begin{figure}[htbp]
 	\input{errorstabilitynmd100.tex}
 	\caption{Stability of the bootstrap errors for different binlengths and $N_{bs}$, for $N_{md}=100$}
