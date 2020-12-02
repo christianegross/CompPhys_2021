@@ -30,7 +30,7 @@ All of our calculations are based on definitions and principles introduced in th
 \subsection{Simulated Model}
 We want to analyse the Markov-chains produced when looking at the magnetization of long-range Ising-model simulated with the Hybrid Monte Carlo algorithm. We already implemented this algorithm in exercise 3, and it describes N spins that all interact with each other and with the external magnetic field. For the analysis of the errors, we only look at the internal coupling $\beta J=0.1$ and the external magnetic field $\beta h=0.5$ for $N=5$ spins. 
  
-In the HMC algorithm, we evolve a given $\phi$ and a $p$ sampled from a normal distribution according to their equations of motion with the help of a molecular dynamics integrator, in our case a leapfrog integrator, to $\phi', p'$ and accepting these new values with a probability of $\min(1, \exp(H(\phi, p)-H(\phi', p')))$. Here we look at the differences that occur when using a different number of steps in the leapfrog algorithm, specifically $N_{md}=4$ and $N_{md}=100$.
+In the HMC algorithm, we evolve a given $\phi$ and a $p$ sampled from a normal distribution according to their equations of motion with the help of a molecular dynamics integrator, in our case a leapfrog integrator, to $\phi', p'$ and accept these new values with a probability of $\min(1, \exp(H(\phi, p)-H(\phi', p')))$. Here we look at the differences that occur when using a different number of steps in the leapfrog algorithm, specifically $N_{md}=4$ and $N_{md}=100$, and at the standard deviation from the mean value.
 
 From these $\phi$ we can then calculate the magnetization $m=\tanh(\beta h+\phi)$.
 
