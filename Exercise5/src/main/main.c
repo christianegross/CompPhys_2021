@@ -139,6 +139,10 @@ double hamiltonian(gsl_vector *u, gsl_vector *phi, double a){
 void interpolatephi(gsl_vector* phifine, gsl_vector *ufine, gsl_vector* phicoarse){
 	gsl_vector_set(phicoarse, 0, 0);
 	//insert phicoarse(phifine, ufine)
+	for (int i=1; i<phicoarse->size-1;i+=1){
+		//gsl_vector_set(phicoarse, i,1);
+		gsl_vector_set(phicoarse, i, 2*gsl_vector_get(phifine, 2*i)+2*gsl_vector_get(ufine, 2*i)-gsl_vector_get(ufine, 2*i-1)-gsl_vector_get(ufine, 2*i+1));
+	}
 	gsl_vector_set(phicoarse, phicoarse->size-1, 0);
 }
 
@@ -148,7 +152,7 @@ void onesweep(gsl_vector *u, gsl_vector *phi, double delta, double a, gsl_rng *g
 	for (int l=1; l<u->size-1; l+=1){
 		randomsite=gsl_rng_uniform_int(generator, u->size-2)+1; //ensures only values between 1 and N-1 are selected
 		randomstep=gsl_ran_flat(generator, -delta, delta);
-		deltah=-2*a*gsl_vector_get(phi, randomsite)*randomstep-2/a*randomstep*(randomstep-2*gsl_vector_get(u, randomsite)+gsl_vector_get(u, randomsite+1)+gsl_vector_get(u, randomsite-1));
+		deltah=-2*a*gsl_vector_get(phi, randomsite)*randomstep+2/a*randomstep*(-randomstep+2*gsl_vector_get(u, randomsite)+gsl_vector_get(u, randomsite+1)+gsl_vector_get(u, randomsite-1));
 		if (gsl_rng_uniform(generator)>exp(deltah)){
 			gsl_vector_set(u, randomsite, gsl_vector_get(u, randomsite)+randomstep);
 		}
@@ -160,8 +164,38 @@ double magnetisation(gsl_vector *u){
 	for (int i=1; i<u->size-1; i+=1){
 		magnet+=gsl_vector_get(u, i);
 	}
-	return magnet/u->size;
+	return magnet/(u->size-1);
 }
+
+inline int nu(int level){
+	return pow(2, level-1);
+}
+
+void multigrid(gsl_vector* u, gsl_vector *phi, gsl_rng *generator, double a, double delta, int level, int levelmax, int gamma){
+	//printf("level=%d\n", level);
+	for (int i=0; i<nu(level); i+=1){
+		onesweep(u, phi, delta, a, generator);
+	}
+	//printf("done presweep\n");
+	if (level<levelmax){
+		gsl_vector *ucoarse=gsl_vector_alloc((u->size-1)/2+1);
+		gsl_vector *phicoarse=gsl_vector_alloc((phi->size-1)/2+1);
+		finetocoarserestriction(u, ucoarse);
+		interpolatephi(phi, u, phicoarse);
+		for (int i=0; i<gamma; i+=1){
+			multigrid(ucoarse, phicoarse, generator, 2*a, delta, level+1, levelmax, gamma);
+		}
+		addcoarsetofineinterpolation(u, ucoarse);
+		gsl_vector_free(ucoarse);
+		gsl_vector_free(phicoarse);
+	}
+	for (int i=0; i<nu(level); i+=1){
+		onesweep(u, phi, delta, a, generator);
+	}
+	
+	//printf("done postsweep\n");
+}
+	
 
 int main(int argc, char **argv){	
 	//set and allocate random number generator
@@ -171,21 +205,33 @@ int main(int argc, char **argv){
 	gsl_rng_set(generator, seed);
 	
 	gsl_vector *u=gsl_vector_calloc(65);
+	gsl_vector *uold=gsl_vector_calloc(65);
 	gsl_vector *phi=gsl_vector_calloc(65);
-	gsl_vector_set(u, 3, 5);
-	
-	double magnet, hamilton, a=1.0/64;
-	for (int i=0;i<100;i+=1){
-		onesweep(u, phi, 2, a, generator);
+	for (int i=1; i<u->size-1; i+=1){
+		gsl_vector_set(u, i, gsl_rng_uniform(generator));
+	}
+	double magnet, hamilton, a=1.0/64, deltah;
+	for (int i=0;i<10000;i+=1){
+		//~ onesweep(u, phi, 2, a, generator);
+		gsl_vector_memcpy(uold, u);
+		multigrid(u, phi, generator, a, 2, 1, 1, 1);
+		deltah=hamiltonian(uold, phi, a)-hamiltonian(u, phi, a);
+		if (gsl_rng_uniform(generator)>exp(-deltah)){
+			gsl_vector_memcpy(u, uold);
+			//printf("not accepted\t");
+		}
 		magnet=magnetisation(u);
 		hamilton=hamiltonian(u, phi, a);
-		printf("%d\t%f\t%f\n", i, magnet, hamilton);
+		printf("%d\t%e\t%e\t%e\n", i, magnet, hamilton, deltah);
 	}
 	for (int i=0; i<u->size; i+=1){
-		printf("%f\t", gsl_vector_get(u, i));
+	//	printf("%e\t", gsl_vector_get(u, i));
 	}
 	printf("\n");
+	gsl_rng_free(generator);
+	gsl_vector_free(u);
+	gsl_vector_free(phi);
 	return 0;
 }
-//git commit -m "added finetocoarserestriction, addcoarsetofineinterpolation, hamiltonian, interpolatephi, onsweep, magnetisation, tested onesweep, magnetisation and hamiltonian"
+
 
