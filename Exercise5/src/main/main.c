@@ -87,8 +87,7 @@ void bootstrap(gsl_vector *measurements, gsl_rng *generator, int R, double *mean
 
 void autocorrelation(gsl_vector *measurements, gsl_vector *results, double mean){
 	/**
-	 * make block, calculate gamma with tau=0, write (0,1) to results
-	 * for range of tau: calculate gamma, divide by gamma(0), write (tau, gamma/gamma) to reaults
+	 * @note implements normalized autocorrelation by first calculation c(0) with the definition from the lectures, then calculating c(tau) and then storing c(tau)/c(0) in results
 	 */
 	double czero=0;
 	double ctime=0;
@@ -107,7 +106,86 @@ void autocorrelation(gsl_vector *measurements, gsl_vector *results, double mean)
 	}
 }
 
-int main(int argc, char **argv){
+/**
+ * @note implements fine-to-coarse restricion given ineq. 6 on the sheet
+ */
+void finetocoarserestriction(gsl_vector *ufine, gsl_vector *ucoarse){
+	for (int i=0; i<ucoarse->size-1; i+=1){
+		gsl_vector_set(ucoarse, i, gsl_vector_get(ufine,2*i));
+	}
+	gsl_vector_set(ucoarse,ucoarse->size-1, 0);
+}
+
+/**
+ * @note adds coarse-to-fine interpolaton to current u
+ * */
+ void addcoarsetofineinterpolation(gsl_vector *ufine, gsl_vector *ucoarse){
+	 for (int i=0; i<ucoarse->size-1; i+=1){
+		 gsl_vector_set(ufine,2*i, gsl_vector_get(ufine,2*i)+gsl_vector_get(ucoarse,i));
+		 gsl_vector_set(ufine,2*i+1, gsl_vector_get(ufine,2*i+1)+0.5*(gsl_vector_get(ucoarse,i)+gsl_vector_get(ucoarse,i+1)));
+	 }
+	 gsl_vector_set(ufine,ufine->size-1, 0);
+}
 	
+double hamiltonian(gsl_vector *u, gsl_vector *phi, double a){
+	double H=0;
+	for (int i=1; i<u->size-1; i+=1){
+		H+=(gsl_vector_get(u, i)-gsl_vector_get(u, i-1))*(gsl_vector_get(u, i)-gsl_vector_get(u, i-1))+a*a*gsl_vector_get(phi, i)*gsl_vector_get(u, i);
+	}
+	H+=(gsl_vector_get(u, u->size-1)-gsl_vector_get(u, u->size-2))*(gsl_vector_get(u, u->size-1)-gsl_vector_get(u, u->size-2));
+	return H/a;
+}
+
+void interpolatephi(gsl_vector* phifine, gsl_vector *ufine, gsl_vector* phicoarse){
+	gsl_vector_set(phicoarse, 0, 0);
+	//insert phicoarse(phifine, ufine)
+	gsl_vector_set(phicoarse, phicoarse->size-1, 0);
+}
+
+void onesweep(gsl_vector *u, gsl_vector *phi, double delta, double a, gsl_rng *generator){
+	int randomsite, randomstep;
+	double deltah;
+	for (int l=1; l<u->size-1; l+=1){
+		randomsite=gsl_rng_uniform_int(generator, u->size-2)+1; //ensures only values between 1 and N-1 are selected
+		randomstep=gsl_ran_flat(generator, -delta, delta);
+		deltah=-2*a*gsl_vector_get(phi, randomsite)*randomstep-2/a*randomstep*(randomstep-2*gsl_vector_get(u, randomsite)+gsl_vector_get(u, randomsite+1)+gsl_vector_get(u, randomsite-1));
+		if (gsl_rng_uniform(generator)>exp(deltah)){
+			gsl_vector_set(u, randomsite, gsl_vector_get(u, randomsite)+randomstep);
+		}
+	}
+}
+
+double magnetisation(gsl_vector *u){
+	double magnet=0;
+	for (int i=1; i<u->size-1; i+=1){
+		magnet+=gsl_vector_get(u, i);
+	}
+	return magnet/u->size;
+}
+
+int main(int argc, char **argv){	
+	//set and allocate random number generator
+	int seed=2;//use fixed seed: result should be exactly reproduced using the same seed
+	gsl_rng *generator;
+	generator=gsl_rng_alloc(gsl_rng_mt19937);//use mersenne-twister
+	gsl_rng_set(generator, seed);
+	
+	gsl_vector *u=gsl_vector_calloc(65);
+	gsl_vector *phi=gsl_vector_calloc(65);
+	gsl_vector_set(u, 3, 5);
+	
+	double magnet, hamilton, a=1.0/64;
+	for (int i=0;i<100;i+=1){
+		onesweep(u, phi, 2, a, generator);
+		magnet=magnetisation(u);
+		hamilton=hamiltonian(u, phi, a);
+		printf("%d\t%f\t%f\n", i, magnet, hamilton);
+	}
+	for (int i=0; i<u->size; i+=1){
+		printf("%f\t", gsl_vector_get(u, i));
+	}
+	printf("\n");
 	return 0;
 }
+//git commit -m "added finetocoarserestriction, addcoarsetofineinterpolation, hamiltonian, interpolatephi, onsweep, magnetisation, tested onesweep, magnetisation and hamiltonian"
+
