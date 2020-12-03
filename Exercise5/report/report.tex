@@ -101,6 +101,26 @@ u_{i}^{(2a)}\frac{1}{a^2}\left(\tilde{u}_{2i}^{(a)}-\tilde{u}_{2i-1}^{(a)}-\tild
 \Leftrightarrow \phi_i^{(2a)}&=&\frac{1}{a^2}\left(\tilde{u}_{2i}^{(a)}-\tilde{u}_{2i-1}^{(a)}-\tilde{u}_{2i+2}^{(a)}+\tilde{u}_{2i+1}^{(a)}  \right)+\left( \phi_{2i}^{(a)}+\frac{1}{2}\phi_{2i+1}^{(a)}+\frac{1}{2}\phi_{2i-1}^{(a)}\right)\\
 \end{array}\]
 
+\subsection{Accept/Reject step}
+
+During the sweep, we propose $u_l\to u_l+\Delta$ for a randomly chosen $l$. For the accept/reject step, we need the difference in the Hamiltonians $H(u)-H(u+\Delta)$ of the two configurations, but we do not need to calculate the entire Hamiltonian:
+
+\[\begin{array}{>{\displaystyle}r>{\displaystyle}c>{\displaystyle}l}
+H(u)-H(u+\Delta)&=&\frac{1}{a}\left( \left(u_l-u_{l-1} \right)^2+\left(u_{l+1}-u_{l}  \right)^2-\left(u_l+\Delta-u_{l-1}  \right)^2-\left( u_{l+1}-u_{l}-\Delta \right)^2\right) \\&+&a\left( \phi_lu_l-\phi_lu_l-\phi_l\Delta\right) \\
+
+%&=&\frac{1}{a}\left( u_l^2+u_{l-1}^2-2u_lu_{l-1}+u_{l+1}^2+u_l^2-2u_{l+1}u_l\\
+%&-&\left(u_l^2+2u_l\Delta-2u_lu_{l-1}+\Delta^2-2\Delta u_{l-1}+u_{l-1}^2+u_{l+1}^2-2u_{l+1}u_l-2u_{l+1}\Delta+u_l^2+2u_l\Delta+\Delta^2 \right)\right) -a\phi_l\Delta \\
+
+
+&=&-\frac{1}{a}\left(+2u_l\Delta+\Delta^2-2\Delta u_{l-1}-2u_{l+1}\Delta+2u_l\Delta+\Delta^2 \right) -a\phi_l\Delta \\
+
+&=&-\frac{2\Delta}{a}\left(2u_l-u_{l-1}-u_{l+1}+\Delta \right) -a\phi_l\Delta
+%\sum_{i=1}^N
+%\left( u_i^{(a)}-u_{i-1}^{(a)}\right) ^2+a\sum_{i=1}^{N-1}\phi_i^{(a)}u_i^{(a)}\\
+%&=&H_a\left( \tilde{u}^{(a)}+I_{2a}^au^{(2a)}\right) \\
+
+\end{array}\]
+
 \section{Implementation}
 
 Our code is in the github-repo \url{https://github.com/christianegross/CompPhys\_2021}. The simulation itself is in Exercise5/src/main/main.c, the gnuplotscript is in Exercise5/report/plot.gp. 
