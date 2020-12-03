@@ -136,12 +136,14 @@ double hamiltonian(gsl_vector *u, gsl_vector *phi, double a){
 	return H/a;
 }
 
-void interpolatephi(gsl_vector* phifine, gsl_vector *ufine, gsl_vector* phicoarse){
+void interpolatephi(gsl_vector* phifine, gsl_vector *ufine, gsl_vector* phicoarse, double a){
 	gsl_vector_set(phicoarse, 0, 0);
 	//insert phicoarse(phifine, ufine)
 	for (int i=1; i<phicoarse->size-1;i+=1){
 		//gsl_vector_set(phicoarse, i,1);
-		gsl_vector_set(phicoarse, i, 2*gsl_vector_get(phifine, 2*i)+2*gsl_vector_get(ufine, 2*i)-gsl_vector_get(ufine, 2*i-1)-gsl_vector_get(ufine, 2*i+1));
+		gsl_vector_set(phicoarse, i, 
+		1/a/a*(gsl_vector_get(ufine, 2*i)-gsl_vector_get(ufine, 2*i-1)-gsl_vector_get(ufine, 2*i+2)+gsl_vector_get(ufine, 2*i+1))
+		+gsl_vector_get(phifine, 2*i)+0.5*(gsl_vector_get(phifine, 2*i+1)+gsl_vector_get(phifine, 2*i-1)));
 	}
 	gsl_vector_set(phicoarse, phicoarse->size-1, 0);
 }
@@ -181,7 +183,7 @@ void multigrid(gsl_vector* u, gsl_vector *phi, gsl_rng *generator, double a, dou
 		gsl_vector *ucoarse=gsl_vector_alloc((u->size-1)/2+1);
 		gsl_vector *phicoarse=gsl_vector_alloc((phi->size-1)/2+1);
 		finetocoarserestriction(u, ucoarse);
-		interpolatephi(phi, u, phicoarse);
+		interpolatephi(phi, u, phicoarse, a);
 		for (int i=0; i<gamma; i+=1){
 			multigrid(ucoarse, phicoarse, generator, 2*a, delta, level+1, levelmax, gamma);
 		}
@@ -212,14 +214,14 @@ int main(int argc, char **argv){
 	}
 	double magnet, hamilton, a=1.0/64, deltah;
 	for (int i=0;i<10000;i+=1){
-		//~ onesweep(u, phi, 2, a, generator);
-		gsl_vector_memcpy(uold, u);
-		multigrid(u, phi, generator, a, 2, 1, 1, 1);
-		deltah=hamiltonian(uold, phi, a)-hamiltonian(u, phi, a);
-		if (gsl_rng_uniform(generator)>exp(-deltah)){
-			gsl_vector_memcpy(u, uold);
-			//printf("not accepted\t");
-		}
+		onesweep(u, phi, 2, a, generator);
+		//~ gsl_vector_memcpy(uold, u);
+		//~ multigrid(u, phi, generator, a, 2, 1, 1, 1);
+		//~ deltah=hamiltonian(uold, phi, a)-hamiltonian(u, phi, a);
+		//~ if (gsl_rng_uniform(generator)>exp(-deltah)){
+			//~ gsl_vector_memcpy(u, uold);
+			//~ //printf("not accepted\t");
+		//~ }
 		magnet=magnetisation(u);
 		hamilton=hamiltonian(u, phi, a);
 		printf("%d\t%e\t%e\t%e\n", i, magnet, hamilton, deltah);

@@ -25,6 +25,97 @@
 % Jetzt startet das eigentliche Dokument
 \begin{document}
 	\maketitle
+	
+\section{Theory}
+\subsection{The Gaussian Model}
+
+\subsection{Multigrid Algorithms}
+\paragraph{restrictions}
+\paragraph{prolongations}
+
+\section{Deliberations}
+
+\subsection{analytical solutions}
+
+\subsection{Explicit form of $\phi^{(2a)}$}
+
+\[\begin{array}{>{\displaystyle}r>{\displaystyle}c>{\displaystyle}l}
+\text{i even: } I_{2a}^a\left( u_i^{(a)}-u_{i-1}^{(a)}\right)  &=&u_{i/2}^{(2a)}-\frac{1}{2}\left(u_{i/2}^{(2a)}+u_{(i-2)/2}^{(2a)} \right) \\
+&=&\frac{1}{2}\left(u_{i/2}^{(2a)}-u_{(i-2)/2}^{(2a)}\right) \\
+
+\text{i odd: } I_{2a}^a\left( u_i^{(a)}-u_{i-1}^{(a)}\right)  &=&\frac{1}{2}\left(u_{(i-1)/2}^{(2a)}+u_{(i+1)/2}^{(2a)}-u_{(i-1)/2}^{(2a)} \right) \\
+&=&\frac{1}{2}\left(u_{(i+1)/2}^{(2a)}-u_{(i+1)/2}^{(2a)}\right) \\
+
+\Leftrightarrow I_{2a}^a\left( u_i^{(a)}-u_{i-1}^{(a)}\right)&=&
+\frac{1}{2}\left(u_{(i+i\%2)/2}^{(2a)}-u_{(i-2+i\%2)/2}^{(2a)}\right) \\
+
+\end{array}\]
+
+\[\begin{array}{>{\displaystyle}r>{\displaystyle}c>{\displaystyle}l}
+H_a(u^{(a)})&=&\frac{1}{a}\sum_{i=1}^N
+\left( u_i^{(a)}-u_{i-1}^{(a)}\right) ^2+a\sum_{i=1}^{N-1}\phi_i^{(a)}u_i^{(a)}\\
+&=&H_a\left( \tilde{u}^{(a)}+I_{2a}^au^{(2a)}\right) \\
+
+&=&\frac{1}{a}\sum_{i=1}^N\left( \tilde{u}_i^{(a)}-\tilde{u}_{i-1}^{(a)}+\frac{1}{2}u_{(i+i\%2)/2}^{(2a)}-\frac{1}{2}u_{(i-2+i\%2)/2}^{(2a)}\right) ^2+a\sum_{i=1}^{N-1}\left( \phi_i^{(a)}\tilde{u}_i^{(a)}+\phi_i^{(a)}\left( I_{2a}^au^{(2a)}\right)_i\right) \\
+
+&&\\
+
+&=&\frac{1}{a}\sum_{i=1}^N\left((\uti)^2+(\utio)^2-2\uti\utio+\frac{1}{4}(\umt)^2+\frac{1}{4}(\utmt)^2-\frac{1}{2}\utmt\umt\right) \\
+&+&\frac{1}{a}\sum_{i=1}^N\left(\umt\uti-\umt\utio-\utmt\uti+\utmt\utio\right)\\
+&+&a\sum_{i=1}^{N-1}\left( \phi_i^{(a)}\tilde{u}_i^{(a)}+\phi_i^{(a)}\left( I_{2a}^au^{(2a)}\right)_i\right)\\
+
+&&\\
+
+&=&\frac{1}{a}\sum_{i=1}^N
+\left( \uti-\utio\right) ^2+a\sum_{i=1}^{N-1}\phi_i^{(a)}\uti+
+\frac{1}{4a}\sum_{i=1}^N\left(\umt-\utmt\right)^2\\
+
+&+&\frac{1}{a}\sum_{i=1}^N \left(\umt\left(\uti-\utio \right) +\utmt\left(\utio-\uti \right)  \right)+a\sum_{i=1}^{N-1}\phi_i^{(a)}\left( I_{2a}^au^{(2a)}\right)_i\\
+
+&&\\
+
+&=&H_a\left(  \tilde{u}^{(a)}\right) + \frac{1}{2a}\sum_{i=1}^{N/2} \left( u_i^{(2a)}-u_{i-1}^{(2a)}\right)^2\\
+&+&\frac{2}{a}\sum_{i=1}^{N/2}
+\left( u_{i}^{(2a)}\left( \tilde{u}_{2i}^{(a)}-\tilde{u}_{2i-1}^{(a)}\right) 
++u_{i-1}^{(2a)}\left( \tilde{u}_{2i-1}^{(a)}-\tilde{u}_{2i}^{(a)}\right) \right)
++a\sum_{i=1}^{N/2-1}2
+\left( \phi_{2i}^{(a)}+\frac{1}{2}\phi_{2i+1}^{(a)}+\frac{1}{2}\phi_{2i-1}^{(a)}\right) u_i^{(2a)} \\
+
+&&\\
+
+
+&=&H_a\left(  \tilde{u}^{(a)}\right) + \frac{1}{2a}\sum_{i=1}^{N/2} \left( u_i^{(2a)}-u_{i-1}^{(2a)}\right)^2\\
+&+&2a\sum_{i=1}^{N/2-1}
+u_{i}^{(2a)}\frac{1}{a^2}\left(\tilde{u}_{2i}^{(a)}-\tilde{u}_{2i-1}^{(a)}-\tilde{u}_{2i+2}^{(a)}+\tilde{u}_{2i+1}^{(a)}  \right)
++\left( \phi_{2i}^{(a)}+\frac{1}{2}\phi_{2i+1}^{(a)}+\frac{1}{2}\phi_{2i-1}^{(a)}\right) u_i^{(2a)} \\
+
+&&\\
+
+%&=&H_a\left( \tilde{u}^{(a)}+I_{2a}^au^{(2a)}\right) \\\\
+
+
+&=&H_a\left(  \tilde{u}^{(a)}\right) + \frac{1}{2a}\sum_{i=1}^{N/2} \left( u_i^{(2a)}-u_{i-1}^{(2a)}\right)^2 +2a\sum_{i=1}^{N/2-1}\phi_i^{(2a)}u_i^{(2a)}\\
+
+&=&H_a\left( \tilde{u}^{(a)}\right) +H_{2a}\left( u^{(2a)}\right) \\
+
+\Leftrightarrow \phi_i^{(2a)}&=&\frac{1}{a^2}\left(\tilde{u}_{2i}^{(a)}-\tilde{u}_{2i-1}^{(a)}-\tilde{u}_{2i+2}^{(a)}+\tilde{u}_{2i+1}^{(a)}  \right)+\left( \phi_{2i}^{(a)}+\frac{1}{2}\phi_{2i+1}^{(a)}+\frac{1}{2}\phi_{2i-1}^{(a)}\right)\\
+\end{array}\]
+
+\section{Implementation}
+
+Our code is in the github-repo \url{https://github.com/christianegross/CompPhys\_2021}. The simulation itself is in Exercise5/src/main/main.c, the gnuplotscript is in Exercise5/report/plot.gp. 
+
+\section{Results}
+\subsection{Simulation at the finest level}
+compare result of m, $m^2$, e to expectation
+
+\subsection{Simulation of the Multigrid-algorithm}
+\paragraph{$\gamma=1$}
+plot autocorrelation
+compare result of m, $m^2$, e to expectation
+\paragraph{$\gamma=2$}
+plot autocorrelation
+compare result of m, $m^2$, e to expectation
 
 \newpage	
 \listoffigures
