@@ -246,38 +246,123 @@ void multigrid(gsl_vector* u, gsl_vector *phi, gsl_rng *generator, double a, dou
 }
 	
 
-int main(int argc, char **argv){	
+int main(int argc, char **argv){
+	/**
+	 * Declarations:
+	 *
+	 * @var delta
+	 * @var N_meas	#measurements
+	 * 
+	 */
+	double delta=2.;
+	int N=64;
+	double magnet, magnet_mean=0, magnet_var=0, hamilton, hamilton_mean=0, hamilton_var=0; 
+	double a=1.0;
+	int startlevel=1;
+	int maxlevel=1;//TODO test maclevel=3, yields inf atm
+	int gamma=1;
+	int N_meas=1000;
+	
 	//set and allocate random number generator
 	int seed=2;//use fixed seed: result should be exactly reproduced using the same seed
 	gsl_rng *generator;
 	generator=gsl_rng_alloc(gsl_rng_mt19937);//use mersenne-twister
 	gsl_rng_set(generator, seed);
 	
-	gsl_vector *u=gsl_vector_calloc(65);
-	gsl_vector *uold=gsl_vector_calloc(65);
-	gsl_vector *phi=gsl_vector_calloc(65);
+	/**
+	 * @note	Allocate memory for u and phi and initialize u
+	 */
+	gsl_vector *u=gsl_vector_calloc(N+1);
+	gsl_vector *phi=gsl_vector_calloc(N+1);
 	for (int i=1; i<u->size-1; i+=1){
 		gsl_vector_set(u, i, gsl_rng_uniform(generator)+5);
 	}
-	double magnet, hamilton, a=1.0, deltah;
-	for (int i=0;i<10000;i+=1){
-		//~ onesweep(u, phi, 2, a, generator);
-		gsl_vector_memcpy(uold, u);
-		multigrid(u, phi, generator, a, 2, 1, 1, 1);
-		deltah=hamiltonian(uold, phi, a)-hamiltonian(u, phi, a);
-		// if (gsl_rng_uniform(generator)>exp(deltah)){
-			// gsl_vector_memcpy(u, uold);
-			// //printf("not accepted\t");
-		// }
+	gsl_vector_set(u, 0, 0);
+	gsl_vector_set(u, u->size-1, 0);
+	
+	/**
+	 * @note	Open output streams and allocate memory for measurements
+	 */
+	FILE * simplehaste_stream=fopen ("data/simplehaste.dat", "w");
+	FILE * vcycle_stream=fopen ("data/vcycle.dat", "w");
+	FILE * wcycle_stream=fopen ("data/wcycle.dat", "w");
+	gsl_vector *magnet_vec=gsl_vector_calloc(N_meas);
+	gsl_vector *hamilton_vec=gsl_vector_calloc(N_meas);
+	/**
+	 * @note	Standard Metropolis-Hastings
+	 */
+	for(int i=0;i<N_meas;i++){
+		onesweep(u, phi, delta, a, generator);
 		magnet=magnetisation(u);
 		hamilton=hamiltonian(u, phi, a);
-		printf("%d\t%e\t%e\t%e\n", i, magnet, hamilton, deltah);
+		gsl_vector_set (magnet_vec, i, magnet);
+		gsl_vector_set (hamilton_vec, i, hamilton);
+		magnet_mean+=magnet;
+		hamilton_mean+=hamilton;
 	}
-	for (int i=0; i<u->size; i+=1){
-	//	printf("%e\t", gsl_vector_get(u, i));
+	hamilton_mean/=N_meas;
+	magnet_mean/=N_meas;
+	//TODO add bining and bootstrap
+	fprintf (simplehaste_stream, "%e\t%e\t%e\t%e\n",magnet_mean,magnet_var,hamilton_mean,hamilton_var);
+	
+	/**
+	 * @note	Reset u
+	 */
+	for (int i=1; i<u->size-1; i+=1){
+		gsl_vector_set(u, i, gsl_rng_uniform(generator)+5);
 	}
-	printf("\n");
+	gsl_vector_set(u, 0, 0);
+	gsl_vector_set(u, u->size-1, 0);
+	magnet_mean=0;
+	hamilton_mean=0;
+	magnet_var=0;
+	hamilton_var=0;
+	
+	/**
+	 * @note	v-cycle
+	 */
+	gamma=1;
+	for (int i=0;i<N_meas;i+=1){
+		multigrid(u, phi, generator, a, delta, startlevel, maxlevel, gamma);
+		magnet=magnetisation(u);
+		hamilton=hamiltonian(u, phi, a);
+		gsl_vector_set (magnet_vec, i, magnet);
+		gsl_vector_set (hamilton_vec, i, hamilton);
+		magnet_mean+=magnet;
+		hamilton_mean+=hamilton;
+	}
+	hamilton_mean/=N_meas;
+	magnet_mean/=N_meas;
+	//TODO add bining and bootstrap autocorrelation
+	fprintf (vcycle_stream, "%e\t%e\t%e\t%e\n",magnet_mean,magnet_var,hamilton_mean,hamilton_var);
+	
+	/**
+	 * @note	w-cycle
+	 */
+	gamma=2;
+	for (int i=0;i<N_meas;i+=1){
+		multigrid(u, phi, generator, a, delta, startlevel, maxlevel, gamma);
+		magnet=magnetisation(u);
+		hamilton=hamiltonian(u, phi, a);
+		gsl_vector_set (magnet_vec, i, magnet);
+		gsl_vector_set (hamilton_vec, i, hamilton);
+		magnet_mean+=magnet;
+		hamilton_mean+=hamilton;
+	}
+	hamilton_mean/=N_meas;
+	magnet_mean/=N_meas;
+	//TODO add bining and bootstrap autocorrelation
+	fprintf (wcycle_stream, "%e\t%e\t%e\t%e\n",magnet_mean,magnet_var,hamilton_mean,hamilton_var);
+	
+	/**
+	 * @note	Cleanup
+	 */
+	fclose (simplehaste_stream);
+	fclose (vcycle_stream);
+	fclose (wcycle_stream);
 	gsl_rng_free(generator);
+	gsl_vector_free(hamilton_vec);
+	gsl_vector_free(magnet_vec);
 	gsl_vector_free(u);
 	gsl_vector_free(phi);
 	return 0;
