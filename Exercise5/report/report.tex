@@ -1,4 +1,4 @@
-%!TeX spellcheck = en_UK
+%!TeX spellcheck = en_GB
 % Die erste (unkommentierte) Zeile im Dokument legt immer die
 % Dokumentklasse fest
 \documentclass{scrartcl} 
@@ -29,29 +29,72 @@
 \section{Theory}
 \subsection{The Gaussian Model}
 
+We want to simulate the Gaussian model with the following hamiltonian that can also be discretized:
+\[
+H(u)=\int_{0}^{L}\mathrm{d}x\left(\partial{u(x)} \right)^2=\frac{1}{a}\sum_{i=1}^{N}\left(u_i-u_{i-1} \right)^2=H_a(u)
+\]
+
+For the discretization, we divide the length $L$ into $N$ pieces, each of which has length $a=L/N$. This give us $N+1$ points connecting the pieces to the end and to each other. 
+
+We assume Dirichlet-boundary conditions, i.\! e.\! $u(0)=u(L)=0=u_0=u_N$.
+
+Any observable can be calculated the usual way as: \[
+\langle O\rangle=\frac{1}{Z}\prod_{i=1}^{N-1}\int\mathrm{d}u_i O(u)\exp(-\beta H(u)) \]
+\[
+Z=\prod_{i=1}^{N-1}\int\mathrm{d}u_i\exp(-\beta H(u)) 
+\]
+
+We set $\beta=1$ and ignore it.
+
+For the multigrid algorithm, we also need a generalized hamiltonian that takes into accout an external field:
+\[
+H_a(u^{(a)})=\frac{1}{a}\sum_{i=1}^N
+\left( u_i^{(a)}-u_{i-1}^{(a)}\right) ^2+a\sum_{i=1}^{N-1}\phi_i^{(a)}u_i^{(a)}
+\]
+
+When performing the simulation, we generate new states by selecting a random site, proposing a change $\Delta$ with $\Delta\sim\mathcal{U}[-\delta, \delta]$ and accepting it with probability $\min(1, \exp(H(u)-H(u')))$. By doing this $N-1$ times, we perform one sweep.
+
 \subsection{Multigrid Algorithms}
+
+We are interested in the behaviour of the system for small $a$ and large $N$, but simulating this is expensive in terms of computation time. The multigrid algorithm tries to solve this problem by doing most of the calculation at a coarser level and using these results for interpolating the finer levels.
+We first do $\nu$ presweeps at the current level, then, if we aren't at the highest level yet, we do $\gamma$ multigrid sweeps at the next coarsest level, and then do $\nu$ postsweeps.
+
 \paragraph{restrictions}
+To be able to do sweeps at a coarser level, we need to determine the Hamiltonian and the lattice $u$ at that level. The derivation of the Hamiltonian is done in section~\ref{subsec:phi2a}, and we do the restriction of $u$ by taking every second grid point: $u_i^{(2a)}=u_{2i}^{(a)}$.
+
 \paragraph{prolongations}
+After the sweep at the coarser level, we need to add these results to the finer level. We do this by setting:\[
+I^{(a)}_{(2a)}=\begin{cases}
+u_{i/2}^{(2a)}& \text{i even}\\
+\frac{1}{2}\left(u_{(i-1)/2}^{(2a)}u_{(i+1)/2}^{(2a)}\right) & \text{i odd}\\
+\end{cases}
+\]
+
+and get our new field by setting $\tilde{u}^{(a)}+I_{2a}^au^{(2a)}$.
 
 \section{Deliberations}
 
 \subsection{analytical solutions}
 
 \subsection{Explicit form of $\phi^{(2a)}$}
+\label{subsec:phi2a}
 
-\[\begin{array}{>{\displaystyle}r>{\displaystyle}c>{\displaystyle}l}
-\text{i even: } I_{2a}^a\left( u_i^{(a)}-u_{i-1}^{(a)}\right)  &=&u_{i/2}^{(2a)}-\frac{1}{2}\left(u_{i/2}^{(2a)}+u_{(i-2)/2}^{(2a)} \right) \\
+\begin{longtable}{>{$\displaystyle}r<{$}>{$\displaystyle}c<{$}>{$\displaystyle}l<{$}}
+I_{2a}^a\left( u_i^{(a)}-u_{i-1}^{(a)}\right)  &=&u_{i/2}^{(2a)}-\frac{1}{2}\left(u_{i/2}^{(2a)}+u_{(i-2)/2}^{(2a)} \right) \text{  for i even} \\
 &=&\frac{1}{2}\left(u_{i/2}^{(2a)}-u_{(i-2)/2}^{(2a)}\right) \\
 
-\text{i odd: } I_{2a}^a\left( u_i^{(a)}-u_{i-1}^{(a)}\right)  &=&\frac{1}{2}\left(u_{(i-1)/2}^{(2a)}+u_{(i+1)/2}^{(2a)}-u_{(i-1)/2}^{(2a)} \right) \\
+I_{2a}^a\left( u_i^{(a)}-u_{i-1}^{(a)}\right)   &=&\frac{1}{2}\left(u_{(i-1)/2}^{(2a)}+u_{(i+1)/2}^{(2a)}-u_{(i-1)/2}^{(2a)} \right)\text{  for i odd} \\
 &=&\frac{1}{2}\left(u_{(i+1)/2}^{(2a)}-u_{(i+1)/2}^{(2a)}\right) \\
 
 \Leftrightarrow I_{2a}^a\left( u_i^{(a)}-u_{i-1}^{(a)}\right)&=&
 \frac{1}{2}\left(u_{(i+i\%2)/2}^{(2a)}-u_{(i-2+i\%2)/2}^{(2a)}\right) \\
 
-\end{array}\]
 
-\[\begin{array}{>{\displaystyle}r>{\displaystyle}c>{\displaystyle}l}
+\end{longtable}
+
+
+\begin{longtable}{>{$\displaystyle}r<{$}>{$\displaystyle}c<{$}>{$\displaystyle}l<{$}}
+
 H_a(u^{(a)})&=&\frac{1}{a}\sum_{i=1}^N
 \left( u_i^{(a)}-u_{i-1}^{(a)}\right) ^2+a\sum_{i=1}^{N-1}\phi_i^{(a)}u_i^{(a)}\\
 &=&H_a\left( \tilde{u}^{(a)}+I_{2a}^au^{(2a)}\right) \\
@@ -99,7 +142,8 @@ u_{i}^{(2a)}\frac{1}{a^2}\left(\tilde{u}_{2i}^{(a)}-\tilde{u}_{2i-1}^{(a)}-\tild
 &=&H_a\left( \tilde{u}^{(a)}\right) +H_{2a}\left( u^{(2a)}\right) \\
 
 \Leftrightarrow \phi_i^{(2a)}&=&\frac{1}{a^2}\left(\tilde{u}_{2i}^{(a)}-\tilde{u}_{2i-1}^{(a)}-\tilde{u}_{2i+2}^{(a)}+\tilde{u}_{2i+1}^{(a)}  \right)+\frac{1}{2}\left( \phi_{2i}^{(a)}+\frac{1}{2}\phi_{2i+1}^{(a)}+\frac{1}{2}\phi_{2i-1}^{(a)}\right)\\
-\end{array}\]
+
+\end{longtable}
 
 \subsection{Accept/Reject step}
 
