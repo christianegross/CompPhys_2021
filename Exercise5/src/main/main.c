@@ -107,7 +107,10 @@ void autocorrelation(gsl_vector *measurements, gsl_vector *results, double mean)
 }
 
 /**
- * @note implements fine-to-coarse restricion given ineq. 6 on the sheet
+ * @brief implements fine-to-coarse restricion given in eq. 6 on the sheet
+ * 
+ * @param ufine field wih smaller distances between sites, used to populate coarser field
+ * @param ucoarse field with larger distances
  */
 void finetocoarserestriction(gsl_vector *ufine, gsl_vector *ucoarse){
 	for (int i=0; i<ucoarse->size-1; i+=1){
@@ -117,7 +120,10 @@ void finetocoarserestriction(gsl_vector *ufine, gsl_vector *ucoarse){
 }
 
 /**
- * @note adds coarse-to-fine interpolaton to current u
+ * @brief adds coarse-to-fine interpolaton to current u
+ * 
+ * @param ufine field wih smaller distances between sites
+ * @param ucoarse field with larger distances, used to update finer field
  * */
  void addcoarsetofineinterpolation(gsl_vector *ufine, gsl_vector *ucoarse){
 	 for (int i=0; i<ucoarse->size-1; i+=1){
@@ -126,7 +132,15 @@ void finetocoarserestriction(gsl_vector *ufine, gsl_vector *ucoarse){
 	 }
 	 gsl_vector_set(ufine,ufine->size-1, 0);
 }
-	
+
+
+/**
+ * @brief implements Hamiltonian as given on the sheet
+ * 
+ * @param u field to be analysed
+ * @param phi external field
+ * @param a lattice spacing
+ * */	
 double hamiltonian(gsl_vector *u, gsl_vector *phi, double a){
 	double H=0;
 	for (int i=1; i<u->size-1; i+=1){
@@ -136,6 +150,14 @@ double hamiltonian(gsl_vector *u, gsl_vector *phi, double a){
 	return H/a;
 }
 
+/**
+ * @brief fills phi of coarser field with the values of the finer field, relation determined in the report
+ * 
+ * @param phifine external field at the finer level
+ * @param phicoarse external field at the coarser level
+ * @param ufine field at the finer level
+ * @param a lattice spacing
+ * */
 void interpolatephi(gsl_vector* phifine, gsl_vector *ufine, gsl_vector* phicoarse, double a){
 	gsl_vector_set(phicoarse, 0, 0);
 	//insert phicoarse(phifine, ufine)
@@ -148,6 +170,15 @@ void interpolatephi(gsl_vector* phifine, gsl_vector *ufine, gsl_vector* phicoars
 	gsl_vector_set(phicoarse, phicoarse->size-1, 0);
 }
 
+/**
+ * @brief does one sweep of the lattice as explained on the sheet: select random site, propose change, metropolis a/r step as often as there are free lattice points
+ * 
+ * @param u simulated lattice
+ * @param phi external field
+ * @param delta maximum step at proposed change
+ * @param a lattice spacing
+ * @param generator random numbers for selecting sit, proposing change, a/r
+ * */
 void onesweep(gsl_vector *u, gsl_vector *phi, double delta, double a, gsl_rng *generator){
 	int randomsite, randomstep;
 	double deltah;
@@ -160,7 +191,9 @@ void onesweep(gsl_vector *u, gsl_vector *phi, double delta, double a, gsl_rng *g
 		}
 	}
 }
-
+/**
+ * @brief returns magnetisation of given lattice according to the definition on the sheet
+ * */
 double magnetisation(gsl_vector *u){
 	double magnet=0;
 	for (int i=1; i<u->size-1; i+=1){
@@ -169,16 +202,31 @@ double magnetisation(gsl_vector *u){
 	return magnet/(u->size-1);
 }
 
+/**
+ * @brief returns number of pre and postsweeps to be done per level
+ * */
 inline int nu(int level){
 	return pow(2, level-1);
 }
 
+/**
+ * @brief implementation of the multigrid algorithm as given on the sheet: presweeps, recursion, postsweeps
+ * 
+ * @param u simulated lattice
+ * @param phi external field
+ * @param generator for random numbers for sweep
+ * @param a lattice spacing
+ * @param delta maximum step in sweep
+ * @param level current level of recursion
+ * @param levelmax maximum number of recursions
+ * @param gamma how often should multigrid algorithm be done in recursion step
+ * */
 void multigrid(gsl_vector* u, gsl_vector *phi, gsl_rng *generator, double a, double delta, int level, int levelmax, int gamma){
-	//printf("level=%d\n", level);
+	//presweeps
 	for (int i=0; i<nu(level); i+=1){
 		onesweep(u, phi, delta, a, generator);
 	}
-	//printf("done presweep\n");
+	//recursive steps: assign coarser field, do multigrid, evaluate finer fields
 	if (level<levelmax){
 		gsl_vector *ucoarse=gsl_vector_alloc((u->size-1)/2+1);
 		gsl_vector *phicoarse=gsl_vector_alloc((phi->size-1)/2+1);
@@ -191,11 +239,10 @@ void multigrid(gsl_vector* u, gsl_vector *phi, gsl_rng *generator, double a, dou
 		gsl_vector_free(ucoarse);
 		gsl_vector_free(phicoarse);
 	}
+	//postsweeps
 	for (int i=0; i<nu(level); i+=1){
 		onesweep(u, phi, delta, a, generator);
 	}
-	
-	//printf("done postsweep\n");
 }
 	
 
@@ -210,18 +257,18 @@ int main(int argc, char **argv){
 	gsl_vector *uold=gsl_vector_calloc(65);
 	gsl_vector *phi=gsl_vector_calloc(65);
 	for (int i=1; i<u->size-1; i+=1){
-		gsl_vector_set(u, i, gsl_rng_uniform(generator));
+		gsl_vector_set(u, i, gsl_rng_uniform(generator)+5);
 	}
 	double magnet, hamilton, a=1.0, deltah;
 	for (int i=0;i<10000;i+=1){
-		onesweep(u, phi, 2, a, generator);
-		//~ gsl_vector_memcpy(uold, u);
-		//~ multigrid(u, phi, generator, a, 2, 1, 1, 1);
-		//~ deltah=hamiltonian(uold, phi, a)-hamiltonian(u, phi, a);
-		//~ // if (gsl_rng_uniform(generator)>exp(deltah)){
-			//~ // gsl_vector_memcpy(u, uold);
-			//~ // //printf("not accepted\t");
-		//~ // }
+		//~ onesweep(u, phi, 2, a, generator);
+		gsl_vector_memcpy(uold, u);
+		multigrid(u, phi, generator, a, 2, 1, 1, 1);
+		deltah=hamiltonian(uold, phi, a)-hamiltonian(u, phi, a);
+		// if (gsl_rng_uniform(generator)>exp(deltah)){
+			// gsl_vector_memcpy(u, uold);
+			// //printf("not accepted\t");
+		// }
 		magnet=magnetisation(u);
 		hamilton=hamiltonian(u, phi, a);
 		printf("%d\t%e\t%e\t%e\n", i, magnet, hamilton, deltah);

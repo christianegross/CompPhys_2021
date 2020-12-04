@@ -78,7 +78,7 @@ H_a(u^{(a)})&=&\frac{1}{a}\sum_{i=1}^N
 &+&\frac{2}{a}\sum_{i=1}^{N/2}
 \left( u_{i}^{(2a)}\left( \tilde{u}_{2i}^{(a)}-\tilde{u}_{2i-1}^{(a)}\right) 
 +u_{i-1}^{(2a)}\left( \tilde{u}_{2i-1}^{(a)}-\tilde{u}_{2i}^{(a)}\right) \right)
-+a\sum_{i=1}^{N/2-1}2
++a\sum_{i=1}^{N/2-1}
 \left( \phi_{2i}^{(a)}+\frac{1}{2}\phi_{2i+1}^{(a)}+\frac{1}{2}\phi_{2i-1}^{(a)}\right) u_i^{(2a)} \\
 
 &&\\
@@ -87,7 +87,7 @@ H_a(u^{(a)})&=&\frac{1}{a}\sum_{i=1}^N
 &=&H_a\left(  \tilde{u}^{(a)}\right) + \frac{1}{2a}\sum_{i=1}^{N/2} \left( u_i^{(2a)}-u_{i-1}^{(2a)}\right)^2\\
 &+&2a\sum_{i=1}^{N/2-1}
 u_{i}^{(2a)}\frac{1}{a^2}\left(\tilde{u}_{2i}^{(a)}-\tilde{u}_{2i-1}^{(a)}-\tilde{u}_{2i+2}^{(a)}+\tilde{u}_{2i+1}^{(a)}  \right)
-+\left( \phi_{2i}^{(a)}+\frac{1}{2}\phi_{2i+1}^{(a)}+\frac{1}{2}\phi_{2i-1}^{(a)}\right) u_i^{(2a)} \\
++\frac{1}{2}\left( \phi_{2i}^{(a)}+\frac{1}{2}\phi_{2i+1}^{(a)}+\frac{1}{2}\phi_{2i-1}^{(a)}\right) u_i^{(2a)} \\
 
 &&\\
 
@@ -98,7 +98,7 @@ u_{i}^{(2a)}\frac{1}{a^2}\left(\tilde{u}_{2i}^{(a)}-\tilde{u}_{2i-1}^{(a)}-\tild
 
 &=&H_a\left( \tilde{u}^{(a)}\right) +H_{2a}\left( u^{(2a)}\right) \\
 
-\Leftrightarrow \phi_i^{(2a)}&=&\frac{1}{a^2}\left(\tilde{u}_{2i}^{(a)}-\tilde{u}_{2i-1}^{(a)}-\tilde{u}_{2i+2}^{(a)}+\tilde{u}_{2i+1}^{(a)}  \right)+\left( \phi_{2i}^{(a)}+\frac{1}{2}\phi_{2i+1}^{(a)}+\frac{1}{2}\phi_{2i-1}^{(a)}\right)\\
+\Leftrightarrow \phi_i^{(2a)}&=&\frac{1}{a^2}\left(\tilde{u}_{2i}^{(a)}-\tilde{u}_{2i-1}^{(a)}-\tilde{u}_{2i+2}^{(a)}+\tilde{u}_{2i+1}^{(a)}  \right)+\frac{1}{2}\left( \phi_{2i}^{(a)}+\frac{1}{2}\phi_{2i+1}^{(a)}+\frac{1}{2}\phi_{2i-1}^{(a)}\right)\\
 \end{array}\]
 
 \subsection{Accept/Reject step}
@@ -106,15 +106,15 @@ u_{i}^{(2a)}\frac{1}{a^2}\left(\tilde{u}_{2i}^{(a)}-\tilde{u}_{2i-1}^{(a)}-\tild
 During the sweep, we propose $u_l\to u_l+\Delta$ for a randomly chosen $l$. For the accept/reject step, we need the difference in the Hamiltonians $H(u)-H(u+\Delta)$ of the two configurations, but we do not need to calculate the entire Hamiltonian:
 
 \[\begin{array}{>{\displaystyle}r>{\displaystyle}c>{\displaystyle}l}
-H(u)-H(u+\Delta)&=&\frac{1}{a}\left( \left(u_l-u_{l-1} \right)^2+\left(u_{l+1}-u_{l}  \right)^2-\left(u_l+\Delta-u_{l-1}  \right)^2-\left( u_{l+1}-u_{l}-\Delta \right)^2\right) \\&+&a\left( \phi_lu_l-\phi_lu_l-\phi_l\Delta\right) \\
+H(u+\Delta)-H(u)&=&\frac{1}{a}\left( -\left(u_l-u_{l-1} \right)^2-\left(u_{l+1}-u_{l}  \right)^2+\left(u_l+\Delta-u_{l-1}  \right)^2+\left( u_{l+1}-u_{l}-\Delta \right)^2\right) \\&+&a\left( -\phi_lu_l+\phi_lu_l+\phi_l\Delta\right) \\
 
 %&=&\frac{1}{a}\left( u_l^2+u_{l-1}^2-2u_lu_{l-1}+u_{l+1}^2+u_l^2-2u_{l+1}u_l\\
 %&-&\left(u_l^2+2u_l\Delta-2u_lu_{l-1}+\Delta^2-2\Delta u_{l-1}+u_{l-1}^2+u_{l+1}^2-2u_{l+1}u_l-2u_{l+1}\Delta+u_l^2+2u_l\Delta+\Delta^2 \right)\right) -a\phi_l\Delta \\
 
 
-&=&-\frac{1}{a}\left(+2u_l\Delta+\Delta^2-2\Delta u_{l-1}-2u_{l+1}\Delta+2u_l\Delta+\Delta^2 \right) -a\phi_l\Delta \\
+&=&\frac{1}{a}\left(+2u_l\Delta+\Delta^2-2\Delta u_{l-1}-2u_{l+1}\Delta+2u_l\Delta+\Delta^2 \right) +a\phi_l\Delta \\
 
-&=&-\frac{2\Delta}{a}\left(2u_l-u_{l-1}-u_{l+1}+\Delta \right) -a\phi_l\Delta
+&=&\frac{2\Delta}{a}\left(2u_l-u_{l-1}-u_{l+1}+\Delta \right)+ a\phi_l\Delta
 %\sum_{i=1}^N
 %\left( u_i^{(a)}-u_{i-1}^{(a)}\right) ^2+a\sum_{i=1}^{N-1}\phi_i^{(a)}u_i^{(a)}\\
 %&=&H_a\left( \tilde{u}^{(a)}+I_{2a}^au^{(2a)}\right) \\
