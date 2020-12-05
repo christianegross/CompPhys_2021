@@ -77,6 +77,7 @@ and get our new field by setting $\tilde{u}^{(a)}+I_{2a}^au^{(2a)}$.
 \subsection{analytical solutions}
 
 \subsection{Explicit form of $\phi^{(2a)}$}
+$\%$ is the modulus operator.
 \label{subsec:phi2a}
 
 \begin{longtable}{>{$\displaystyle}r<{$}>{$\displaystyle}c<{$}>{$\displaystyle}l<{$}}
@@ -119,9 +120,9 @@ H_a(u^{(a)})&=&\frac{1}{a}\sum_{i=1}^N
 
 &=&H_a\left(  \tilde{u}^{(a)}\right) + \frac{1}{2a}\sum_{i=1}^{N/2} \left( u_i^{(2a)}-u_{i-1}^{(2a)}\right)^2\\
 &+&\frac{2}{a}\sum_{i=1}^{N/2}
-\left( u_{i}^{(2a)}\left( \tilde{u}_{2i}^{(a)}-\tilde{u}_{2i-1}^{(a)}\right) 
-+u_{i-1}^{(2a)}\left( \tilde{u}_{2i-1}^{(a)}-\tilde{u}_{2i}^{(a)}\right) \right)
-+a\sum_{i=1}^{N/2-1}
+\left( u_{i}^{(2a)}\left( \tilde{u}_{2i}^{(a)}\underbrace{-\tilde{u}_{2i-1}^{(a)}+\tilde{u}_{2i-1}^{(a)}}_{=0}-\tilde{u}_{2i-2}^{(a)}\right) 
++u_{i-1}^{(2a)}\left(\tilde{u}_{2i-2}^{(a)}\underbrace{-\tilde{u}_{2i-1}^{(a)}+ \tilde{u}_{2i-1}^{(a)}}_{=0}-\tilde{u}_{2i}^{(a)}\right) \right)\\
+&+&a\sum_{i=1}^{N/2-1}
 \left( \phi_{2i}^{(a)}+\frac{1}{2}\phi_{2i+1}^{(a)}+\frac{1}{2}\phi_{2i-1}^{(a)}\right) u_i^{(2a)} \\
 
 &&\\
@@ -129,7 +130,7 @@ H_a(u^{(a)})&=&\frac{1}{a}\sum_{i=1}^N
 
 &=&H_a\left(  \tilde{u}^{(a)}\right) + \frac{1}{2a}\sum_{i=1}^{N/2} \left( u_i^{(2a)}-u_{i-1}^{(2a)}\right)^2\\
 &+&2a\sum_{i=1}^{N/2-1}
-u_{i}^{(2a)}\frac{1}{a^2}\left(\tilde{u}_{2i}^{(a)}-\tilde{u}_{2i-1}^{(a)}-\tilde{u}_{2i+2}^{(a)}+\tilde{u}_{2i+1}^{(a)}  \right)
+u_{i}^{(2a)}\frac{1}{a^2}\left(\tilde{u}_{2i}^{(a)}-\tilde{u}_{2i-2}^{(a)}-\tilde{u}_{2i+2}^{(a)}+\tilde{u}_{2i}^{(a)}  \right)
 +\frac{1}{2}\left( \phi_{2i}^{(a)}+\frac{1}{2}\phi_{2i+1}^{(a)}+\frac{1}{2}\phi_{2i-1}^{(a)}\right) u_i^{(2a)} \\
 
 &&\\
@@ -141,7 +142,7 @@ u_{i}^{(2a)}\frac{1}{a^2}\left(\tilde{u}_{2i}^{(a)}-\tilde{u}_{2i-1}^{(a)}-\tild
 
 &=&H_a\left( \tilde{u}^{(a)}\right) +H_{2a}\left( u^{(2a)}\right) \\
 
-\Leftrightarrow \phi_i^{(2a)}&=&\frac{1}{a^2}\left(\tilde{u}_{2i}^{(a)}-\tilde{u}_{2i-1}^{(a)}-\tilde{u}_{2i+2}^{(a)}+\tilde{u}_{2i+1}^{(a)}  \right)+\frac{1}{2}\left( \phi_{2i}^{(a)}+\frac{1}{2}\phi_{2i+1}^{(a)}+\frac{1}{2}\phi_{2i-1}^{(a)}\right)\\
+\Leftrightarrow \phi_i^{(2a)}&=&\frac{1}{a^2}\left(2\tilde{u}_{2i}^{(a)}-\tilde{u}_{2i-2}^{(a)}-\tilde{u}_{2i+2}^{(a)}\right)+\frac{1}{2}\left( \phi_{2i}^{(a)}+\frac{1}{2}\phi_{2i+1}^{(a)}+\frac{1}{2}\phi_{2i-1}^{(a)}\right)\\
 
 \end{longtable}
 
