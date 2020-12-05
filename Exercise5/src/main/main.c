@@ -164,7 +164,7 @@ void interpolatephi(gsl_vector* phifine, gsl_vector *ufine, gsl_vector* phicoars
 	for (int i=1; i<phicoarse->size-1;i+=1){
 		//gsl_vector_set(phicoarse, i,1);
 		gsl_vector_set(phicoarse, i, 
-		1.0/a/a*(2*gsl_vector_get(ufine, 2*i)-gsl_vector_get(ufine, 2*i-2)-gsl_vector_get(ufine, 2*i+2))
+		1.0/a/a*(2*gsl_vector_get(ufine, 2*i)-gsl_vector_get(ufine, 2*i-2)-gsl_vector_get(ufine, 2*i+2))/2
 		+0.5*gsl_vector_get(phifine, 2*i)+0.25*(gsl_vector_get(phifine, 2*i+1)+gsl_vector_get(phifine, 2*i-1)));
 	}
 	gsl_vector_set(phicoarse, phicoarse->size-1, 0);
