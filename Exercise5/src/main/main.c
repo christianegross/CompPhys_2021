@@ -164,7 +164,7 @@ void interpolatephi(gsl_vector* phifine, gsl_vector *ufine, gsl_vector* phicoars
 	for (int i=1; i<phicoarse->size-1;i+=1){
 		//gsl_vector_set(phicoarse, i,1);
 		gsl_vector_set(phicoarse, i, 
-		1/a/a*(gsl_vector_get(ufine, 2*i)-gsl_vector_get(ufine, 2*i-1)-gsl_vector_get(ufine, 2*i+2)+gsl_vector_get(ufine, 2*i+1))
+		1.0/a/a*(2*gsl_vector_get(ufine, 2*i)-gsl_vector_get(ufine, 2*i-2)-gsl_vector_get(ufine, 2*i+2))
 		+0.5*gsl_vector_get(phifine, 2*i)+0.25*(gsl_vector_get(phifine, 2*i+1)+gsl_vector_get(phifine, 2*i-1)));
 	}
 	gsl_vector_set(phicoarse, phicoarse->size-1, 0);
@@ -228,9 +228,9 @@ void multigrid(gsl_vector* u, gsl_vector *phi, gsl_rng *generator, double a, dou
 	}
 	//recursive steps: assign coarser field, do multigrid, evaluate finer fields
 	if (level<levelmax){
-		gsl_vector *ucoarse=gsl_vector_alloc((u->size-1)/2+1);
+		gsl_vector *ucoarse=gsl_vector_calloc((u->size-1)/2+1);		//allocates all elements to zero
 		gsl_vector *phicoarse=gsl_vector_alloc((phi->size-1)/2+1);
-		finetocoarserestriction(u, ucoarse);
+		//finetocoarserestriction(u, ucoarse);
 		interpolatephi(phi, u, phicoarse, a);
 		for (int i=0; i<gamma; i+=1){
 			multigrid(ucoarse, phicoarse, generator, 2*a, delta, level+1, levelmax, gamma);
@@ -259,9 +259,9 @@ int main(int argc, char **argv){
 	double magnet, magnet_mean=0, magnet_var=0, hamilton, hamilton_mean=0, hamilton_var=0; 
 	double a=1.0;
 	int startlevel=1;
-	int maxlevel=1;//TODO test maclevel=3, yields inf atm
+	int maxlevel=3;//TODO test maclevel=3, yields inf atm
 	int gamma=1;
-	int N_meas=1000;
+	int N_meas=10000;
 	
 	//set and allocate random number generator
 	int seed=2;//use fixed seed: result should be exactly reproduced using the same seed
