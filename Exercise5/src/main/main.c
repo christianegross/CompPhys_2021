@@ -260,10 +260,10 @@ int main(int argc, char **argv){
 	double a=1.0;
 	int startlevel=1;
 
-	int maxlevel=3;//TODO test maxlevel=3, yields inf atm
+	int maxlevel=3;
 	int gamma=1;
 	int N_meas=10000;
-	int N_therm=100;
+	int N_therm=1000;
 	int lengthofbin=10;
 	int N_bs=4*N_meas;
 	
@@ -328,7 +328,7 @@ int main(int argc, char **argv){
 	binning(hamilton_vec, &binnedhamilton.vector, lengthofbin);
 	bootstrap(&binnedmagnetization.vector, generator, N_bs, &magnet_mean, &magnet_var);
 	bootstrap(&binnedhamilton.vector, generator, N_bs, &hamilton_mean, &hamilton_var);
-	fprintf (meas_stream, "#simplehaste\n%e\t%e\t%e\t%e\n",magnet_mean,magnet_var,hamilton_mean,hamilton_var);
+	fprintf (meas_stream, "#simplehaste\t<m>\t<m>_err\t<E>\t<E>_err\n%e\t%e\t%e\t%e\n",magnet_mean,sqrt(magnet_var),hamilton_mean,sqrt(hamilton_var));
 	
 	/**
 	 * @note	Reset u
@@ -380,7 +380,7 @@ int main(int argc, char **argv){
 	bootstrap(&binnedhamilton.vector, generator, N_bs, &hamilton_mean, &hamilton_var);
 	autocorrelation (magnet_vec_sqr, correlation_magn_sqr, magnet_sqr_mean);
 	
-	fprintf (meas_stream, "#v-cycle\n%e\t%e\t%e\t%e\n",magnet_mean,magnet_var,hamilton_mean,hamilton_var);
+	fprintf (meas_stream, "#v-cycle\t<m>\t<m>_err\t<E>\t<E>_err\n%e\t%e\t%e\t%e\n",magnet_mean,sqrt(magnet_var),hamilton_mean,sqrt(hamilton_var));
 	gsl_vector_fprintf (vcycle_stream, correlation_magn_sqr, "%f");
 	
 	/**
@@ -434,8 +434,12 @@ int main(int argc, char **argv){
 	bootstrap(&binnedhamilton.vector, generator, N_bs, &hamilton_mean, &hamilton_var);
 	autocorrelation (magnet_vec_sqr, correlation_magn_sqr, magnet_sqr_mean);
 	
-	fprintf (meas_stream, "#w-cycle\n%e\t%e\t%e\t%e\n",magnet_mean,magnet_var,hamilton_mean,hamilton_var);
+	fprintf (meas_stream, "#w-cycle\t<m>\t<m>_err\t<E>\t<E>_err\n%e\t%e\t%e\t%e\n",magnet_mean,sqrt(magnet_var),hamilton_mean,sqrt(hamilton_var));
 	gsl_vector_fprintf (wcycle_stream, correlation_magn_sqr, "%f");
+	
+	
+	
+	
 	
 	/**
 	 * @note	Cleanup
@@ -444,10 +448,16 @@ int main(int argc, char **argv){
 	fclose (vcycle_stream);
 	fclose (wcycle_stream);
 	gsl_rng_free(generator);
-	gsl_vector_free(hamilton_vec);
-	gsl_vector_free(magnet_vec);
 	gsl_vector_free(u);
 	gsl_vector_free(phi);
+	gsl_vector_free(magnet_vec);
+	gsl_vector_free(magnet_vec_sqr);
+	gsl_vector_free(hamilton_vec);
+	gsl_vector_free(correlation_magn_sqr);
+	gsl_vector_free(binnedmagnetization_mem);
+	gsl_vector_free(binnedhamilton_mem);
+	
+	
 	return 0;
 }
 
