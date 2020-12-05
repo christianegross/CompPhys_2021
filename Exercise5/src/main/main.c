@@ -22,7 +22,7 @@
  * @param binneddata 	holds results from binning
  * @param lengthofbin	determins how many elements are in one bin, so also has a role in how many elements there are in binneddata
  */
-inline void binning(gsl_vector *measurements, gsl_vector *binneddata, int lengthofbin){
+void binning(gsl_vector *measurements, gsl_vector *binneddata, int lengthofbin){
 	double bincontent=0;
 	//assertion if lengths of bins, measurements fit together
 	int numberofbins=measurements->size/lengthofbin;
@@ -256,12 +256,16 @@ int main(int argc, char **argv){
 	 */
 	double delta=2.;
 	int N=64;
-	double magnet, magnet_mean=0, magnet_var=0, hamilton, hamilton_mean=0, hamilton_var=0; 
+	double magnet, magnet_mean=0, magnet_var=0,  magnet_sqr_mean=0, hamilton, hamilton_mean=0, hamilton_var=0; 
 	double a=1.0;
 	int startlevel=1;
-	int maxlevel=3;//TODO test maclevel=3, yields inf atm
+
+	int maxlevel=3;//TODO test maxlevel=3, yields inf atm
 	int gamma=1;
 	int N_meas=10000;
+	int N_therm=100;
+	int lengthofbin=10;
+	int N_bs=4*N_meas;
 	
 	//set and allocate random number generator
 	int seed=2;//use fixed seed: result should be exactly reproduced using the same seed
@@ -283,27 +287,48 @@ int main(int argc, char **argv){
 	/**
 	 * @note	Open output streams and allocate memory for measurements
 	 */
-	FILE * simplehaste_stream=fopen ("data/simplehaste.dat", "w");
+	FILE * meas_stream=fopen ("data/meas.dat", "w");
 	FILE * vcycle_stream=fopen ("data/vcycle.dat", "w");
 	FILE * wcycle_stream=fopen ("data/wcycle.dat", "w");
-	gsl_vector *magnet_vec=gsl_vector_calloc(N_meas);
-	gsl_vector *hamilton_vec=gsl_vector_calloc(N_meas);
+	gsl_vector *magnet_vec=gsl_vector_alloc(N_meas);
+	gsl_vector *magnet_vec_sqr=gsl_vector_alloc(N_meas);
+	gsl_vector *hamilton_vec=gsl_vector_alloc(N_meas);
+	gsl_vector *correlation_magn_sqr=gsl_vector_alloc(N_meas/2);
+	gsl_vector * binnedmagnetization_mem=gsl_vector_alloc(N_meas);
+	gsl_vector_view binnedmagnetization;
+	gsl_vector * binnedhamilton_mem=gsl_vector_alloc(N_meas);
+	gsl_vector_view binnedhamilton;
+	
+	
+	
+	
+	
+	
 	/**
-	 * @note	Standard Metropolis-Hastings
+	 * @note	Standard Metropolis-Hastings:
+	 * 			Thermalization and measurement
 	 */
+	for(int i=0;i<N_therm;i++){
+		onesweep(u, phi, delta, a, generator);
+	}
 	for(int i=0;i<N_meas;i++){
 		onesweep(u, phi, delta, a, generator);
 		magnet=magnetisation(u);
 		hamilton=hamiltonian(u, phi, a);
 		gsl_vector_set (magnet_vec, i, magnet);
 		gsl_vector_set (hamilton_vec, i, hamilton);
-		magnet_mean+=magnet;
-		hamilton_mean+=hamilton;
 	}
-	hamilton_mean/=N_meas;
-	magnet_mean/=N_meas;
-	//TODO add bining and bootstrap
-	fprintf (simplehaste_stream, "%e\t%e\t%e\t%e\n",magnet_mean,magnet_var,hamilton_mean,hamilton_var);
+	
+	/**
+	 * @note	Binning and bootstrap
+	 */
+	binnedmagnetization=gsl_vector_subvector(binnedmagnetization_mem, 0, magnet_vec->size/lengthofbin);
+	binnedhamilton=gsl_vector_subvector(binnedhamilton_mem, 0, hamilton_vec->size/lengthofbin);
+	binning(magnet_vec, &binnedmagnetization.vector, lengthofbin);
+	binning(hamilton_vec, &binnedhamilton.vector, lengthofbin);
+	bootstrap(&binnedmagnetization.vector, generator, N_bs, &magnet_mean, &magnet_var);
+	bootstrap(&binnedhamilton.vector, generator, N_bs, &hamilton_mean, &hamilton_var);
+	fprintf (meas_stream, "#simplehaste\n%e\t%e\t%e\t%e\n",magnet_mean,magnet_var,hamilton_mean,hamilton_var);
 	
 	/**
 	 * @note	Reset u
@@ -315,49 +340,107 @@ int main(int argc, char **argv){
 	gsl_vector_set(u, u->size-1, 0);
 	magnet_mean=0;
 	hamilton_mean=0;
+	magnet_sqr_mean=0;
 	magnet_var=0;
 	hamilton_var=0;
 	
+	
+	
+	
+	
+	
+	
 	/**
 	 * @note	v-cycle
+	 * 			Thermalization and measurement
 	 */
 	gamma=1;
+	for(int i=0;i<N_therm;i++){
+		multigrid(u, phi, generator, a, delta, startlevel, maxlevel, gamma);
+	}
 	for (int i=0;i<N_meas;i+=1){
 		multigrid(u, phi, generator, a, delta, startlevel, maxlevel, gamma);
 		magnet=magnetisation(u);
 		hamilton=hamiltonian(u, phi, a);
 		gsl_vector_set (magnet_vec, i, magnet);
+		gsl_vector_set (magnet_vec_sqr, i, magnet*magnet);
+		magnet_sqr_mean+=gsl_vector_get (magnet_vec_sqr, i);
 		gsl_vector_set (hamilton_vec, i, hamilton);
-		magnet_mean+=magnet;
-		hamilton_mean+=hamilton;
 	}
-	hamilton_mean/=N_meas;
-	magnet_mean/=N_meas;
-	//TODO add bining and bootstrap autocorrelation
-	fprintf (vcycle_stream, "%e\t%e\t%e\t%e\n",magnet_mean,magnet_var,hamilton_mean,hamilton_var);
+	magnet_sqr_mean/=N_meas;
+	
+	/**
+	 * @note	Binning, bootstrap and autocorrelation
+	 */
+	binnedmagnetization=gsl_vector_subvector(binnedmagnetization_mem, 0, magnet_vec->size/lengthofbin);
+	binnedhamilton=gsl_vector_subvector(binnedhamilton_mem, 0, hamilton_vec->size/lengthofbin);
+	binning(magnet_vec, &binnedmagnetization.vector, lengthofbin);
+	binning(hamilton_vec, &binnedhamilton.vector, lengthofbin);
+	bootstrap(&binnedmagnetization.vector, generator, N_bs, &magnet_mean, &magnet_var);
+	bootstrap(&binnedhamilton.vector, generator, N_bs, &hamilton_mean, &hamilton_var);
+	autocorrelation (magnet_vec_sqr, correlation_magn_sqr, magnet_sqr_mean);
+	
+	fprintf (meas_stream, "#v-cycle\n%e\t%e\t%e\t%e\n",magnet_mean,magnet_var,hamilton_mean,hamilton_var);
+	gsl_vector_fprintf (vcycle_stream, correlation_magn_sqr, "%f");
+	
+	/**
+	 * @note	Reset u
+	 */
+	for (int i=1; i<u->size-1; i+=1){
+		gsl_vector_set(u, i, gsl_rng_uniform(generator)+5);
+	}
+	gsl_vector_set(u, 0, 0);
+	gsl_vector_set(u, u->size-1, 0);
+	magnet_mean=0;
+	hamilton_mean=0;
+	magnet_sqr_mean=0;
+	magnet_var=0;
+	hamilton_var=0;
+	
+	
+	
+	
+	
+	
+	
 	
 	/**
 	 * @note	w-cycle
+	 * 			Thermalization and measurement
 	 */
 	gamma=2;
+	for(int i=0;i<N_therm;i++){
+		multigrid(u, phi, generator, a, delta, startlevel, maxlevel, gamma);
+	}
 	for (int i=0;i<N_meas;i+=1){
 		multigrid(u, phi, generator, a, delta, startlevel, maxlevel, gamma);
 		magnet=magnetisation(u);
 		hamilton=hamiltonian(u, phi, a);
 		gsl_vector_set (magnet_vec, i, magnet);
+		gsl_vector_set (magnet_vec_sqr, i, magnet*magnet);
+		magnet_sqr_mean+=gsl_vector_get (magnet_vec_sqr, i);
 		gsl_vector_set (hamilton_vec, i, hamilton);
-		magnet_mean+=magnet;
-		hamilton_mean+=hamilton;
 	}
-	hamilton_mean/=N_meas;
-	magnet_mean/=N_meas;
-	//TODO add bining and bootstrap autocorrelation
-	fprintf (wcycle_stream, "%e\t%e\t%e\t%e\n",magnet_mean,magnet_var,hamilton_mean,hamilton_var);
+	magnet_sqr_mean/=N_meas;
+	
+	/**
+	 * @note	Binning, bootstrap and autocorrelation
+	 */
+	binnedmagnetization=gsl_vector_subvector(binnedmagnetization_mem, 0, magnet_vec->size/lengthofbin);
+	binnedhamilton=gsl_vector_subvector(binnedhamilton_mem, 0, hamilton_vec->size/lengthofbin);
+	binning(magnet_vec, &binnedmagnetization.vector, lengthofbin);
+	binning(hamilton_vec, &binnedhamilton.vector, lengthofbin);
+	bootstrap(&binnedmagnetization.vector, generator, N_bs, &magnet_mean, &magnet_var);
+	bootstrap(&binnedhamilton.vector, generator, N_bs, &hamilton_mean, &hamilton_var);
+	autocorrelation (magnet_vec_sqr, correlation_magn_sqr, magnet_sqr_mean);
+	
+	fprintf (meas_stream, "#w-cycle\n%e\t%e\t%e\t%e\n",magnet_mean,magnet_var,hamilton_mean,hamilton_var);
+	gsl_vector_fprintf (wcycle_stream, correlation_magn_sqr, "%f");
 	
 	/**
 	 * @note	Cleanup
 	 */
-	fclose (simplehaste_stream);
+	fclose (meas_stream);
 	fclose (vcycle_stream);
 	fclose (wcycle_stream);
 	gsl_rng_free(generator);
