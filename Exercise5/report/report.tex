@@ -76,6 +76,30 @@ and get our new field by setting $\tilde{u}^{(a)}+I_{2a}^au^{(2a)}$.
 
 \subsection{analytical solutions}
 
+\begin{longtable}{>{$\displaystyle}r<{$}>{$\displaystyle}c<{$}>{$\displaystyle}l<{$}}
+	\alpha_k&=&\frac{2N}{a}\sin^2\left(\frac{k\pi}{2N}\right)\\
+	H_a(u)&=&\sum_{k=1}^{N-1}c_k^2\alpha_k\\
+	Z(a, N)&=&\prod_{k=1}^{N-1}\int\mathrm{d}c_k\exp(-H_a(u))\\
+	&=&\prod_{k=1}^{N-1}\int\mathrm{d}c_k\exp(-\alpha_kc_k^2)=\prod_{k=1}^{N-1}\frac{1}{2}\sqrt{\frac{\pi}{\alpha_k}}\\
+	
+	\langle E\rangle(a, N) &=&\frac{1}{Z}\prod_{k=1}^{N-1}\int\mathrm{d}c_kH_a(u)\exp(-H_a(u))\\
+	&=&\frac{1}{Z}\prod_{k=1}^{N-1}\int\mathrm{d}c_k\, c_k^2\alpha_k\exp(-H_a(u))\\
+	&=&\frac{1}{Z}\prod_{k=1}^{N-1} \alpha_k \frac{1}{2}\sqrt{\frac{\pi}{\alpha_k^3}}\\
+	&=&\frac{1}{Z} Z\prod_{k=1}^{N-1}\frac{\alpha_k}{\alpha_k}=1\\
+	
+	m&=&\frac{a}{L}\sum_{l=1}^{N-1}u_l=\frac{a}{L}\sum_{l=1}^{N-1}\sum_{k=1}^{N-1}c_k\sin\left(\frac{k\pi l}{N} \right) \\
+	&=&\frac{a}{L}\sum_{k=1}^{N-1}c_k\frac{1}{2}(1-(-1)^k)cot\left( \frac{k\pi}{2N}\right) \\
+	&\Rightarrow & m\text{ is an odd function in } c_k\\
+	\langle m\rangle &=&\frac{1}{Z}\prod_{k=1}^{N-1}\int\mathrm{d}c_k\underbrace{m}_{\text{odd}}\underbrace{\exp(-H_a(u))}_{\text{even}}=0\\
+	
+	
+	\langle m^2 \rangle &=&\frac{1}{Z}\prod_{k=1}^{N-1}\int\mathrm{d}c_k \frac{a^2}{L^2}\frac{1}{4}(1-(-1)^k)^2\cot^2\left(\frac{k\pi}{2N}\right)c_k^2\exp(-H_a(u))\\
+	&=&\frac{1}{Z}\prod_{k=1}^{N-1}\frac{a^2}{L^2} \frac{1}{4}(1-(-1)^k)^2\cot^2\left(\frac{k\pi}{2N}\right)\frac{1}{2}\sqrt{\frac{\pi}{\alpha_k^3}}\\
+	&=&\prod_{k=1}^{N-1}\frac{a^2}{L^2} \frac{a}{8N}(1-(-1)^k)^2\frac{\cot^2\left(\frac{k\pi}{2N}\right)}{\sin^2\left(\frac{k\pi}{2N}\right)}\\
+	&=&\prod_{k=1}^{N-1}\frac{a}{8N^3} (1-(-1)^k)^2\frac{\cos^2\left(\frac{k\pi}{2N}\right)}{\sin^4\left(\frac{k\pi}{2N}\right)}\\
+%	&&
+\end{longtable}
+
 \subsection{Explicit form of $\phi^{(2a)}$}
 $\%$ is the modulus operator.
 \label{subsec:phi2a}
@@ -119,7 +143,7 @@ H_a(u^{(a)})&=&\frac{1}{a}\sum_{i=1}^N
 &&\\
 
 &=&H_a\left(  \tilde{u}^{(a)}\right) + \frac{1}{2a}\sum_{i=1}^{N/2} \left( u_i^{(2a)}-u_{i-1}^{(2a)}\right)^2\\
-&+&\frac{2}{a}\sum_{i=1}^{N/2}
+&+&\frac{1}{a}\sum_{i=1}^{N/2}
 \left( u_{i}^{(2a)}\left( \tilde{u}_{2i}^{(a)}\underbrace{-\tilde{u}_{2i-1}^{(a)}+\tilde{u}_{2i-1}^{(a)}}_{=0}-\tilde{u}_{2i-2}^{(a)}\right) 
 +u_{i-1}^{(2a)}\left(\tilde{u}_{2i-2}^{(a)}\underbrace{-\tilde{u}_{2i-1}^{(a)}+ \tilde{u}_{2i-1}^{(a)}}_{=0}-\tilde{u}_{2i}^{(a)}\right) \right)\\
 &+&a\sum_{i=1}^{N/2-1}
@@ -129,9 +153,9 @@ H_a(u^{(a)})&=&\frac{1}{a}\sum_{i=1}^N
 
 
 &=&H_a\left(  \tilde{u}^{(a)}\right) + \frac{1}{2a}\sum_{i=1}^{N/2} \left( u_i^{(2a)}-u_{i-1}^{(2a)}\right)^2\\
-&+&2a\sum_{i=1}^{N/2-1}
+&+&a\sum_{i=1}^{N/2-1}
 u_{i}^{(2a)}\frac{1}{a^2}\left(\tilde{u}_{2i}^{(a)}-\tilde{u}_{2i-2}^{(a)}-\tilde{u}_{2i+2}^{(a)}+\tilde{u}_{2i}^{(a)}  \right)
-+\frac{1}{2}\left( \phi_{2i}^{(a)}+\frac{1}{2}\phi_{2i+1}^{(a)}+\frac{1}{2}\phi_{2i-1}^{(a)}\right) u_i^{(2a)} \\
++\left( \phi_{2i}^{(a)}+\frac{1}{2}\phi_{2i+1}^{(a)}+\frac{1}{2}\phi_{2i-1}^{(a)}\right) u_i^{(2a)} \\
 
 &&\\
 
@@ -142,7 +166,7 @@ u_{i}^{(2a)}\frac{1}{a^2}\left(\tilde{u}_{2i}^{(a)}-\tilde{u}_{2i-2}^{(a)}-\tild
 
 &=&H_a\left( \tilde{u}^{(a)}\right) +H_{2a}\left( u^{(2a)}\right) \\
 
-\Leftrightarrow \phi_i^{(2a)}&=&\frac{1}{a^2}\left(2\tilde{u}_{2i}^{(a)}-\tilde{u}_{2i-2}^{(a)}-\tilde{u}_{2i+2}^{(a)}\right)+\frac{1}{2}\left( \phi_{2i}^{(a)}+\frac{1}{2}\phi_{2i+1}^{(a)}+\frac{1}{2}\phi_{2i-1}^{(a)}\right)\\
+\Leftrightarrow \phi_i^{(2a)}&=&\frac{1}{2a^2}\left(2\tilde{u}_{2i}^{(a)}-\tilde{u}_{2i-2}^{(a)}-\tilde{u}_{2i+2}^{(a)}\right)+\frac{1}{2}\left( \phi_{2i}^{(a)}+\frac{1}{2}\phi_{2i+1}^{(a)}+\frac{1}{2}\phi_{2i-1}^{(a)}\right)\\
 
 \end{longtable}
 
