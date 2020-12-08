@@ -256,15 +256,15 @@ int main(int argc, char **argv){
 	 */
 	double delta=2.;
 	int N=64;
-	double magnet, magnet_mean=0, magnet_var=0,  magnet_sqr_mean=0, hamilton, hamilton_mean=0, hamilton_var=0; 
+	double magnet, magnet_mean=0, magnet_var=0,  magnet_sqr_mean=0, magnet_sqr_var=0, hamilton, hamilton_mean=0, hamilton_var=0; 
 	double a=1.0;
 	int startlevel=1;
 
 	int maxlevel=3;
 	int gamma=1;
-	int N_meas=10000;
-	int N_therm=1000;
-	int lengthofbin=10;
+	int N_meas=50000;
+	int N_therm=5000;
+	int lengthofbin=100;
 	int N_bs=4*N_meas;
 	
 	//set and allocate random number generator
@@ -298,6 +298,8 @@ int main(int argc, char **argv){
 	gsl_vector_view binnedmagnetization;
 	gsl_vector * binnedhamilton_mem=gsl_vector_alloc(N_meas);
 	gsl_vector_view binnedhamilton;
+	gsl_vector * binnedmagsqrt_mem=gsl_vector_alloc(N_meas);
+	gsl_vector_view binnedmagsqrt;
 	
 	
 	
@@ -317,6 +319,7 @@ int main(int argc, char **argv){
 		hamilton=hamiltonian(u, phi, a);
 		gsl_vector_set (magnet_vec, i, magnet);
 		gsl_vector_set (hamilton_vec, i, hamilton);
+		gsl_vector_set (magnet_vec_sqr, i, magnet*magnet);
 	}
 	
 	/**
@@ -324,11 +327,14 @@ int main(int argc, char **argv){
 	 */
 	binnedmagnetization=gsl_vector_subvector(binnedmagnetization_mem, 0, magnet_vec->size/lengthofbin);
 	binnedhamilton=gsl_vector_subvector(binnedhamilton_mem, 0, hamilton_vec->size/lengthofbin);
+	binnedmagsqrt=gsl_vector_subvector(binnedmagsqrt_mem, 0, magnet_vec_sqr->size/lengthofbin);
 	binning(magnet_vec, &binnedmagnetization.vector, lengthofbin);
 	binning(hamilton_vec, &binnedhamilton.vector, lengthofbin);
+	binning(magnet_vec_sqr, &binnedmagsqrt.vector, lengthofbin);
 	bootstrap(&binnedmagnetization.vector, generator, N_bs, &magnet_mean, &magnet_var);
 	bootstrap(&binnedhamilton.vector, generator, N_bs, &hamilton_mean, &hamilton_var);
-	fprintf (meas_stream, "#simplehaste\t<m>\t<m>_err\t<E>\t<E>_err\n%e\t%e\t%e\t%e\n",magnet_mean,sqrt(magnet_var),hamilton_mean,sqrt(hamilton_var));
+	bootstrap(&binnedmagsqrt.vector, generator, N_bs, &magnet_sqr_mean, &magnet_sqr_var);
+	fprintf (meas_stream, "#simplehastings\t<m>\t<m>_err\t<E>\t<E>_err\t<m^2>\t<m^2>_err\n$%.2f$&\t$\\pm%.2f$&\t$%.2f$&\t$\\pm%.2f$&\t$%.2f$&\t$\\pm%.2f$\n",magnet_mean,sqrt(magnet_var),hamilton_mean,sqrt(hamilton_var), magnet_sqr_mean, sqrt(magnet_sqr_var));
 	
 	/**
 	 * @note	Reset u
@@ -338,11 +344,12 @@ int main(int argc, char **argv){
 	}
 	gsl_vector_set(u, 0, 0);
 	gsl_vector_set(u, u->size-1, 0);
-	magnet_mean=0;
-	hamilton_mean=0;
-	magnet_sqr_mean=0;
-	magnet_var=0;
-	hamilton_var=0;
+	//~ magnet_mean=0;
+	//~ hamilton_mean=0;
+	//~ magnet_sqr_mean=0;
+	//~ magnet_var=0;
+	//~ hamilton_var=0;
+	//~ magnet_sqr_var=0;
 	
 	
 	
@@ -355,6 +362,7 @@ int main(int argc, char **argv){
 	 * 			Thermalization and measurement
 	 */
 	gamma=1;
+	lengthofbin=50;
 	for(int i=0;i<N_therm;i++){
 		multigrid(u, phi, generator, a, delta, startlevel, maxlevel, gamma);
 	}
@@ -364,23 +372,26 @@ int main(int argc, char **argv){
 		hamilton=hamiltonian(u, phi, a);
 		gsl_vector_set (magnet_vec, i, magnet);
 		gsl_vector_set (magnet_vec_sqr, i, magnet*magnet);
-		magnet_sqr_mean+=gsl_vector_get (magnet_vec_sqr, i);
+//		magnet_sqr_mean+=gsl_vector_get (magnet_vec_sqr, i);
 		gsl_vector_set (hamilton_vec, i, hamilton);
 	}
-	magnet_sqr_mean/=N_meas;
+//	magnet_sqr_mean/=N_meas;
 	
 	/**
 	 * @note	Binning, bootstrap and autocorrelation
 	 */
 	binnedmagnetization=gsl_vector_subvector(binnedmagnetization_mem, 0, magnet_vec->size/lengthofbin);
 	binnedhamilton=gsl_vector_subvector(binnedhamilton_mem, 0, hamilton_vec->size/lengthofbin);
+	binnedmagsqrt=gsl_vector_subvector(binnedmagsqrt_mem, 0, magnet_vec_sqr->size/lengthofbin);
 	binning(magnet_vec, &binnedmagnetization.vector, lengthofbin);
 	binning(hamilton_vec, &binnedhamilton.vector, lengthofbin);
+	binning(magnet_vec_sqr, &binnedmagsqrt.vector, lengthofbin);
 	bootstrap(&binnedmagnetization.vector, generator, N_bs, &magnet_mean, &magnet_var);
 	bootstrap(&binnedhamilton.vector, generator, N_bs, &hamilton_mean, &hamilton_var);
+	bootstrap(&binnedmagsqrt.vector, generator, N_bs, &magnet_sqr_mean, &magnet_sqr_var);
 	autocorrelation (magnet_vec_sqr, correlation_magn_sqr, magnet_sqr_mean);
 	
-	fprintf (meas_stream, "#v-cycle\t<m>\t<m>_err\t<E>\t<E>_err\n%e\t%e\t%e\t%e\n",magnet_mean,sqrt(magnet_var),hamilton_mean,sqrt(hamilton_var));
+	fprintf (meas_stream, "#v-cycle\t<m>\t<m>_err\t<E>\t<E>_err\t<m^2>\t<m^2>_err\n$%.2f$&\t$\\pm%.2f$&\t$%.2f$&\t$\\pm%.2f$&\t$%.2f$&\t$\\pm%.2f$\n",magnet_mean,sqrt(magnet_var),hamilton_mean,sqrt(hamilton_var), magnet_sqr_mean, sqrt(magnet_sqr_var));
 	gsl_vector_fprintf (vcycle_stream, correlation_magn_sqr, "%f");
 	
 	/**
@@ -391,11 +402,12 @@ int main(int argc, char **argv){
 	}
 	gsl_vector_set(u, 0, 0);
 	gsl_vector_set(u, u->size-1, 0);
-	magnet_mean=0;
-	hamilton_mean=0;
-	magnet_sqr_mean=0;
-	magnet_var=0;
-	hamilton_var=0;
+	//~ magnet_mean=0;
+	//~ hamilton_mean=0;
+	//~ magnet_sqr_mean=0;
+	//~ magnet_var=0;
+	//~ hamilton_var=0;
+	//~ magnet_sqr_var=0;
 	
 	
 	
@@ -409,6 +421,7 @@ int main(int argc, char **argv){
 	 * 			Thermalization and measurement
 	 */
 	gamma=2;
+	lengthofbin=10;
 	for(int i=0;i<N_therm;i++){
 		multigrid(u, phi, generator, a, delta, startlevel, maxlevel, gamma);
 	}
@@ -418,23 +431,26 @@ int main(int argc, char **argv){
 		hamilton=hamiltonian(u, phi, a);
 		gsl_vector_set (magnet_vec, i, magnet);
 		gsl_vector_set (magnet_vec_sqr, i, magnet*magnet);
-		magnet_sqr_mean+=gsl_vector_get (magnet_vec_sqr, i);
+//		magnet_sqr_mean+=gsl_vector_get (magnet_vec_sqr, i);
 		gsl_vector_set (hamilton_vec, i, hamilton);
 	}
-	magnet_sqr_mean/=N_meas;
+//	magnet_sqr_mean/=N_meas;
 	
 	/**
 	 * @note	Binning, bootstrap and autocorrelation
 	 */
 	binnedmagnetization=gsl_vector_subvector(binnedmagnetization_mem, 0, magnet_vec->size/lengthofbin);
 	binnedhamilton=gsl_vector_subvector(binnedhamilton_mem, 0, hamilton_vec->size/lengthofbin);
+	binnedmagsqrt=gsl_vector_subvector(binnedmagsqrt_mem, 0, magnet_vec_sqr->size/lengthofbin);
 	binning(magnet_vec, &binnedmagnetization.vector, lengthofbin);
 	binning(hamilton_vec, &binnedhamilton.vector, lengthofbin);
+	binning(magnet_vec_sqr, &binnedmagsqrt.vector, lengthofbin);
 	bootstrap(&binnedmagnetization.vector, generator, N_bs, &magnet_mean, &magnet_var);
 	bootstrap(&binnedhamilton.vector, generator, N_bs, &hamilton_mean, &hamilton_var);
+	bootstrap(&binnedmagsqrt.vector, generator, N_bs, &magnet_sqr_mean, &magnet_sqr_var);
 	autocorrelation (magnet_vec_sqr, correlation_magn_sqr, magnet_sqr_mean);
 	
-	fprintf (meas_stream, "#w-cycle\t<m>\t<m>_err\t<E>\t<E>_err\n%e\t%e\t%e\t%e\n",magnet_mean,sqrt(magnet_var),hamilton_mean,sqrt(hamilton_var));
+	fprintf (meas_stream, "#w-cycle\t<m>\t<m>_err\t<E>\t<E>_err\t<m^2>\t<m^2>_err\n$%.2f$&\t$\\pm%.2f$&\t$%.2f$&\t$\\pm%.2f$&\t$%.2f$&\t$\\pm%.2f$\n",magnet_mean,sqrt(magnet_var),hamilton_mean,sqrt(hamilton_var), magnet_sqr_mean, sqrt(magnet_sqr_var));
 	gsl_vector_fprintf (wcycle_stream, correlation_magn_sqr, "%f");
 	
 	
@@ -455,6 +471,7 @@ int main(int argc, char **argv){
 	gsl_vector_free(hamilton_vec);
 	gsl_vector_free(correlation_magn_sqr);
 	gsl_vector_free(binnedmagnetization_mem);
+	gsl_vector_free(binnedmagsqrt_mem);
 	gsl_vector_free(binnedhamilton_mem);
 	
 	
