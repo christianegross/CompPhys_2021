@@ -196,8 +196,10 @@ H(u+\Delta)-H(u)&=&\frac{1}{a}\left( -\left(u_l-u_{l-1} \right)^2-\left(u_{l+1}-
 \end{array}\]
 
 \section{Implementation}
-
 Our code is in the github-repo \url{https://github.com/christianegross/CompPhys\_2021}. The simulation itself is in Exercise5/src/main/main.c, the gnuplotscript is in Exercise5/report/plot.gp. 
+We implemented the standard Metropolis hastings and calculated $<m>, <E>, <m^2>$ with their respective bootstrap errors. We also added a multigrid function to take care of the multigrid algorithm as described on the exercise sheet. Further more the autocorrelation function from Exercise 5 got used to compare the correlation of the data from the v-cycle ($\gamma=1$) to the data set obtained from the w-cycle ($\gamma=2$), before binning and bootstrap. $<m>, <E>, <m^2>$ also got calculated using the multigrid algorithm with their respective bootstrap errors.
+All algorithms were run using the same amount of thermalization and measurement steps.
+All of our data sets are saved in "gsl\_vector" objects (see \cite{gsldoc_mat}), this is useful in the binning process to simply create "vector\_view"'s. 
 
 \section{Results}
  
