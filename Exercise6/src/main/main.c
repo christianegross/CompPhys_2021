@@ -12,6 +12,7 @@
 #include <gsl/gsl_interp.h>
 #include <gsl/gsl_spline.h>
 #include <gsl/gsl_sf_legendre.h>
+#include <gsl/gsl_integration.h>
 
 void readinwavefunction(FILE * wavefunctionfile, gsl_vector *p, gsl_vector *w, gsl_vector* wf){
 	/**
@@ -30,18 +31,34 @@ void readinwavefunction(FILE * wavefunctionfile, gsl_vector *p, gsl_vector *w, g
 	 }
 }
 
-double formfactor(double q, gsl_vector *p,gsl_vector *wf, gsl_interp* interpolater, gsl_interp_accel* accelerator ){
+double formfactor(double q, gsl_vector *p, gsl_vector* p_weights, gsl_vector *wf, gsl_interp* interpolater, gsl_interp_accel* accelerator, int nx ){
 	double x=0.5;
-	double p_p=3;
+	double p_p=1;
+	double x_weight=1;
 	double p_p_z=0;
 	double F=0;
+	double F_add=0;
 	double p_2=0;
-	int l_z=2, l=2;
+	int l_z=5, l=5;
 	
-	p_p_z=p_p*x;
-	p_2=sqrt (p_p*p_p-p_p_z*q+q*q/4.);
-	F=p_p*p_p*gsl_sf_legendre_sphPlm (l, l_z, x)*gsl_sf_legendre_sphPlm (l, l_z, (p_p_z-0.5*q)/p_2)
+	gsl_integration_glfixed_table* table= gsl_integration_glfixed_table_alloc (nx);
+	
+	for(int j=0;j<p->size;j++){
+		F_add=0;
+		p_p=gsl_vector_get (p, j);
+		for(int i=0;i<nx;i++){
+			gsl_integration_glfixed_point (-1, 1, i, &x, &x_weight, table);
+			p_p_z=p_p*x;
+			p_2=sqrt (p_p*p_p-p_p_z*q+q*q/4.);
+			F_add+=x_weight*gsl_sf_legendre_sphPlm (l, l_z, x)*gsl_sf_legendre_sphPlm (l, l_z, (p_p_z-0.5*q)/p_2)
 				*gsl_interp_eval (interpolater, p->data, wf->data, p_p, accelerator)*gsl_interp_eval (interpolater, p->data, wf->data, p_2, accelerator);
+			printf ("F_add=%e,p_p=%e,x=%e\n",F_add,p_p,x);
+		}
+		F+=F_add*p_p*p_p*gsl_vector_get (p_weights, j);
+	}
+	
+	gsl_integration_glfixed_table_free (table);
+	
 	return F;
 }
 
@@ -72,13 +89,15 @@ int main(int argc, char **argv){
 	 */
 	gsl_vector_memcpy (norm, wf);
 	gsl_vector_mul (norm, wf);
-	//gsl_vector_mul (norm, w);
+	gsl_vector_mul (norm, p);
+	gsl_vector_mul (norm, p);
+	gsl_vector_mul (norm, w);
 	for(int i=0;i<norm->size;i++){
 		result+=gsl_vector_get (norm, i);
 	}
 	
 	
-	printf ("norm=%e, F=%e\n",result,formfactor (0, p, wf, interpolate_test, acc_test));
+	printf ("norm=%e, F=%e\n",result,formfactor (0, p, w, wf, interpolate_test, acc_test, 10));
 	
 	/**
 	 * @note	Cleanup after each dataset
