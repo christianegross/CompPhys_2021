@@ -9,6 +9,8 @@
 #include <gsl/gsl_randist.h>//pull random number from gaussian
 #include "math.h"//exp-Function
 #include <gsl/gsl_vector.h>
+#include <gsl/gsl_interp.h>
+#include <gsl/gsl_spline.h>
 
 void readinwavefunction(FILE * wavefunctionfile, gsl_vector *p, gsl_vector *w, gsl_vector* wf){
 	/**
@@ -28,19 +30,35 @@ void readinwavefunction(FILE * wavefunctionfile, gsl_vector *p, gsl_vector *w, g
 }
 
 int main(int argc, char **argv){
-	FILE *wavefunctionfile=fopen("data/wavefunctions/wf-obe-lam=0300.00.dat", "r");
+	int datasetsize=60;
+	FILE *wavefunctionfile=fopen("data/wavefunctions/wf-obe-lam=1200.00.dat", "r");
 	FILE *testfile=fopen("data/test.dat", "w");
-	gsl_vector *p=gsl_vector_alloc(60);
-	gsl_vector *w=gsl_vector_alloc(60);
-	gsl_vector *wf=gsl_vector_alloc(60);
+	gsl_vector *p=gsl_vector_alloc(datasetsize);
+	gsl_vector *w=gsl_vector_alloc(datasetsize);
+	gsl_vector *wf=gsl_vector_alloc(datasetsize);
+	gsl_vector *norm=gsl_vector_alloc(datasetsize);
+	double result=0;
 	readinwavefunction(wavefunctionfile, p, w, wf);
+	gsl_vector_memcpy (norm, wf);
+	gsl_vector_mul (norm, wf);
+	gsl_vector_mul (norm, w);
+	for(int i=0;i<norm->size;i++){
+		result+=gsl_vector_get (norm, i);
+	}
+	
 	gsl_vector_fprintf(testfile, p, "%e");
+	
+	gsl_interp* interpolate_test=gsl_interp_alloc(gsl_interp_cspline ,datasetsize);
+	gsl_interp_accel* acc_test=gsl_interp_accel_alloc ();
+	gsl_interp_init (interpolate_test, p->data, wf->data, datasetsize);
+	printf ("%e,%e\n",result,gsl_interp_eval (interpolate_test, p->data, wf->data, 30, acc_test));
 	fclose(wavefunctionfile);
 	fclose(testfile);
 	gsl_vector_free(p);
 	gsl_vector_free(w);
 	gsl_vector_free(wf);
-	
+	gsl_vector_free(norm);
+	gsl_interp_free (interpolate_test);
 	
 	return 0;
 }
