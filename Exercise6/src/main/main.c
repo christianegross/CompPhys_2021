@@ -122,19 +122,19 @@ int main(int argc, char **argv){
 		for(int i=0;i<norm->size;i++){
 			result+=gsl_vector_get (norm, i);
 		}
-		//printf("%d\t%f\n", lambda, result);
-		printf("F%d(x)=a%d+b%d*x+c%d*x**2+d%d*x**3\nfit [0:1] F%d(x) file using ((($1==%d)&&($2==20))?$4:1/0):5 via a%d,b%d, c%d, d%d\n\n\n", lambda, lambda, lambda, lambda, lambda, lambda, lambda, lambda, lambda, lambda, lambda);
-		//printf("print(sqrt(-6*b%d))\n", lambda);
+		printf("%d\t%f\n", lambda, result);
+		//printf("F%d(x)=a%d+b%d*x+c%d*x**2+d%d*x**3\nfit [0:1] F%d(x) file using ((($1==%d)&&($2==20))?$4:1/0):5 via a%d,b%d, c%d, d%d\n\n\n", lambda, lambda, lambda, lambda, lambda, lambda, lambda, lambda, lambda, lambda, lambda);
+		//printf("print(sprintf(\"%d\\t%%f\\t%%f\\n\",b%d, sqrt(-6*b%d)))\n", lambda, lambda, lambda);
 		/**
 		 * @note calculate formfactor for different q
 		 * */
-		 for (int qvalue=0; qvalue<=1000; qvalue+=(qvalue<100?1:10)){
+		 for (int qvalue=0; qvalue<=1000; qvalue+=(qvalue<100?2:10)){
 			 q=qvalue/100.0;
 			/**
 			* @note for lambda=1200: calculate formfactor also for different nx
 			* */
 			if(lambda==1200){
-				for (nx=2; nx<=40; nx+=2){	
+				for (nx=1; nx<=40; nx+=1){	
 					fprintf(results, "%4d\t%2d\t%e\t%e\t%e\n", lambda, nx, q, q*q, formfactor (q, p, w, wf, interpolate_test, acc_test, nx));
 				}
 				nx=20;
