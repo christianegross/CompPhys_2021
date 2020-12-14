@@ -70,7 +70,6 @@ double formfactor(double q, gsl_vector *p, gsl_vector* p_weights, gsl_vector *wf
 					*gsl_interp_eval (interpolater, p->data, wf->data, p_p, accelerator)*gsl_interp_eval (interpolater, p->data, wf->data, p_2, accelerator);
 				//printf ("F_add=%e,p_p=%e,x=%e\n",F_add,p_p,x);
 			}
-			else{printf("p not accepted\n");}
 		}
 		F+=F_add*p_p*p_p*gsl_vector_get (p_weights, j);
 	}
@@ -83,6 +82,8 @@ double formfactor(double q, gsl_vector *p, gsl_vector* p_weights, gsl_vector *wf
 int main(int argc, char **argv){
 	int datasetsize=60;
 	double result=0;
+	int nx=20;
+	double q;
 	
 	/**
 	 * @note	General allocations and opening of streams
@@ -91,36 +92,64 @@ int main(int argc, char **argv){
 	gsl_vector *w=gsl_vector_alloc(datasetsize);
 	gsl_vector *wf=gsl_vector_alloc(datasetsize);
 	gsl_vector *norm=gsl_vector_alloc(datasetsize);
-	FILE *wavefunctionfile=fopen("data/wavefunctions/wf-obe-lam=1200.00.dat", "r");
+	FILE *wavefunctionfile;//=fopen("data/wavefunctions/wf-obe-lam=1200.00.dat", "r");
+	FILE *results=fopen("data/results.dat", "w");
+	char wffilename[100];
 	gsl_interp* interpolate_test=gsl_interp_alloc(gsl_interp_cspline ,datasetsize);
 	gsl_interp_accel* acc_test=gsl_interp_accel_alloc ();
 	
-	
+	fprintf(results, "lambda\tnx\tq\tq^2\tF\n");
+	printf("lambda\tnorm(psi)\n");
 	/**
-	 * @note	Reading of dataset and init of interpolater
-	 */
-	readinwavefunction(wavefunctionfile, p, w, wf);
-	gsl_interp_init (interpolate_test, p->data, wf->data, datasetsize);
-	
-	/**
-	 * @note Test of normalization
-	 */
-	gsl_vector_memcpy (norm, wf);
-	gsl_vector_mul (norm, wf);
-	gsl_vector_mul (norm, p);
-	gsl_vector_mul (norm, p);
-	gsl_vector_mul (norm, w);
-	for(int i=0;i<norm->size;i++){
-		result+=gsl_vector_get (norm, i);
+	* @note calculate formfactor for different Lambda
+	* */
+	for (int lambda=300; lambda<=1200; lambda+=100){
+		/**
+		 * @note	Reading of dataset and init of interpolater
+		 */
+		sprintf(wffilename, "data/wavefunctions/wf-obe-lam=%.4d.00.dat", lambda);
+		wavefunctionfile=fopen(wffilename, "r"); 
+		readinwavefunction(wavefunctionfile, p, w, wf);
+		gsl_interp_init (interpolate_test, p->data, wf->data, datasetsize);
+		/**
+		 * @note Test of normalization
+		 */
+		gsl_vector_memcpy (norm, wf);
+		gsl_vector_mul (norm, wf);
+		gsl_vector_mul (norm, p);
+		gsl_vector_mul (norm, p);
+		gsl_vector_mul (norm, w);
+		for(int i=0;i<norm->size;i++){
+			result+=gsl_vector_get (norm, i);
+		}
+		//printf("%d\t%f\n", lambda, result);
+		printf("F%d(x)=a%d+b%d*x+c%d*x**2+d%d*x**3\nfit [0:1] F%d(x) file using ((($1==%d)&&($2==20))?$4:1/0):5 via a%d,b%d, c%d, d%d\n\n\n", lambda, lambda, lambda, lambda, lambda, lambda, lambda, lambda, lambda, lambda, lambda);
+		//printf("print(sqrt(-6*b%d))\n", lambda);
+		/**
+		 * @note calculate formfactor for different q
+		 * */
+		 for (int qvalue=0; qvalue<=1000; qvalue+=(qvalue<100?1:10)){
+			 q=qvalue/100.0;
+			/**
+			* @note for lambda=1200: calculate formfactor also for different nx
+			* */
+			if(lambda==1200){
+				for (nx=2; nx<=40; nx+=2){	
+					fprintf(results, "%4d\t%2d\t%e\t%e\t%e\n", lambda, nx, q, q*q, formfactor (q, p, w, wf, interpolate_test, acc_test, nx));
+				}
+				nx=20;
+			}
+			fprintf(results, "%4d\t%2d\t%e\t%e\t%e\n", lambda, nx, q, q*q, formfactor (q, p, w, wf, interpolate_test, acc_test, nx));
+		 }
+
+		
+		/**
+		 * @note	Cleanup after each dataset
+		 */
+		gsl_interp_accel_reset (acc_test);
+		fclose(wavefunctionfile);
+		result=0;
 	}
-	
-	
-	printf ("norm=%e, F=%e\n",result,formfactor (0, p, w, wf, interpolate_test, acc_test, 100));
-	
-	/**
-	 * @note	Cleanup after each dataset
-	 */
-	gsl_interp_accel_reset (acc_test);
 	
 	
 	
@@ -128,7 +157,6 @@ int main(int argc, char **argv){
 	/**
 	 * @note	Complete cleanup
 	 */
-	fclose(wavefunctionfile);
 	gsl_vector_free(p);
 	gsl_vector_free(w);
 	gsl_vector_free(wf);
