@@ -27,7 +27,116 @@
 	\maketitle
 	
 \section{Theory}
-
+The following relations were given on the exercise sheet. And should be assumed, that both particles have the same mass: $m_1=m_2=m=m_N$
+\begin{align}
+	\bra{\vec{k}_1'}\rho(\vec{q})\ket{\vec{k}_1}&=\delta(\vec{k}_1'-\vec{q}-\vec{k}_1)\label{eq:rhok}\\
+	\bra{\Psi \vec{P}'}\rho(\vec{q})\ket{\Psi\vec{P}}&=F(\vec{q}^2)\delta(\vec{P}'-\vec{q}-\vec{P})\label{eq:rhopsi}
+\end{align}
+With $\Psi$ the two-body bound state, $\vec{P}$ the initial center of mass momentum and $\vec{P}'$ the final center of mass momentum. Which represents, that $\gamma$ only interacts with the first particle (Proton). To derive the explicit form of $F(\vec{q}^2)$, one needs the following unity relations:
+\begin{align}
+	\int\dd[3]{k_1}\dd[3]{k_2}\ket{\vec{k}_1,\vec{k}_2}\bra{\vec{k}_1,\vec{k}_2}&=\mathbf{1}\label{eq:unityk}\\
+	\int\dd[3]{p}\dd[3]{P}\ket{\vec{p},\vec{P}}\bra{\vec{p},\vec{P}}&=\mathbf{1}\label{eq:unityp}
+\end{align}
+Where $\vec{k}_{1,2}$ are the single particle momenta (in laboratory system) and $\vec{p}$ the relative momentum. If 2 particles have the momenta $\vec{k}_{1,2}$ in the laboratory system, then their corresponding center of mass momentum and relative momentum is given by:
+\begin{align}
+	\vec{P}&=\vec{k}_1+\vec{k}_2\label{eq:pk}\\
+	\vec{p}&=\dfrac{1}{m_1+m_2}(m_2\vec{k}_1-m_1\vec{k}_2)\overset{m_1=m_2=m}{=}\dfrac{1}{2}(\vec{k}_1-\vec{k}_2)\label{eq:pmk}
+\end{align}
+With these preparations one finds:
+\begin{align}
+	\bra{\Psi \vec{P}'}\rho(\vec{q})\ket{\Psi\vec{P}}&\overset{\ref{eq:rhopsi}}{=}F(\vec{q}^2)\delta(\vec{P}'-\vec{q}-\vec{P})\\
+	&\overset{\ref{eq:unityk}}{=}\int\dd[3]{k_{1a}}\dd[3]{k_{2a}}\int\dd[3]{k_{1b}}\dd[3]{k_{2b}}\bra{\Psi \vec{P}'}\ket{\vec{k}_{1a},\vec{k}_{2a}}\\&\qquad\qquad\cdot\underbrace{\bra{\vec{k}_{1a},\vec{k}_{2a}}\rho(\vec{q})\ket{\vec{k}_{1b},\vec{k}_{2b}}}_{\substack{\overset{\ref{eq:rhok}}{=}\delta(\vec{k}_{2a}-\vec{k}_{2b})\delta(\vec{k}_{1a}-\vec{q}-\vec{k}_{1b})}}\bra{\vec{k}_{1b},\vec{k}_{2b}}\ket{\Psi\vec{P}}\\
+	&=\int\dd[3]{k_{1a}}\dd[3]{k_{2a}}\bra{\Psi \vec{P}'}\ket{\vec{k}_{1a},\vec{k}_{2a}}\bra{\vec{k}_{1a}-\vec{q},\vec{k}_{2a}}\ket{\Psi\vec{P}}
+\end{align}
+By changing into the center of mass system with $\vec{p}_1,\vec{P}_1,\vec{k}_{1a},\vec{k}_{2a}$ following the corresponding relations given in \ref{eq:pk} and \ref{eq:pmk}. We get:
+\begin{align}
+	\vec{p}_2&\dfrac{1}{2}(\vec{k}_{1a}-\vec{q}-\vec{k}_{2a})=\vec{p}_1-\dfrac{\vec{q}}{2}\\
+	\vec{P}_2&=\vec{k}_{1a}-\vec{q}+\vec{k}_{2a}=\vec{P}_1-\vec{q}
+\end{align}
+And with this:
+\begin{align}
+	F(\vec{q}^2)\delta(\vec{P}'-\vec{q}-\vec{P})&=\int\dd[3]{p_1}\dd[3]{P_1}\bra{\Psi \vec{P}'}\ket{\vec{p}_1,\vec{P}_1}\bra{\vec{p}_1-\dfrac{\vec{q}}{2},\vec{P}_1-\vec{q}}\ket{\Psi\vec{P}}\\
+	&=\int\dd[3]{p_1}\dd[3]{P_1}\Psi^*(\vec{p}_1)\Psi(\vec{p}_1-\dfrac{\vec{q}}{2})\delta(\vec{P}'-\vec{P}_1)\delta(\vec{P}_1-\vec{q}-\vec{P})\\
+	&=\delta(\vec{P}'-\vec{q}-\vec{P})\int\dd[3]{p_1}\Psi^*(\vec{p}_1)\Psi(\vec{p}_1-\dfrac{\vec{q}}{2})\\
+	\Rightarrow F(\vec{q}^2)&=\int\dd[3]{p_1}\Psi^*(\vec{p}_1)\Psi(\vec{p}_1-\dfrac{\vec{q}}{2})\label{eq:F1}
+\end{align}
+When assuming $\vec{q}=q \hat{e}_z$ and that only the partial wave $ll_z$ contributes, one gets:
+\begin{align}
+	\Psi(\vec{p})&=\psi_{ll_z}(p) Y_{ll_z}(\hat{p})\\
+	\Rightarrow F(\vec{q}^2)&= \int \dd{\hat{p}_1}\int\dd{p_1} p_1^2\psi_{ll_z}^*(p_1) Y_{ll_z}^*(\hat{p}_1)\psi_{ll_z}\left(\abs{\vec{p}_1-\frac{\vec{q}}{2}}\right) Y_{ll_z}\left(\widehat{\vec{p}_1-\frac{\vec{q}}{2}}\right)\label{eq:F2}
+\end{align}
+If we now consider the following naming:
+\begin{align}
+	\vec{p}_1&=\left(\begin{array}{c}
+	p_{1x}\\
+	p_{1y}\\
+	p_{1z}
+	\end{array}\right)=\left(\begin{array}{c}
+	p_{1}\sin(\theta_1)\cos(\phi_1)\\
+	p_{1}\sin(\theta_1)\sin(\phi_1)\\
+	p_{1}\cos(\theta_1)
+	\end{array}\right)\\
+	\vec{p}_2=\vec{p}_1-\dfrac{1}{2}\vec{q}&=\left(\begin{array}{c}
+	p_{1x}\\
+	p_{1y}\\
+	p_{1z}-\frac{1}{2}q
+	\end{array}\right)=\left(\begin{array}{c}
+	p_{2}\sin(\theta_2)\cos(\phi_2)\\
+	p_{2}\sin(\theta_2)\sin(\phi_2)\\
+	p_{2}\cos(\theta_2)
+	\end{array}\right)\\
+	\Rightarrow \tan(\phi_1)&=\dfrac{p_{1y}}{p_{1x}}=\tan(\phi_2)\\
+	\Rightarrow \phi_1&=\phi_2\label{eq:phi1phi2}
+\end{align}
+The last line follows because $\vec{q}$ only translates $\vec{p}_1$ in the z-axes.
+The spherical harmonics can then be rewritten as, using $Y_{lm}(\theta,\phi)=\Theta_{lm}(\theta)\exp(i m \phi)$ ($\Theta_{lm}(\theta)$ real):
+\begin{align}
+	Y_{ll_z}^*(\hat{p}_1)Y_{ll_z}\left(\widehat{\vec{p}-\frac{\vec{q}}{2}}\right)&=Y_{ll_z}^*(\theta_1,\phi_1)Y_{ll_z}(\theta_2,\phi_2)\\
+	&\overset{\ref{eq:phi1phi2}}{=}\Theta_{ll_z}(\theta_1)\Theta_{ll_z}(\theta_2)\underbrace{\exp(i l_z (\phi_1-\phi_1))}_{\substack{=1}}
+\end{align}
+This can be expressed by $\vec{p}'$, which is the same  as $\vec{p}_1$ ($p_1=p', \theta_1=\theta'=\theta$) but rotated in such a way, s.t. $\phi_1=\phi_2\rightarrow \phi'=0$:
+\begin{align}
+	\vec{p}'&=\left(\begin{array}{c}
+	p_{x}'\\
+	p_{y}'\\
+	p_{z}'
+	\end{array}\right)=\left(\begin{array}{c}
+	p_{1}\sin(\theta_1)\\
+	0\\
+	p_{1}\cos(\theta_1)
+	\end{array}\right)=\left(\begin{array}{c}
+	p'\sqrt{1-\cos[2](\theta)}\\
+	0\\
+	p'\cos(\theta)
+	\end{array}\right)\\
+	\Rightarrow Y_{ll_z}^*(\hat{p}_1)Y_{ll_z}\left(\widehat{\vec{p}-\frac{\vec{q}}{2}}\right)&=\Theta_{ll_z}(\theta_1)\Theta_{ll_z}(\theta_2) \exp(i l_z(0+0))\\
+	&=Y_{ll_z}^*(\theta_1,\phi')Y_{ll_z}(\theta_2,\phi')\\
+	\Rightarrow	F(\vec{q}^2)&\overset{\ref{eq:F2}}{=} \int\limits_0^{2\pi} \dd{\phi'}\int\limits_{-1}^{1} \dd{\cos(\theta)}\int\dd{p'} p'^2\psi_{ll_z}^*(p') Y_{ll_z}^*(\hat{p}')\\
+	&\qquad\qquad\cdot\psi_{ll_z}\left(\abs{\vec{p}'-\frac{\vec{q}}{2}}\right) Y_{ll_z}^*\left(\widehat{\vec{p}'-\frac{\vec{q}}{2}}\right)
+\end{align}
+With $x=\cos(\theta)$ it can be seen:
+\begin{equation}
+	\vec{p}'=\left(\begin{array}{c}
+	p'\sqrt{1-x^2}\\
+	0\\
+	p'x
+	\end{array}\right)=\left(\begin{array}{c}
+	p_{x}'\\
+	p_{y}'\\
+	p_{z}'
+	\end{array}\right)
+\end{equation}
+In the Implementation the following relations were used to determine the angular dependencies:
+\begin{align}
+	\vec{p}_2'&=\vec{p}'-\dfrac{1}{2}\vec{q}\\
+	\Rightarrow \cos(\theta_{p_2'})&=\dfrac{p_{2z}}{p_2}=\dfrac{p_{z}'-\frac{1}{2}q}{p_2}\\
+	\text{With: } p_2&=\abs{\vec{p}'-\frac{1}{2}\vec{q}}=\left(p'^2(1-x^2)+(p'x-\dfrac{1}{2}q)^2\right)^{1/2}\\
+	&=\left(p'^2-p'x q +\dfrac{1}{4}q^2\right)^{1/2}
+\end{align}
+It can easily be seen:
+\begin{equation}
+	F(0)\overset{\ref{eq:F1}}{=}\int \dd[3]{p'}\abs{\Psi(\vec{p}')}^2=1
+\end{equation}
 \section{Results}
 \subsection{Accuracy}
 
