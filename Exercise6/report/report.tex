@@ -31,24 +31,54 @@
 \section{Results}
 \subsection{Accuracy}
 
+We check the numerical accuracy of our results by plotting $F(\vec{q}^2)$ for several $\vec{q}^2$ for different nx, see fig.~\ref{fig:accuracy}. We see that for very small nx the results change rapidly and grow bigger for bigger nx, but a plateau is reached very soon, at nx=5. For bigger nx we cannot see a change at the plotted resolution. 
+
 \begin{figure}[htbp]
 	\input{stability.tex}
 	\caption{Results for $\Lambda=1200\si{\mega\electronvolt}$, different $\vec{q}$ and different nx}
 	\label{fig:accuracy}
 \end{figure}
 
-\subsection{Normalization and Radius}
+further comparison: table nx, F(1)
 
+\subsection{Normalization and Radius}
+The deviation $F(0)-1$ is plotted for the different values of the cut-off-energy in fig.~\ref{fig:fofzero}. We see that for all chosen $\lambda$ the deviation is less than one part per million and we do not see any trend in the data to either rise or fall for changing $\Lambda$.
+  
+  
 \begin{figure}[htbp]
 	\input{fofzero.tex}
 	\caption{$F(0)$ for different $\Lambda$, nx=20}
 	\label{fig:fofzero}
 \end{figure}
 
+We calculated the radius by fitting a polynomial of third order to the calculated data: $F(\vec{q}^2)=a+b\cdot \vec{q}^2+c\cdot\vec{q}^4+d\cdot\vec{q}^6$. We did the fit with the gnuplot fit-routine, which internally uses the nonlinear least-squares Marquardt-Levenberg algorithm~\cite[p. 74]{gnuplotdoc}. From this we calculated $\sqrt{\langle r^2\rangle}=\sqrt{-6b}$ and determined the error using Gaussian error propagation. The results for $\sqrt{\langle r^2\rangle}$ are plotted in fig.~\ref{fig:radius}, together with the results given in the lecture.
+
 \begin{figure}[htbp]
 	\input{radius.tex}
 	\caption{$\sqrt{\langle r^2\rangle}$ for different $\Lambda$, nx=20}
 	\label{fig:radius}
+\end{figure}
+
+Qualitatively, both show the same behaviour of having the largest value at $\Lambda=300\si{\mega\electronvolt}$, the dipping to a minimum at $\Lambda=500\si{\mega\electronvolt}$, and then rising slowly. However, all of our measurements are about $.02\si{\femto\meter}$, or 1\%, below the data points from the lecture.
+
+\subsection{Form Factor at different Cut-off-energies}
+
+\begin{figure}[htbp]
+	\input{formfactor.tex}
+	\caption{Form factor for different $\Lambda$}
+	\label{fig:formfactor}
+\end{figure}
+
+\begin{figure}[htbp]
+	\input{formfactorsmall.tex}
+	\caption{Form factor for different $\Lambda$ and small momenta}
+	\label{fig:formfactorsmall}
+\end{figure}
+
+\begin{figure}[htbp]
+	\input{formfactorbig.tex}
+	\caption{Form factor for different $\Lambda$ and big momenta}
+	\label{fig:formfactorbig}
 \end{figure}
 
 \newpage
