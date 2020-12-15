@@ -59,6 +59,7 @@ fit [0:1] F1200(x) file using ((($1==1200)&&($2==20))?$4:1/0):5 via a1200,b1200,
 
 
 set print radiusfile
+print(sprintf("Lambda\tb\tsqrt(<r^2>)\n"))
 print(sprintf("300\t%f\t%f\n",b300, sqrt(-6*b300)))
 print(sprintf("400\t%f\t%f\n",b400, sqrt(-6*b400)))
 print(sprintf("500\t%f\t%f\n",b500, sqrt(-6*b500)))
@@ -77,57 +78,72 @@ set out 'test.pdf'
 
 set xlabel "q^2/fm^-2"
 set ylabel "F"
-set yrange [-0.05:1.05]
+#set yrange [-0.05:1.05]
 plot for [lambda=300:1200:100] file using ((($1==lambda)&&($2==20))?$4:1/0):5 with linespoints title sprintf("lambda=%d", lambda)
 set xrange [0:5]
-#plot for [lambda=300:1200:100] file using ((($1==lambda)&&($2==20))?$4:1/0):5 with linespoints title sprintf("lambda=%d", lambda), F1200(x)
+plot for [lambda=300:1200:100] file using ((($1==lambda)&&($2==20))?$4:1/0):5 with linespoints title sprintf("lambda=%d", lambda)#, F1200(x)
+set xrange [1:1.5]
+plot for [lambda=300:1200:100] file using ((($1==lambda)&&($2==20))?$4:1/0):5 with linespoints title sprintf("lambda=%d", lambda)#, F1200(x)
+set xrange [0:0.005]
+plot for [lambda=300:1200:100] file using ((($1==lambda)&&($2==20))?$4:1/0):5 with linespoints title sprintf("lambda=%d", lambda)#, F1200(x)
 set xrange [80:100]
 unset yrange
 plot for [lambda=300:1200:100] file using ((($1==lambda)&&($2==20))?$4:1/0):5 with linespoints title sprintf("lambda=%d", lambda)
 unset xrange
+set title 'accuracy'
+set xlabel 'nx'
 plot for [value=1:10:1] file using (($1==1200)&&($3==value)?$2:1/0):5 with linespoints title sprintf("q=%.1f", value)
 
 set xlabel "lambda" 
 
 plot radiusfile u 1:3, file using ($3==0&&$2==20?$1:1/0):5
 
+set yrange [-1e-6:+1e-6]
+zero(x)=0
+plot file using ($3==0&&$2==20?$1:1/0):($5-1) ls 1 title '', zero(x) title ''
+unset xrange
+unset yrange
+
+
 set ter epslatex size 15 cm, 10 cm color colortext
 unset title
 set out 'stability.tex'
 set xlabel 'nx'
-set ylabel '$F(\vec{q}^2)/\si{\fermi\meter^2}$'
-plot file using (($1==1200)&&($3==1)?$2:1/0):5 with linespoints ls 1 title '$q=1\si{\per\fermi\meter}',\
-	file using (($1==1200)&&($3==2)?$2:1/0):5 with linespoints ls 2 title '$q=2\si{\per\fermi\meter}',\
-	file using (($1==1200)&&($3==3)?$2:1/0):5 with linespoints ls 3 title '$q=3\si{\per\fermi\meter}',\
-	file using (($1==1200)&&($3==9)?$2:1/0):5 with linespoints ls 4 title '$q=9\si{\per\fermi\meter}'
+set ylabel '$F(\vec{q}^2)/\si{\femto\meter^2}$'
+plot file using (($1==1200)&&($3==1)?$2:1/0):5 with linespoints ls 1 title '$q=1\si{\per\femto\meter}$',\
+	file using (($1==1200)&&($3==2)?$2:1/0):5 with linespoints ls 2 title '$q=2\si{\per\femto\meter}$',\
+	file using (($1==1200)&&($3==3)?$2:1/0):5 with linespoints ls 3 title '$q=3\si{\per\femto\meter}$',\
+	file using (($1==1200)&&($3==9)?$2:1/0):5 with linespoints ls 4 title '$q=9\si{\per\femto\meter}$'
 	
 set out 'radius.tex'
 set xlabel '$\Lambda/\si{\mega\electronvolt}$'
-set ylabel '$\langle r^2 \rangle/\si{\fermi\meter^2}$'
-plot radiusfile u 1:2 ls 1 title 'measured radius'
+set ylabel '$\langle r^2 \rangle/\si{\femto\meter^2}$'
+plot radiusfile u 1:3 ls 1 title 'measured radius'
 
+set yrange [-1e-6:+1e-6]
 set out 'fofzero.tex'
 set xlabel '$\Lambda/\si{\mega\electronvolt}$'
-set ylabel '$F(\vec{q}^2)/\si{\fermi\meter^2}$'
-plot file using ($3==0&&$2==20?$1:1/0):5 ls 1 title ''
+set ylabel '$F(\vec{q}^2)/\si{\femto\meter^2}-1$'
+plot file using ($3==0&&$2==20?$1:1/0):($5-1) ls 1 title '', zero(x) ls 1 dt 2 title ''
+unset yrange
 
 set out 'formfactor.tex'
-set xlabel '$q^2/\si{\per\fermi\meter^2}$'
-set ylabel '$F(\vec{q}^2)/\si{\fermi\meter^2}$'
+set xlabel '$q^2/\si{\per\femto\meter^2}$'
+set ylabel '$F(\vec{q}^2)/\si{\femto\meter^2}$'
 
 plot for [lambda=300:1200:100] file using ((($1==lambda)&&($2==20))?$4:1/0):5 with linespoints ls ((lambda-200)/100) title sprintf('$\Lambda=%d\si{\mega\electronvolt}$', lambda)
 
 set out 'formfactorsmall.tex'
 set xrange [0:5]
-set xlabel '$q^2/\si{\per\fermi\meter^2}$'
-set ylabel '$F(\vec{q}^2)/\si{\fermi\meter^2}$'
+set xlabel '$q^2/\si{\per\femto\meter^2}$'
+set ylabel '$F(\vec{q}^2)/\si{\femto\meter^2}$'
 
 plot for [lambda=300:1200:100] file using ((($1==lambda)&&($2==20))?$4:1/0):5 with linespoints ls ((lambda-200)/100) title sprintf('$\Lambda=%d\si{\mega\electronvolt}$', lambda)
 
 set out 'formfactorbig.tex'
 set xrange [80:100]
-set xlabel '$q^2/\si{\per\fermi\meter^2}$'
-set ylabel '$F(\vec{q}^2)/\si{\fermi\meter^2}$'
+set xlabel '$q^2/\si{\per\femto\meter^2}$'
+set ylabel '$F(\vec{q}^2)/\si{\femto\meter^2}$'
 
 plot for [lambda=300:1200:100] file using ((($1==lambda)&&($2==20))?$4:1/0):5 with linespoints ls ((lambda-200)/100) title sprintf('$\Lambda=%d\si{\mega\electronvolt}$', lambda)
 

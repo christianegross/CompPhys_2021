@@ -1,4 +1,4 @@
-%!TeX spellcheck = en_UK
+%!TeX spellcheck = en_GB
 % Die erste (unkommentierte) Zeile im Dokument legt immer die
 % Dokumentklasse fest
 \documentclass{scrartcl} 
@@ -28,6 +28,28 @@
 	
 \section{Theory}
 
+\section{Results}
+\subsection{Accuracy}
+
+\begin{figure}[htbp]
+	\input{stability.tex}
+	\caption{Results for $\Lambda=1200\si{\mega\electronvolt}$, different $\vec{q}$ and different nx}
+	\label{fig:accuracy}
+\end{figure}
+
+\subsection{Normalization and Radius}
+
+\begin{figure}[htbp]
+	\input{fofzero.tex}
+	\caption{$F(0)$ for different $\Lambda$, nx=20}
+	\label{fig:fofzero}
+\end{figure}
+
+\begin{figure}[htbp]
+	\input{radius.tex}
+	\caption{$\sqrt{\langle r^2\rangle}$ for different $\Lambda$, nx=20}
+	\label{fig:radius}
+\end{figure}
 
 \newpage
 \listoffigures

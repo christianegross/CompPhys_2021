@@ -52,7 +52,7 @@ double formfactor(double q, gsl_vector *p, gsl_vector* p_weights, gsl_vector *wf
 	double F=0;				//Form factor
 	double F_add=0;			//Form factor contribution for one given p_p for all angles
 	double p_2=0;			//modulus of p-0.5q
-	int l_z=5, l=5;			//angular momentum
+	int l_z=0, l=0;			//angular momentum: only look at s-waves
 	
 	gsl_integration_glfixed_table* table= gsl_integration_glfixed_table_alloc (nx);		//used for integrating over angles
 	
@@ -128,7 +128,7 @@ int main(int argc, char **argv){
 		/**
 		 * @note calculate formfactor for different q
 		 * */
-		 for (int qvalue=0; qvalue<=1000; qvalue+=(qvalue<100?2:10)){
+		 for (int qvalue=0; qvalue<=1000; qvalue+=(qvalue<200?1:5)){
 			 q=qvalue/100.0;
 			/**
 			* @note for lambda=1200: calculate formfactor also for different nx
