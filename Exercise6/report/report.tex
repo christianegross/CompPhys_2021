@@ -50,7 +50,7 @@ With these preparations one finds:
 \end{align}
 By changing into the center of mass system with $\vec{p}_1,\vec{P}_1,\vec{k}_{1a},\vec{k}_{2a}$ following the corresponding relations given in \ref{eq:pk} and \ref{eq:pmk}. We get:
 \begin{align}
-	\vec{p}_2&\dfrac{1}{2}(\vec{k}_{1a}-\vec{q}-\vec{k}_{2a})=\vec{p}_1-\dfrac{\vec{q}}{2}\\
+	\vec{p}_2&=\dfrac{1}{2}(\vec{k}_{1a}-\vec{q}-\vec{k}_{2a})=\vec{p}_1-\dfrac{\vec{q}}{2}\\
 	\vec{P}_2&=\vec{k}_{1a}-\vec{q}+\vec{k}_{2a}=\vec{P}_1-\vec{q}
 \end{align}
 And with this:
@@ -112,6 +112,8 @@ This can be expressed by $\vec{p}'$, which is the same  as $\vec{p}_1$ ($p_1=p',
 	\Rightarrow Y_{ll_z}^*(\hat{p}_1)Y_{ll_z}\left(\widehat{\vec{p}-\frac{\vec{q}}{2}}\right)&=\Theta_{ll_z}(\theta_1)\Theta_{ll_z}(\theta_2) \exp(i l_z(0+0))\\
 	&=Y_{ll_z}^*(\theta_1,\phi')Y_{ll_z}(\theta_2,\phi')\\
 	\Rightarrow	F(\vec{q}^2)&\overset{\ref{eq:F2}}{=} \int\limits_0^{2\pi} \dd{\phi'}\int\limits_{-1}^{1} \dd{\cos(\theta)}\int\dd{p'} p'^2\psi_{ll_z}^*(p') Y_{ll_z}^*(\hat{p}')\\
+	&\qquad\qquad\cdot\psi_{ll_z}\left(\abs{\vec{p}'-\frac{\vec{q}}{2}}\right) Y_{ll_z}^*\left(\widehat{\vec{p}'-\frac{\vec{q}}{2}}\right)\\
+	&=2\pi\int\limits_{-1}^{1} \dd{\cos(\theta)}\int\dd{p'} p'^2\psi_{ll_z}^*(p') Y_{ll_z}^*(\hat{p}')\\
 	&\qquad\qquad\cdot\psi_{ll_z}\left(\abs{\vec{p}'-\frac{\vec{q}}{2}}\right) Y_{ll_z}^*\left(\widehat{\vec{p}'-\frac{\vec{q}}{2}}\right)
 \end{align}
 With $x=\cos(\theta)$ it can be seen:
@@ -137,6 +139,20 @@ It can easily be seen:
 \begin{equation}
 	F(0)\overset{\ref{eq:F1}}{=}\int \dd[3]{p'}\abs{\Psi(\vec{p}')}^2=1
 \end{equation}
+
+
+\section{Implementation}
+
+Our code is in the github-repo \url{https://github.com/christianegross/CompPhys\_2021}. The simulation itself is in Exercise6/src/main/main.c, the gnuplotscript including the calculation of the radii is in Exercise5/report/plot.gp. 
+
+We define the function \texttt{readinwavefunction} to put the values for the momenta, integration weights and wavefunctions given in the files into gsl\_vector-objects~\cite{gsldoc_blk}. 
+
+In the function \texttt{formfactor} we calculate the formfactor by doing two Gauss-Legendre-Integrals, one over the angles and one over the momenta. We do the integration over the angles with the GSL integration library~\cite{gsldoc_integrate}. For the intermediate momenta which we need, but that are not on the grid, we interpolate the corresponding wavefunction using cubic splines~\cite{gsldoc_interpolate}. For the integration over the momenta, we use the weights already given in the datasets.
+
+We only do the calculations for s-waves, $l, l_z=0,0$, because this is the wavefunction we are given.
+
+We calculate our data by nesting several for-loops, over the different $\Lambda$ and the datasets we are given, over several momenta between $q=0\si{\per\femto\meter}$ and $q=10\si{\per\femto\meter}$, and, only for the highest $\Lambda$, over the amount of grid points for the angular integration. The result of each calculation is put into our results-file, which we further analyse with gnuplot.
+
 \section{Results}
 \subsection{Accuracy}
 
@@ -148,7 +164,27 @@ We check the numerical accuracy of our results by plotting $F(\vec{q}^2)$ for se
 	\label{fig:accuracy}
 \end{figure}
 
-further comparison: table nx, F(1)
+\begin{table}[htbp]
+	\begin{center}
+		\begin{tabular}{r|l}
+			nx&$10\cdot F(1)$\\ \hline
+			4	&5.687757\\
+			8	&5.789857\\
+			12	&5.791982\\
+			16	&5.792048\\
+			20	&5.792047\\
+			24	&5.792048\\
+			28	&5.792056\\
+			32	&5.792048\\
+			36	&5.792055\\
+			40	&5.792051\\
+		\end{tabular}
+	\end{center}
+	\caption{accuracy for $\Lambda=1200\si{\mega\electronvolt}$, $q=1\si{\per\femto\meter}$}
+	\label{tab:accuracy}
+\end{table}
+	
+A closer look at the numerical calues, table~\ref{tab:accuracy} shows that there is a very slight rise in the value between nx=8 and nx=16, but above that, the first five digits of the measurement of $F(1)$ do not change. Because of this, we use nx=20 for the rest of our calculations.
 
 \subsection{Normalization and Radius}
 The deviation $F(0)-1$ is plotted for the different values of the cut-off-energy in fig.~\ref{fig:fofzero}. We see that for all chosen $\lambda$ the deviation is less than one part per million and we do not see any trend in the data to either rise or fall for changing $\Lambda$.
@@ -160,7 +196,7 @@ The deviation $F(0)-1$ is plotted for the different values of the cut-off-energy
 	\label{fig:fofzero}
 \end{figure}
 
-We calculated the radius by fitting a polynomial of third order to the calculated data: $F(\vec{q}^2)=a+b\cdot \vec{q}^2+c\cdot\vec{q}^4+d\cdot\vec{q}^6$. We did the fit with the gnuplot fit-routine, which internally uses the nonlinear least-squares Marquardt-Levenberg algorithm~\cite[p. 74]{gnuplotdoc}. From this we calculated $\sqrt{\langle r^2\rangle}=\sqrt{-6b}$ and determined the error using Gaussian error propagation. The results for $\sqrt{\langle r^2\rangle}$ are plotted in fig.~\ref{fig:radius}, together with the results given in the lecture.
+We calculated the radius by fitting a polynomial of third order to the calculated data: $F(\vec{q}^2)=a+b\cdot \vec{q}^2+c\cdot\vec{q}^4+d\cdot\vec{q}^6$. We did the fit with the gnuplot fit-routine, which internally uses the nonlinear least-squares Marquardt-Levenberg algorithm~\cite[p. 74]{gnuplotdoc}, and only used small momenta between $q=0\si{\per\femto\meter}$ and $q=1\si{\per\femto\meter}$. From this we calculated $\sqrt{\langle r^2\rangle}=\sqrt{-6b}$ and determined the error using Gaussian error propagation. The results for $\sqrt{\langle r^2\rangle}$ are plotted in fig.~\ref{fig:radius}, together with the results given in the lecture.
 
 \begin{figure}[htbp]
 	\input{radius.tex}
@@ -172,23 +208,28 @@ Qualitatively, both show the same behaviour of having the largest value at $\Lam
 
 \subsection{Form Factor at different Cut-off-energies}
 
+An overview of the behaviour of the form factor is plotted in fig.~\ref{fig:formfactor}, the behaviour of small and large momenta is plotted in fig.~\ref{fig:formfactorsmall} and~\ref{fig:formfactorbig} respectively.
+
 \begin{figure}[htbp]
 	\input{formfactor.tex}
-	\caption{Form factor for different $\Lambda$}
+	\caption{Form factor for different $\Lambda$, nx=20}
 	\label{fig:formfactor}
 \end{figure}
 
 \begin{figure}[htbp]
 	\input{formfactorsmall.tex}
-	\caption{Form factor for different $\Lambda$ and small momenta}
+	\caption{Form factor for different $\Lambda$ and small momenta, nx=20}
 	\label{fig:formfactorsmall}
 \end{figure}
 
 \begin{figure}[htbp]
 	\input{formfactorbig.tex}
-	\caption{Form factor for different $\Lambda$ and big momenta}
+	\caption{Form factor for different $\Lambda$ and big momenta, nx=20}
 	\label{fig:formfactorbig}
 \end{figure}
+
+
+Overall, the form factor seems to be exponentially decreasing, and at small momenta almost no difference is visible between the different $\Lambda$. There is a very slight splitting up visible going towards larger momenta. At bigger momenta, the form factor is a lot smaller and so the relative differences are a lot bigger and clearly visible. Going from largest to smallest momentum, the form factor first gets larger, up until the maximum at $\Lambda=500\si{\mega\electronvolt}$, and falls after that, corresponding to the behaviour of the radius. 
 
 \newpage
 \listoffigures
