@@ -16,7 +16,7 @@ set style line 10 lc 5 lt 7 pt 12
 file="../data/results.dat"
 radiusfile="../data/radius.dat"
 
-
+set fit errorvariables
 
 F300(x)=a300+b300*x+c300*x**2+d300*x**3
 fit [0:1] F300(x) file using ((($1==300)&&($2==20))?$4:1/0):5 via a300,b300, c300, d300
@@ -59,17 +59,17 @@ fit [0:1] F1200(x) file using ((($1==1200)&&($2==20))?$4:1/0):5 via a1200,b1200,
 
 
 set print radiusfile
-print(sprintf("Lambda\tb\tsqrt(<r^2>)\n"))
-print(sprintf("300\t%f\t%f\n",b300, sqrt(-6*b300)))
-print(sprintf("400\t%f\t%f\n",b400, sqrt(-6*b400)))
-print(sprintf("500\t%f\t%f\n",b500, sqrt(-6*b500)))
-print(sprintf("600\t%f\t%f\n",b600, sqrt(-6*b600)))
-print(sprintf("700\t%f\t%f\n",b700, sqrt(-6*b700)))
-print(sprintf("800\t%f\t%f\n",b800, sqrt(-6*b800)))
-print(sprintf("900\t%f\t%f\n",b900, sqrt(-6*b900)))
-print(sprintf("1000\t%f\t%f\n",b1000, sqrt(-6*b1000)))
-print(sprintf("1100\t%f\t%f\n",b1100, sqrt(-6*b1100)))
-print(sprintf("1200\t%f\t%f\n",b1200, sqrt(-6*b1200)))
+print(sprintf("300\t%f\t%f\t%f\t%f\n",b300, b300_err, sqrt(-6*b300), 3*b300_err/sqrt(-6*b300)))
+print(sprintf("400\t%f\t%f\t%f\t%f\n",b400, b400_err, sqrt(-6*b400), 3*b400_err/sqrt(-6*b400)))
+print(sprintf("500\t%f\t%f\t%f\t%f\n",b500, b500_err, sqrt(-6*b500), 3*b500_err/sqrt(-6*b500)))
+print(sprintf("600\t%f\t%f\t%f\t%f\n",b600, b600_err, sqrt(-6*b600), 3*b600_err/sqrt(-6*b600)))
+print(sprintf("700\t%f\t%f\t%f\t%f\n",b700, b700_err, sqrt(-6*b700), 3*b700_err/sqrt(-6*b700)))
+print(sprintf("800\t%f\t%f\t%f\t%f\n",b800, b800_err, sqrt(-6*b800), 3*b800_err/sqrt(-6*b800)))
+print(sprintf("900\t%f\t%f\t%f\t%f\n",b900, b900_err, sqrt(-6*b900), 3*b900_err/sqrt(-6*b900)))
+print(sprintf("1000\t%f\t%f\t%f\t%f\n",b1000, b1000_err, sqrt(-6*b1000), 3*b1000_err/sqrt(-6*b1000)))
+print(sprintf("1100\t%f\t%f\t%f\t%f\n",b1100, b1100_err, sqrt(-6*b1100), 3*b1100_err/sqrt(-6*b1100)))
+print(sprintf("1200\t%f\t%f\t%f\t%f\n",b1200, b1200_err, sqrt(-6*b1200), 3*b1200_err/sqrt(-6*b1200)))
+
 
 
 
@@ -96,7 +96,7 @@ plot for [value=1:10:1] file using (($1==1200)&&($3==value)?$2:1/0):5 with lines
 
 set xlabel "lambda" 
 
-plot radiusfile u 1:3, file using ($3==0&&$2==20?$1:1/0):5
+plot radiusfile u 1:4:5 w yerrorbars, file using ($3==0&&$2==20?$1:1/0):5
 
 set yrange [-1e-6:+1e-6]
 zero(x)=0
@@ -118,7 +118,7 @@ plot file using (($1==1200)&&($3==1)?$2:1/0):5 with linespoints ls 1 title '$q=1
 set out 'radius.tex'
 set xlabel '$\Lambda/\si{\mega\electronvolt}$'
 set ylabel '$\langle r^2 \rangle/\si{\femto\meter^2}$'
-plot radiusfile u 1:3 ls 1 title 'measured radius'
+plot radiusfile u 1:4:5 w yerrorbars ls 1 title 'measured radius'
 
 set yrange [-1e-6:+1e-6]
 set out 'fofzero.tex'
