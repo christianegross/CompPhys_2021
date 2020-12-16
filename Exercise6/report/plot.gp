@@ -132,21 +132,21 @@ unset yrange
 
 set out 'formfactor.tex'
 set key top rmargin title '$\Lambda/\si{\mega\electronvolt}$'
-set xlabel '$q^2/\si{\per\femto\meter^2}$'
+set xlabel '$q^2/\si{\femto\meter^{-2}}$'
 set ylabel '$F(\vec{q}^2)/\si{\femto\meter^2}$'
 
 plot for [lambda=300:1200:100] file using ((($1==lambda)&&($2==20))?$4:1/0):5 with linespoints ls ((lambda-200)/100) title sprintf('%d', lambda)
 
 set out 'formfactorsmall.tex'
 set xrange [0:5]
-set xlabel '$q^2/\si{\per\femto\meter^2}$'
+set xlabel '$q^2/\si{\femto\meter^{-2}}$'
 set ylabel '$F(\vec{q}^2)/\si{\femto\meter^2}$'
 
 plot for [lambda=300:1200:100] file using ((($1==lambda)&&($2==20))?$4:1/0):5 with linespoints ls ((lambda-200)/100) title sprintf('%d', lambda)
 
 set out 'formfactorbig.tex'
 set xrange [80:100]
-set xlabel '$q^2/\si{\per\femto\meter^2}$'
+set xlabel '$q^2/\si{\femto\meter^{-2}}$'
 set ylabel '$F(\vec{q}^2)/\si{\femto\meter^2}$'
 
 plot for [lambda=300:1200:100] file using ((($1==lambda)&&($2==20))?$4:1/0):5 with linespoints ls ((lambda-200)/100) title sprintf('%d', lambda)
