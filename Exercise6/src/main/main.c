@@ -124,7 +124,7 @@ int main(int argc, char **argv){
 		}
 		printf("%d\t%f\n", lambda, result);
 		//printf("F%d(x)=a%d+b%d*x+c%d*x**2+d%d*x**3\nfit [0:1] F%d(x) file using ((($1==%d)&&($2==20))?$4:1/0):5 via a%d,b%d, c%d, d%d\n\n\n", lambda, lambda, lambda, lambda, lambda, lambda, lambda, lambda, lambda, lambda, lambda);
-		//printf("print(sprintf(\"%d\\t%%f\\t%%f\\n\",b%d, sqrt(-6*b%d)))\n", lambda, lambda, lambda);
+		//printf("print(sprintf(\"%d\\t%%f\\t%%f\\t%%f\\t%%f\\n\",b%d, b%d_err, sqrt(-6*b%d), 3*b%d_err/sqrt(-6*b%d)))\n", lambda, lambda, lambda, lambda, lambda, lambda);
 		/**
 		 * @note calculate formfactor for different q
 		 * */
