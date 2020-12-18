@@ -15,6 +15,9 @@
 #include <gsl/gsl_sf_legendre.h>
 #include <gsl/gsl_integration.h>
 
+/**
+ * @brief determines Gauss-Legendre integration points and weights for given grid size, also sets additional point pN=q with weight 1
+ * */
 void getgridpoints(gsl_vector *momenta, gsl_vector *weights, double q, double pmax, int sizeofgrid){
 	gsl_integration_glfixed_table *table=gsl_integration_glfixed_table_alloc(sizeofgrid);
 	double momentum, weight;
@@ -29,16 +32,10 @@ void getgridpoints(gsl_vector *momenta, gsl_vector *weights, double q, double pm
 	gsl_integration_glfixed_table_free(table);	
 }
 
-inline double potential(double pa, double pb, int l, int sizeofangulargrid, double mu, gsl_integration_glfixed_table *table){
-	double result=0, x, weight;
-	int errorcode;
-	for (int k=0; k<sizeofangulargrid; k+=1){
-		errorcode=gsl_integration_glfixed_point(-1, 1, k, &x, &weight, table);
-		result+=weight*gsl_sf_legendre_Pl(l, x)/(pa*pa+pb*pb-2*pa*pb*x+mu*mu);
-	}
-	return 2.0*M_PI*result;
-}
-
+/**
+ * @brief uses Gauss-Legendre integration to calculate the potential, form of the potential given in lecture 7, 
+ * fills matrix with the potential
+ * */
 inline void fillpotentialmatrix(gsl_matrix *pot, gsl_vector *momenta, int l, int sizeofangulargrid, double mu){
 	gsl_integration_glfixed_table *table=gsl_integration_glfixed_table_alloc(sizeofangulargrid);
 	double result, x, weight, pi, pj;
@@ -59,6 +56,9 @@ inline void fillpotentialmatrix(gsl_matrix *pot, gsl_vector *momenta, int l, int
 }
 
 int main(int argc, char **argv){
+	/**
+	 * @note set up parameters
+	 * */
 	int sizeofgrid=20;
 	int sizeofangulargrid=20;
 	int l=5;
@@ -66,12 +66,20 @@ int main(int argc, char **argv){
 	double mu=938.92;
 	double q=sqrt(2*mu*E);
 	double pmax=100;
+	
+	/**
+	 * @note set up gsl vectors and matrices, streams for toring results
+	 * */
 	gsl_vector *momenta=gsl_vector_alloc(sizeofgrid+1);
 	gsl_vector *weights=gsl_vector_alloc(sizeofgrid+1);
 	
 	gsl_matrix *pot=gsl_matrix_alloc(sizeofgrid+1, sizeofgrid+1);
 	
 	FILE *test=fopen("data/test.dat", "w");
+	
+	/**
+	 * @note test functions
+	 * */
 	
 	getgridpoints(momenta, weights, q, pmax, sizeofgrid);
 	
@@ -84,6 +92,10 @@ int main(int argc, char **argv){
 	
 	gsl_matrix_fprintf(test, pot, "%e");
 	fprintf(test, "\n\n");
+	
+	/**
+	 * @note cleanup
+	 * */
 	
 	gsl_vector_free(momenta);
 	gsl_vector_free(weights);
