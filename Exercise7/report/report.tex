@@ -1,0 +1,37 @@
+%!TeX spellcheck = en_GB
+% Die erste (unkommentierte) Zeile im Dokument legt immer die
+% Dokumentklasse fest
+\documentclass{scrartcl} 
+
+% Präambel:
+% Einbinen von zusätzlichen Paketen. Falls für eine Datei keine Endung
+% explizit angegeben wird, benutzt LaTeX '.tex'. Im Folgenden wird
+% also die Datei 'edv_pakete.tex' eingebunden.
+\input{edv_pakete}
+
+
+% Verzeichnisse mit Abbildungen; kann gestrichen werden,
+% falls Sie dies schon in edv_pakete.tex definiert haben:
+%\graphicspath{{../report}}
+
+\addbibresource{refs.bib} %Hinzufügen einer Literaturdatenbank aus dem angegebenen Verzeichnis
+
+% Titel, Autor und Datum
+\title{Computational Physics}
+\subtitle{Exercise 7}
+\date{\today}
+\author{Christiane Groß, Nico Dichter}
+
+% Jetzt startet das eigentliche Dokument
+\begin{document}
+	\maketitle
+	
+\section{Theory}
+\section{Implementation}
+
+Our code is in the github-repo \url{https://github.com/christianegross/CompPhys\_2021}. The simulation itself is in Exercise7/src/main/main.c, the gnuplotscript is in Exercise7/report/plot.gp. 
+\newpage
+\listoffigures
+\listoftables
+\printbibliography
+\end{document}
