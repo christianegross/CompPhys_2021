@@ -89,4 +89,14 @@
 \newcommand{\utmt}{u_{(i-2+i\%2)/2}^{(2a)}}
 \newcommand{\uti}{\tilde{u}_i^{(a)}}
 \newcommand{\utio}{\tilde{u}_{i-1}^{(a)}}
+\def\Xint#1{\mathchoice
+	{\XXint\displaystyle\textstyle{#1}}%
+	{\XXint\textstyle\scriptstyle{#1}}%
+	{\XXint\scriptstyle\scriptscriptstyle{#1}}%
+	{\XXint\scriptscriptstyle\scriptscriptstyle{#1}}%
+	\!\int}
+\def\XXint#1#2#3{{\setbox0=\hbox{$#1{#2#3}{\int}$}
+		\vcenter{\hbox{$#2#3$}}\kern-.5\wd0}}
+\def\ddashint{\Xint=}
+\def\dashint{\Xint-}
 
