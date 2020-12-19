@@ -17,6 +17,8 @@
 #include <gsl/gsl_complex.h>
 #include <gsl/gsl_complex_math.h>
 #include <gsl/gsl_blas.h>
+#include <gsl/gsl_linalg.h>
+#include <gsl/gsl_permutation.h>
 
 /**
  * @brief determines Gauss-Legendre integration points and weights for given grid size, also sets additional point pN=q with weight 1
@@ -125,8 +127,8 @@ int main(int argc, char **argv){
 	/**
 	 * @note set up parameters
 	 * */
-	int sizeofgrid=40;
-	int sizeofangulargrid=40;
+	int sizeofgrid=60;
+	int sizeofangulargrid=60;
 	int l=0;
 	double E=1;
 	double mu=938.92;
@@ -146,9 +148,11 @@ int main(int argc, char **argv){
 	gsl_matrix_complex *a=gsl_matrix_complex_alloc(sizeofgrid+1, sizeofgrid+1);
 	gsl_matrix_complex *awopm=gsl_matrix_complex_alloc(sizeofgrid+1, sizeofgrid+1); 		//a without pmax
 	gsl_matrix_complex *t=gsl_matrix_complex_alloc(sizeofgrid+1, sizeofgrid+1);
+	gsl_matrix_complex *inverse=gsl_matrix_complex_alloc(sizeofgrid+1, sizeofgrid+1);
 	
 	gsl_vector_view p, w;
-	gsl_matrix_complex_view V, A, Awopm, T;
+	gsl_matrix_complex_view V, A, Awopm, T, inv;
+
 	
 	FILE *test=fopen("data/test.dat", "w");
 	FILE *result3=fopen("data/result3.dat", "w");
@@ -208,56 +212,74 @@ int main(int argc, char **argv){
 		A=gsl_matrix_complex_submatrix(a, 0, 0, size+1, size+1);
 		Awopm=gsl_matrix_complex_submatrix(awopm, 0, 0, size+1, size+1);
 		T=gsl_matrix_complex_submatrix(t, 0, 0, size+1, size+1);
-		for (angularsize=4; angularsize<sizeofangulargrid; angularsize+=4){
-			for (int maxp=1; maxp<20; maxp+=1){
-				pmax=100.0*maxp;
+		inv=gsl_matrix_complex_submatrix(inverse, 0, 0, size+1, size+1);
+		gsl_permutation *permutation= gsl_permutation_calloc(size+1);
+		int signum=1;
+		for (angularsize=4; angularsize<=sizeofangulargrid; angularsize+=4){
+			for (int maxp=1; maxp<=100; maxp+=1){
+				pmax=50.0*maxp;
 				getgridpoints(&p.vector, &w.vector, q, pmax, size);
 				fillpotentialmatrix(&V.matrix, &p.vector, l, angularsize, mb);
 				fillmatrixa(&A.matrix, &V.matrix, &p.vector, &w.vector, mu, pmax);
 				fillmatrixawopm(&Awopm.matrix, &V.matrix, &p.vector, &w.vector, mu);
 				fprintf(result3, "%3d\t%3d\t%e\t", size, angularsize, pmax);
-				gsl_matrix_complex_memcpy(&T.matrix, &V.matrix);
-				gsl_blas_ztrsm(CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit, gsl_complex_rect(1.0, 0), &A.matrix, &T.matrix);
+				
+				gsl_linalg_complex_LU_decomp(&A.matrix, permutation, &signum);
+				gsl_linalg_complex_LU_invert(&A.matrix, permutation, &inv.matrix);
+				gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, gsl_complex_rect(1.0, 0), &inv.matrix, &V.matrix, gsl_complex_rect(0, 0), &T.matrix); 
 				tnn=gsl_matrix_complex_get(&T.matrix, size, size);
 				fprintf(result3, "%e\t%e\t%e\t", GSL_REAL(tnn), GSL_IMAG(tnn), gsl_complex_abs(tnn));
-				gsl_matrix_complex_memcpy(&T.matrix, &V.matrix);
-				gsl_blas_ztrsm(CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit, gsl_complex_rect(1.0, 0), &Awopm.matrix, &T.matrix);
+				
+				gsl_linalg_complex_LU_decomp(&Awopm.matrix, permutation, &signum);
+				gsl_linalg_complex_LU_invert(&Awopm.matrix, permutation, &inv.matrix);
+				gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, gsl_complex_rect(1.0, 0), &inv.matrix, &V.matrix, gsl_complex_rect(0, 0), &T.matrix); 
 				tnn=gsl_matrix_complex_get(&T.matrix, size, size);
 				fprintf(result3, "%e\t%e\t%e\n", GSL_REAL(tnn), GSL_IMAG(tnn), gsl_complex_abs(tnn));
 			}
 		}
+		gsl_permutation_free(permutation);
 	}
 	
 	/**
 	 * @note measurements for exercise 4
 	 * */
+	size=sizeofgrid;
+	angularsize=sizeofangulargrid;
+	p=gsl_vector_subvector(momenta, 0, size+1);
+	w=gsl_vector_subvector(weights, 0, size+1);
+	V=gsl_matrix_complex_submatrix(pot, 0, 0, size+1, size+1);
+	A=gsl_matrix_complex_submatrix(a, 0, 0, size+1, size+1);
+	Awopm=gsl_matrix_complex_submatrix(awopm, 0, 0, size+1, size+1);
+	T=gsl_matrix_complex_submatrix(t, 0, 0, size+1, size+1);
+	inv=gsl_matrix_complex_submatrix(inverse, 0, 0, size+1, size+1);
+	gsl_permutation *permutation= gsl_permutation_calloc(size+1);
+	int signum=1;
 	fprintf(result4, "energy\tq\tAbs(s)\tArg(s)\tAbs(swopm)\tArg(swopm)\n");
 	for (int energy=0; energy<=200; energy +=1){p=gsl_vector_subvector(momenta, 0, size+1);
 		q=sqrt(2.0*mu*energy);
 		pmax=1000;
-		size=sizeofgrid;
-		angularsize=sizeofangulargrid;
-		w=gsl_vector_subvector(weights, 0, size+1);
-		V=gsl_matrix_complex_submatrix(pot, 0, 0, size+1, size+1);
-		A=gsl_matrix_complex_submatrix(a, 0, 0, size+1, size+1);
-		Awopm=gsl_matrix_complex_submatrix(awopm, 0, 0, size+1, size+1);
-		T=gsl_matrix_complex_submatrix(t, 0, 0, size+1, size+1);
+		
 		getgridpoints(&p.vector, &w.vector, q, pmax, size);
 		fillpotentialmatrix(&V.matrix, &p.vector, l, angularsize, mb);
 		fillmatrixa(&A.matrix, &V.matrix, &p.vector, &w.vector, mu, pmax);
 		fillmatrixawopm(&Awopm.matrix, &V.matrix, &p.vector, &w.vector, mu);
 		fprintf(result4, "%3d\t%e\t", energy, q);
-		gsl_matrix_complex_memcpy(&T.matrix, &V.matrix);
-		gsl_blas_ztrsm(CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit, gsl_complex_rect(1.0, 0), &A.matrix, &T.matrix);
+		
+		gsl_linalg_complex_LU_decomp(&A.matrix, permutation, &signum);
+		gsl_linalg_complex_LU_invert(&A.matrix, permutation, &inv.matrix);
+		gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, gsl_complex_rect(1.0, 0), &inv.matrix, &V.matrix, gsl_complex_rect(0, 0), &T.matrix); 
 		tnn=gsl_matrix_complex_get(&T.matrix, size, size);
 		s=calculate_s(tnn, mu, q);
 		fprintf(result4, "%e\t%e\t",gsl_complex_abs(s), gsl_complex_arg(s));
-		gsl_matrix_complex_memcpy(&T.matrix, &V.matrix);
-		gsl_blas_ztrsm(CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit, gsl_complex_rect(1.0, 0), &Awopm.matrix, &T.matrix);
+		
+		gsl_linalg_complex_LU_decomp(&Awopm.matrix, permutation, &signum);
+		gsl_linalg_complex_LU_invert(&Awopm.matrix, permutation, &inv.matrix);
+		gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, gsl_complex_rect(1.0, 0), &inv.matrix, &V.matrix, gsl_complex_rect(0, 0), &T.matrix); 
 		tnn=gsl_matrix_complex_get(&T.matrix, size, size);
 		s=calculate_s(tnn, mu, q);
 		fprintf(result4, "%e\t%e\n", gsl_complex_abs(s), gsl_complex_arg(s));
 	}
+	gsl_permutation_free(permutation);
 	/**
 	 * @note cleanup
 	 * */
