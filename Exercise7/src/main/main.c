@@ -116,9 +116,9 @@ inline void fillmatrixawopm(gsl_matrix_complex *a, gsl_matrix_complex *pot, gsl_
 /**
  * @brief calculates the modulus of s
  * */
-inline double absofs(gsl_complex tnn, double mu, double q){
+inline gsl_complex calculate_s(gsl_complex tnn, double mu, double q){
 	gsl_complex result=gsl_complex_add_real(gsl_complex_mul_imag(gsl_complex_mul_real(tnn, 2*M_PI*mu*q), -1), 1);
-	return gsl_complex_abs(result);
+	return result;
 }
 
 int main(int argc, char **argv){
@@ -132,7 +132,8 @@ int main(int argc, char **argv){
 	double mu=938.92;
 	double q=sqrt(2*mu*E);
 	double pmax=100;
-	gsl_complex tnn;
+	gsl_complex tnn, s;
+	int size, angularsize;
 	
 	/**
 	 * @note set up gsl vectors and matrices, streams for toring results
@@ -150,6 +151,7 @@ int main(int argc, char **argv){
 	
 	FILE *test=fopen("data/test.dat", "w");
 	FILE *result3=fopen("data/result3.dat", "w");
+	FILE *result4=fopen("data/result4.dat", "w");
 	
 	/**
 	 * @note test functions
@@ -192,37 +194,68 @@ int main(int argc, char **argv){
 	printf("%e\n", GSL_REAL(tnn));
 	//~ s=gsl_complex_sub_real(gsl_complex_mul_imag(gsl_complex_mul_real(gsl_matrix_complex_get(t, t->size1-1, t->size2-1), 2*M_PI*mu*q), -1), 1);
 	//~ printf("%e\n", gsl_complex_abs(s));
-	printf("%e\n", absofs(tnn, mu, q));
+	//~ printf("%e\n", absofs(tnn, mu, q));
 	
 	/**
 	 * @note measurements for exercise 3
 	 * */
-	 fprintf(result3, "size\tangularsize\tpmax\tR(tnn)\tI(tnn)\tAbs(tnn)\tR(tnnwopm)\tI(tnnwopm)\tAbs(tnnwopm)\n");
-	for (int size=4; size<sizeofgrid; size+=4){
+	fprintf(result3, "size\tangularsize\tpmax\tR(tnn)\tI(tnn)\tAbs(tnn)\tAbs(s)\tArg(s)\tR(tnnwopm)\tI(tnnwopm)\tAbs(tnnwopm)\tAbs(s)\tArg(s)\n");
+	for (size=4; size<sizeofgrid; size+=4){
 		p=gsl_vector_subvector(momenta, 0, size+1);
 		w=gsl_vector_subvector(weights, 0, size+1);
 		V=gsl_matrix_complex_submatrix(pot, 0, 0, size+1, size+1);
 		A=gsl_matrix_complex_submatrix(a, 0, 0, size+1, size+1);
 		Awopm=gsl_matrix_complex_submatrix(awopm, 0, 0, size+1, size+1);
 		T=gsl_matrix_complex_submatrix(t, 0, 0, size+1, size+1);
-		for (int angularsize=4; angularsize<sizeofangulargrid; angularsize+=4){
+		for (angularsize=4; angularsize<sizeofangulargrid; angularsize+=4){
 			for (int maxp=1; maxp<20; maxp+=1){
 				pmax=100.0*maxp;
 				getgridpoints(&p.vector, &w.vector, q, pmax, size);
 				fillpotentialmatrix(&V.matrix, &p.vector, l, angularsize, mu);
 				fillmatrixa(&A.matrix, &V.matrix, &p.vector, &w.vector, mu, pmax);
 				fillmatrixawopm(&Awopm.matrix, &V.matrix, &p.vector, &w.vector, mu);
-				fprintf(result3, "%d\t%d\t%e\t", size, angularsize, pmax);
+				fprintf(result3, "%3d\t%3d\t%e\t", size, angularsize, pmax);
 				gsl_matrix_complex_memcpy(&T.matrix, &V.matrix);
 				gsl_blas_ztrsm(CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit, gsl_complex_rect(1.0, 0), &A.matrix, &T.matrix);
 				tnn=gsl_matrix_complex_get(&T.matrix, size, size);
-				fprintf(result3, "%e\t%e\t%e\t", GSL_REAL(tnn), GSL_IMAG(tnn), gsl_complex_abs(tnn));
+				s=calculate_s(tnn, mu, q);
+				fprintf(result3, "%e\t%e\t%e\t%e\t%e\t", GSL_REAL(tnn), GSL_IMAG(tnn), gsl_complex_abs(tnn), gsl_complex_abs(s), gsl_complex_arg(s));
 				gsl_matrix_complex_memcpy(&T.matrix, &V.matrix);
 				gsl_blas_ztrsm(CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit, gsl_complex_rect(1.0, 0), &Awopm.matrix, &T.matrix);
-				tnn=gsl_matrix_complex_get(&T.matrix, size, size);
-				fprintf(result3, "%e\t%e\t%e\n", GSL_REAL(tnn), GSL_IMAG(tnn), gsl_complex_abs(tnn));
+				s=calculate_s(tnn, mu, q);
+				fprintf(result3, "%e\t%e\t%e\t%e\t%e\n", GSL_REAL(tnn), GSL_IMAG(tnn), gsl_complex_abs(tnn), gsl_complex_abs(s), gsl_complex_arg(s));
 			}
 		}
+	}
+	
+	/**
+	 * @note measurements for exercise 4
+	 * */
+	fprintf(result4, "energy\tq\tAbs(s)\tArg(s)\tAbs(swopm)\tArg(swopm)\n");
+	for (int energy=0; energy<=200; energy +=1){p=gsl_vector_subvector(momenta, 0, size+1);
+		q=sqrt(2.0*mu*energy);
+		pmax=1000;
+		size=sizeofgrid;
+		angularsize=sizeofangulargrid;
+		w=gsl_vector_subvector(weights, 0, size+1);
+		V=gsl_matrix_complex_submatrix(pot, 0, 0, size+1, size+1);
+		A=gsl_matrix_complex_submatrix(a, 0, 0, size+1, size+1);
+		Awopm=gsl_matrix_complex_submatrix(awopm, 0, 0, size+1, size+1);
+		T=gsl_matrix_complex_submatrix(t, 0, 0, size+1, size+1);
+		getgridpoints(&p.vector, &w.vector, q, pmax, size);
+		fillpotentialmatrix(&V.matrix, &p.vector, l, angularsize, mu);
+		fillmatrixa(&A.matrix, &V.matrix, &p.vector, &w.vector, mu, pmax);
+		fillmatrixawopm(&Awopm.matrix, &V.matrix, &p.vector, &w.vector, mu);
+		fprintf(result4, "%3d\t%e\t", energy, q);
+		gsl_matrix_complex_memcpy(&T.matrix, &V.matrix);
+		gsl_blas_ztrsm(CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit, gsl_complex_rect(1.0, 0), &A.matrix, &T.matrix);
+		tnn=gsl_matrix_complex_get(&T.matrix, size, size);
+		s=calculate_s(tnn, mu, q);
+		fprintf(result4, "%e\t%e\t",gsl_complex_abs(s), gsl_complex_arg(s));
+		gsl_matrix_complex_memcpy(&T.matrix, &V.matrix);
+		gsl_blas_ztrsm(CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit, gsl_complex_rect(1.0, 0), &Awopm.matrix, &T.matrix);
+		s=calculate_s(tnn, mu, q);
+		fprintf(result4, "%e\t%e\n", gsl_complex_abs(s), gsl_complex_arg(s));
 	}
 	/**
 	 * @note cleanup
@@ -234,6 +267,7 @@ int main(int argc, char **argv){
 	gsl_matrix_complex_free(a);
 	fclose(test);
 	fclose(result3);
+	fclose(result4);
 	
 	return 0;
 }
