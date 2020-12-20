@@ -28,6 +28,7 @@ set title sprintf("wo pmax angsize=%d", angsize)
 plot for [size=4:56:4] result3 u (($2==angsize&&$1==size)?$3:1/0):7 title sprintf("%d", size)
 }
 
+plot result4 u 2:4
 
 set ter epslatex size 15 cm, 10 cm color colortext
 unset title

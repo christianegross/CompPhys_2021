@@ -41,9 +41,9 @@ void getgridpoints(gsl_vector *momenta, gsl_vector *weights, double q, double pm
  * @brief uses Gauss-Legendre integration to calculate the potential, form of the potential given in lecture 7, 
  * fills matrix with the potential
  * */
-inline void fillpotentialmatrix(gsl_matrix_complex *pot, gsl_vector *momenta, int l, int sizeofangulargrid, double mb){
+inline void fillpotentialmatrix(gsl_matrix_complex *pot, gsl_vector *momenta, int l, int sizeofangulargrid, double mb, double Apref, double C_0, double lambda){
 	gsl_integration_glfixed_table *table=gsl_integration_glfixed_table_alloc(sizeofangulargrid);
-	double result, x, weight, pi, pj;
+	double result, x, weight, pi, pj, qval;
 	int errorcode;
 	for (int i=0; i<pot->size1; i+=1){
 		pi=gsl_vector_get(momenta, i);
@@ -52,9 +52,14 @@ inline void fillpotentialmatrix(gsl_matrix_complex *pot, gsl_vector *momenta, in
 			result=0;
 			for (int k=0; k<sizeofangulargrid; k+=1){
 				errorcode=gsl_integration_glfixed_point(-1, 1, k, &x, &weight, table);
-				result+=weight*gsl_sf_legendre_Pl(l, x)/(pi*pi+pj*pj-2*pi*pj*x+mb*mb);
+				qval=pi*pi+pj*pj-2*pi*pj*x;
+				result+=weight*gsl_sf_legendre_Pl(l, x)/(qval*qval+mb*mb)*exp(-1*(qval*qval+mb*mb)/lambda/lambda);
 			}
-			gsl_matrix_complex_set(pot, i, j, gsl_complex_rect(2*M_PI*result, 0));
+			result*=Apref;
+			if (l==0){
+				result+=C_0*exp(-(pi*pi+pj*pj)/lambda/lambda);
+			}
+			gsl_matrix_complex_set(pot, i, j, gsl_complex_rect(result, 0));
 		}
 	}
 	gsl_integration_glfixed_table_free(table);	
@@ -127,12 +132,16 @@ int main(int argc, char **argv){
 	/**
 	 * @note set up parameters
 	 * */
+	double hbarc=197.3;
+	double lambda=800/hbarc;
+	double Apref=-0.1544435;
+	double C_0=2.470795e-2;
 	int sizeofgrid=60;
 	int sizeofangulargrid=60;
 	int l=0;
-	double E=1;
-	double mu=938.92;
-	double mb=138.0;
+	double E=1.0/hbarc;
+	double mu=938.92/hbarc;
+	double mb=138.0/hbarc;
 	double q=sqrt(2*mu*E);
 	double pmax=100;
 	gsl_complex tnn, s;
@@ -157,52 +166,10 @@ int main(int argc, char **argv){
 	FILE *test=fopen("data/test.dat", "w");
 	FILE *result3=fopen("data/result3.dat", "w");
 	FILE *result4=fopen("data/result4.dat", "w");
-	
-	/**
-	 * @note test functions
-	 * */
-	
-	getgridpoints(momenta, weights, q, pmax, sizeofgrid);
-	
-	//~ gsl_vector_fprintf(test, momenta, "%e");
-	//~ fprintf(test, "\n\n");
-	//~ gsl_vector_fprintf(test, weights, "%e");
-	//~ fprintf(test, "\n\n");
-	
-	fillpotentialmatrix(pot, momenta, l, sizeofangulargrid, mb);
-	
-	//~ gsl_matrix_complex_fprintf(test, pot, "%e");
-	//~ fprintf(test, "\n\n");
-	
-	fillmatrixa(a, pot, momenta, weights, mu, pmax);
-	
-	//~ gsl_matrix_complex_fprintf(test, a, "%e");
-	//~ fprintf(test, "\n\n");
-	
-	/**
-	 * @note determine t by using t=A^-1*V, copy V in empty t so V does not get lost
-	 * */
-	gsl_matrix_complex_memcpy(t, pot);
-	
-	//~ gsl_matrix_complex_fprintf(test, t, "%e");
-	//~ fprintf(test, "\n\n");
-	
-	gsl_blas_ztrsm(CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit, gsl_complex_rect(1.0, 0), a, t);
-	
-	gsl_matrix_complex_fprintf(test, t, "%e");
-	fprintf(test, "\n\n");
-	
-	/**
-	 * @note determine t_NN, check if |S|==1
-	 * */
-	tnn=gsl_matrix_complex_get(t, t->size1-1, t->size2-1);
-	printf("%e\n", GSL_REAL(tnn));
-	//~ s=gsl_complex_sub_real(gsl_complex_mul_imag(gsl_complex_mul_real(gsl_matrix_complex_get(t, t->size1-1, t->size2-1), 2*M_PI*mu*q), -1), 1);
-	//~ printf("%e\n", gsl_complex_abs(s));
-	//~ printf("%e\n", absofs(tnn, mu, q));
-	
+
 	/**
 	 * @note measurements for exercise 3
+	 * @note get grids, fill matrices, invert a by doing LU decomposition and inverting that, then multiplying to V to get t 
 	 * */
 	fprintf(result3, "size\tangularsize\tpmax\tR(tnn)\tI(tnn)\tAbs(tnn)\tR(tnnwopm)\tI(tnnwopm)\tAbs(tnnwopm)\n");
 	for (size=4; size<sizeofgrid; size+=4){
@@ -216,23 +183,25 @@ int main(int argc, char **argv){
 		gsl_permutation *permutation= gsl_permutation_calloc(size+1);
 		int signum=1;
 		for (angularsize=4; angularsize<=sizeofangulargrid; angularsize+=4){
-			for (int maxp=1; maxp<=100; maxp+=1){
+			for (int maxp=1; maxp<=200; maxp+=1){
 				pmax=50.0*maxp;
 				getgridpoints(&p.vector, &w.vector, q, pmax, size);
-				fillpotentialmatrix(&V.matrix, &p.vector, l, angularsize, mb);
+				fillpotentialmatrix(&V.matrix, &p.vector, l, angularsize, mb, Apref, C_0, lambda);
 				fillmatrixa(&A.matrix, &V.matrix, &p.vector, &w.vector, mu, pmax);
 				fillmatrixawopm(&Awopm.matrix, &V.matrix, &p.vector, &w.vector, mu);
 				fprintf(result3, "%3d\t%3d\t%e\t", size, angularsize, pmax);
 				
-				gsl_linalg_complex_LU_decomp(&A.matrix, permutation, &signum);
-				gsl_linalg_complex_LU_invert(&A.matrix, permutation, &inv.matrix);
-				gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, gsl_complex_rect(1.0, 0), &inv.matrix, &V.matrix, gsl_complex_rect(0, 0), &T.matrix); 
+				gsl_matrix_complex_memcpy(&T.matrix, &V.matrix);																	//make copy of V that is later changed and used to store the result
+				gsl_linalg_complex_LU_decomp(&A.matrix, permutation, &signum);														//make LU-decomposition of A
+				gsl_blas_ztrsm(CblasLeft, CblasLower, CblasNoTrans, CblasUnit, gsl_complex_rect(1.0, 0), &A.matrix, &T.matrix); 	//multiply 1*(L)⁻1*V
+				gsl_blas_ztrsm(CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit, gsl_complex_rect(1.0, 0), &A.matrix, &T.matrix); 	//multiply 1*(U)⁻1*(L)⁻1*V
 				tnn=gsl_matrix_complex_get(&T.matrix, size, size);
 				fprintf(result3, "%e\t%e\t%e\t", GSL_REAL(tnn), GSL_IMAG(tnn), gsl_complex_abs(tnn));
 				
-				gsl_linalg_complex_LU_decomp(&Awopm.matrix, permutation, &signum);
-				gsl_linalg_complex_LU_invert(&Awopm.matrix, permutation, &inv.matrix);
-				gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, gsl_complex_rect(1.0, 0), &inv.matrix, &V.matrix, gsl_complex_rect(0, 0), &T.matrix); 
+				gsl_matrix_complex_memcpy(&T.matrix, &V.matrix);																	//make copy of V that is later changed and used to store the result
+				gsl_linalg_complex_LU_decomp(&Awopm.matrix, permutation, &signum);														//make LU-decomposition of A
+				gsl_blas_ztrsm(CblasLeft, CblasLower, CblasNoTrans, CblasUnit, gsl_complex_rect(1.0, 0), &Awopm.matrix, &T.matrix); 	//multiply 1*(L)⁻1*V
+				gsl_blas_ztrsm(CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit, gsl_complex_rect(1.0, 0), &Awopm.matrix, &T.matrix); 	//multiply 1*(U)⁻1*(L)⁻1*V
 				tnn=gsl_matrix_complex_get(&T.matrix, size, size);
 				fprintf(result3, "%e\t%e\t%e\n", GSL_REAL(tnn), GSL_IMAG(tnn), gsl_complex_abs(tnn));
 			}
@@ -243,7 +212,7 @@ int main(int argc, char **argv){
 	/**
 	 * @note measurements for exercise 4
 	 * */
-	size=sizeofgrid;
+	size=20;
 	angularsize=sizeofangulargrid;
 	p=gsl_vector_subvector(momenta, 0, size+1);
 	w=gsl_vector_subvector(weights, 0, size+1);
@@ -256,25 +225,27 @@ int main(int argc, char **argv){
 	int signum=1;
 	fprintf(result4, "energy\tq\tAbs(s)\tArg(s)\tAbs(swopm)\tArg(swopm)\n");
 	for (int energy=0; energy<=200; energy +=1){p=gsl_vector_subvector(momenta, 0, size+1);
-		q=sqrt(2.0*mu*energy);
-		pmax=1000;
+		q=sqrt(2.0*mu*energy/hbarc);
+		pmax=100000;
 		
 		getgridpoints(&p.vector, &w.vector, q, pmax, size);
-		fillpotentialmatrix(&V.matrix, &p.vector, l, angularsize, mb);
+		fillpotentialmatrix(&V.matrix, &p.vector, l, angularsize, mb, Apref, C_0, lambda);
 		fillmatrixa(&A.matrix, &V.matrix, &p.vector, &w.vector, mu, pmax);
 		fillmatrixawopm(&Awopm.matrix, &V.matrix, &p.vector, &w.vector, mu);
 		fprintf(result4, "%3d\t%e\t", energy, q);
 		
-		gsl_linalg_complex_LU_decomp(&A.matrix, permutation, &signum);
-		gsl_linalg_complex_LU_invert(&A.matrix, permutation, &inv.matrix);
-		gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, gsl_complex_rect(1.0, 0), &inv.matrix, &V.matrix, gsl_complex_rect(0, 0), &T.matrix); 
+		gsl_matrix_complex_memcpy(&T.matrix, &V.matrix);																	//make copy of V that is later changed and used to store the result
+		gsl_linalg_complex_LU_decomp(&A.matrix, permutation, &signum);														//make LU-decomposition of A
+		gsl_blas_ztrsm(CblasLeft, CblasLower, CblasNoTrans, CblasUnit, gsl_complex_rect(1.0, 0), &A.matrix, &T.matrix); 	//multiply 1*(L)⁻1*V
+		gsl_blas_ztrsm(CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit, gsl_complex_rect(1.0, 0), &A.matrix, &T.matrix); 	//multiply 1*(U)⁻1*(L)⁻1*V
 		tnn=gsl_matrix_complex_get(&T.matrix, size, size);
 		s=calculate_s(tnn, mu, q);
 		fprintf(result4, "%e\t%e\t",gsl_complex_abs(s), gsl_complex_arg(s));
 		
-		gsl_linalg_complex_LU_decomp(&Awopm.matrix, permutation, &signum);
-		gsl_linalg_complex_LU_invert(&Awopm.matrix, permutation, &inv.matrix);
-		gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, gsl_complex_rect(1.0, 0), &inv.matrix, &V.matrix, gsl_complex_rect(0, 0), &T.matrix); 
+		gsl_matrix_complex_memcpy(&T.matrix, &V.matrix);																	//make copy of V that is later changed and used to store the result
+		gsl_linalg_complex_LU_decomp(&Awopm.matrix, permutation, &signum);														//make LU-decomposition of A
+		gsl_blas_ztrsm(CblasLeft, CblasLower, CblasNoTrans, CblasUnit, gsl_complex_rect(1.0, 0), &Awopm.matrix, &T.matrix); 	//multiply 1*(L)⁻1*V
+		gsl_blas_ztrsm(CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit, gsl_complex_rect(1.0, 0), &Awopm.matrix, &T.matrix); 	//multiply 1*(U)⁻1*(L)⁻1*V
 		tnn=gsl_matrix_complex_get(&T.matrix, size, size);
 		s=calculate_s(tnn, mu, q);
 		fprintf(result4, "%e\t%e\n", gsl_complex_abs(s), gsl_complex_arg(s));
