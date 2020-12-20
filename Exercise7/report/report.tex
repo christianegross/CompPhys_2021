@@ -1,0 +1,93 @@
+%!TeX spellcheck = en_GB
+% Die erste (unkommentierte) Zeile im Dokument legt immer die
+% Dokumentklasse fest
+\documentclass{scrartcl} 
+
+% Präambel:
+% Einbinen von zusätzlichen Paketen. Falls für eine Datei keine Endung
+% explizit angegeben wird, benutzt LaTeX '.tex'. Im Folgenden wird
+% also die Datei 'edv_pakete.tex' eingebunden.
+\input{edv_pakete}
+
+
+% Verzeichnisse mit Abbildungen; kann gestrichen werden,
+% falls Sie dies schon in edv_pakete.tex definiert haben:
+%\graphicspath{{../report}}
+
+\addbibresource{refs.bib} %Hinzufügen einer Literaturdatenbank aus dem angegebenen Verzeichnis
+
+% Titel, Autor und Datum
+\title{Computational Physics}
+\subtitle{Exercise 7}
+\date{\today}
+\author{Christiane Groß, Nico Dichter}
+
+% Jetzt startet das eigentliche Dokument
+\begin{document}
+	\maketitle
+	
+\section{Theory}
+
+\subsection{Discretization of the Lippmann-Schwinger-equation}
+
+Using some definitions given in the lectures and on the sheet, we are able to discretize the Lippmann-Schwinger-equation given on the sheet. we use Gauss-Legendre-integration and get the following matrix-equation:
+
+\begin{longtable}{>{$\displaystyle}r<{$}>{$\displaystyle}c<{$}>{$\displaystyle}l<{$}}
+	f(p'')&=&2\mu p''^2V_l(p, p'')t_l(p'', p')\\
+	q&=&p_N\\
+		
+	V(p_i, p_j)&=&V_{ij}\\
+		
+		
+	t(p_i, p_j)&=&t_{ij}\\
+		
+	\int_{0}^{\infty}\dd p'' g(p'')&=&\sum_{k=0}^{N-1}\omega_k g(p''_k)\\
+	
+	&&\\
+	
+	\dashint_{0}^{p_{max}}\dd p''\frac{1}{q^2-p''^2}&=&\lim\limits_{\epsilon\to 0}\int_{0}^{q-\epsilon}\dd p''\frac{1}{(q+p'')(q-p'')}+\int_{q+\epsilon}^{p_{max}}\dd p''\frac{1}{(q+p'')(q-p'')}\\
+	&=&\lim\limits_{\epsilon\to 0}\frac{1}{2q}\left(\int_{0}^{q-\epsilon}\dd p''\frac{1}{q+p''}-\frac{1}{p''-q}+\int_{q+\epsilon}^{p_{max}}\dd p''\frac{1}{q+p''}-\frac{1}{p''-q}\right)\\
+	&=&\lim\limits_{\epsilon\to 0}\frac{1}{2q}\left(\ln\left(\frac{q+p''}{p''-q}\right)_0^{q-\epsilon}+\ln\left(\frac{q+p''}{p''-q}\right)_{q+\epsilon}^{p_{max}}\right)\\
+	&=&\frac{1}{2q}\ln\left(\frac{p_{max}+q}{p_{max}-q}\right)\\
+	
+	&&\\
+
+	
+	V_l(p, p')&=&-t_l(p, p')-\int_0^{\infty}\dd p''\frac{f(p'')-f(q)}{q^2-p''^2}-f(q)	\dashint_{0}^{p_{max}}\dd p''\frac{1}{q^2-p''^2}+i\pi\frac{f(q)}{2q}\\
+	
+	V_l(p, p')&=&-t_l(p, p')-2\mu\int_0^{\infty}\dd p''\frac{p''^2V_l(p, p'')t_l(p'', p')-q^2V_l(p, q)t_l(q, p')}{q^2-p''^2}\\
+	&&-2\mu q^2V_l(p, q)t_l(q, p')\frac{1}{2q}\ln\left(\frac{p_{max}+q}{p_{max}-q}\right)+i\pi\frac{2\mu q^2V_l(p, q)t_l(q, p')}{2q}\\
+	
+	V_l(p, p')&=&-t_l(p, p')-2\mu\int_0^{\infty}\dd p''\frac{p''^2V_l(p, p'')t_l(p'', p')-q^2V_l(p, q)t_l(q, p')}{q^2-p''^2}\\
+	&&-\mu qV_l(p, q)t_l(q, p')\ln\left(\frac{p_{max}+q}{p_{max}-q}\right)+i\pi\mu qV_l(p, q)t_l(q, p')\\
+	
+	V_{ij}&=&t_{ij}-2\mu\sum_{k=0}^{N-1}\omega_k\left(\frac{p_k^2V_{ik}t_{kj}}{q^2-p_k^2}-\frac{q^2V_{iN}t_{Nj}}{q^2-p_k^2}\right)-\mu qV_{iN}t_{Nj}\ln\left(\frac{p_{max}+q}{p_{max}-q}\right)+i\pi\mu qV_{iN}t_{Nj}\\
+	
+	&=&\sum_{k=0}^{N-1}\left(\delta_{ik}-\frac{2\mu p_k^2V_{ik}}{q^2-p_k^2}\omega_k\right)t_{kj}\\
+	&&+\left(\delta_{iN}+\sum_{k=0}^{N-1}\frac{2\mu q^2V_{iN}}{q^2-p_k^2}\omega_k-\mu qV_{iN}\ln\left(\frac{p_{max}+q}{p_{max}-q}\right)+i\pi\mu qV_{iN}\right)t_{Nj}\\
+	&=&\sum_{k=0}^{N}A_{ik}t_{kj}\\
+	
+	
+	\end{longtable}
+	
+	This is exactly the matrix given on the sheet.
+	
+	The potential was given in the lectures as \[
+	V_l(p, p')=2\pi\int_{-1}^{1}\dd x P_l(x)\frac{1}{p^2+p'^2-2pp'x+\mu^2}
+	\]
+	
+	We also discretize this integral using the Gauss-Legendre-approximation. 
+	
+	For determining $t(q, q)=t_{NN}$, we use the following manipulation:
+	\[
+	V=At \Leftrightarrow t=A^{-1}V \Leftrightarrow t_{NN}=(A^{-1}V)_{NN}
+	\]
+	
+\section{Implementation}
+
+Our code is in the github-repo \url{https://github.com/christianegross/CompPhys\_2021}. The simulation itself is in Exercise7/src/main/main.c, the gnuplotscript is in Exercise7/report/plot.gp. 
+\newpage
+\listoffigures
+\listoftables
+\printbibliography
+\end{document}
