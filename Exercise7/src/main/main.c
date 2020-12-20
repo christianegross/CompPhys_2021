@@ -53,11 +53,11 @@ inline void fillpotentialmatrix(gsl_matrix_complex *pot, gsl_vector *momenta, in
 			for (int k=0; k<sizeofangulargrid; k+=1){
 				errorcode=gsl_integration_glfixed_point(-1, 1, k, &x, &weight, table);
 				qval=pi*pi+pj*pj-2*pi*pj*x;
-				result+=weight*gsl_sf_legendre_Pl(l, x)/(qval*qval+mb*mb)*exp(-1*(qval*qval+mb*mb)/lambda/lambda);
+				result+=weight*gsl_sf_legendre_Pl(l, x)/(qval*qval+mb*mb)*exp(-1*(qval*qval+mb*mb)/lambda/lambda);//TODO fix qval
 			}
 			result*=Apref;
 			if (l==0){
-				result+=C_0*exp(-(pi*pi+pj*pj)/lambda/lambda);
+				result+=C_0*exp(-(pi*pi+pj*pj)/lambda/lambda);//TODO fix 1/4pi and 1/2pi
 			}
 			gsl_matrix_complex_set(pot, i, j, gsl_complex_rect(result, 0));
 		}
@@ -85,7 +85,7 @@ inline void fillmatrixa(gsl_matrix_complex *a, gsl_matrix_complex *pot, gsl_vect
 		if(i==a->size2-1){result+=1;}
 		for (int m=0; m<a->size2-1; m+=1){
 			pm=gsl_vector_get(momenta, m);
-			result+=2*mu*GSL_REAL(gsl_matrix_complex_get(pot, i, m))*pm*pm*gsl_vector_get(weights, m)/(q*q-pm*pm);
+			result+=2*mu*GSL_REAL(gsl_matrix_complex_get(pot, i, m))*pm*pm*gsl_vector_get(weights, m)/(q*q-pm*pm);//TODO fix V_iN and p_m-> q
 		}
 		result-=mu*q*GSL_REAL(gsl_matrix_complex_get(pot, i, pot->size2-1))*log((pmax+q)/(pmax-q));
 		resultimaginary=M_PI*mu*q*GSL_REAL(gsl_matrix_complex_get(pot, i, pot->size2-1));
@@ -113,7 +113,7 @@ inline void fillmatrixawopm(gsl_matrix_complex *a, gsl_matrix_complex *pot, gsl_
 		if(i==a->size2-1){result+=1;}
 		for (int m=0; m<a->size2-1; m+=1){
 			pm=gsl_vector_get(momenta, m);
-			result+=2*mu*GSL_REAL(gsl_matrix_complex_get(pot, i, m))*pm*pm*gsl_vector_get(weights, m)/(q*q-pm*pm);
+			result+=2*mu*GSL_REAL(gsl_matrix_complex_get(pot, i, m))*pm*pm*gsl_vector_get(weights, m)/(q*q-pm*pm);//TODO fix V_iN and p_m-> q
 		}
 		resultimaginary=M_PI*mu*q*GSL_REAL(gsl_matrix_complex_get(pot, i, pot->size2-1));
 		gsl_matrix_complex_set(a, i, a->size2-1, gsl_complex_rect(result, resultimaginary));
@@ -148,7 +148,7 @@ int main(int argc, char **argv){
 	int size, angularsize;
 	
 	/**
-	 * @note set up gsl vectors and matrices, streams for toring results
+	 * @note set up gsl vectors and matrices, streams for storing results
 	 * */
 	gsl_vector *momenta=gsl_vector_alloc(sizeofgrid+1);
 	gsl_vector *weights=gsl_vector_alloc(sizeofgrid+1);
@@ -193,6 +193,10 @@ int main(int argc, char **argv){
 				
 				gsl_matrix_complex_memcpy(&T.matrix, &V.matrix);																	//make copy of V that is later changed and used to store the result
 				gsl_linalg_complex_LU_decomp(&A.matrix, permutation, &signum);														//make LU-decomposition of A
+				/**for(int u=0;u<permutation->size;u++){
+					printf ("%ld ",permutation->data[u]);
+				}
+				printf ("\n%d\n",signum);**/
 				gsl_blas_ztrsm(CblasLeft, CblasLower, CblasNoTrans, CblasUnit, gsl_complex_rect(1.0, 0), &A.matrix, &T.matrix); 	//multiply 1*(L)⁻1*V
 				gsl_blas_ztrsm(CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit, gsl_complex_rect(1.0, 0), &A.matrix, &T.matrix); 	//multiply 1*(U)⁻1*(L)⁻1*V
 				tnn=gsl_matrix_complex_get(&T.matrix, size, size);
