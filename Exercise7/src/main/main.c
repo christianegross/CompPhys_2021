@@ -43,7 +43,7 @@ void getgridpoints(gsl_vector *momenta, gsl_vector *weights, double q, double pm
  * */
 inline void fillpotentialmatrix(gsl_matrix_complex *pot, gsl_vector *momenta, int l, int sizeofangulargrid, double mb, double Apref, double C_0, double lambda){
 	gsl_integration_glfixed_table *table=gsl_integration_glfixed_table_alloc(sizeofangulargrid);
-	double result, x, weight, pi, pj, qval;
+	double result, x, weight, pi, pj, qvalsquare;
 	int errorcode;
 	for (int i=0; i<pot->size1; i+=1){
 		pi=gsl_vector_get(momenta, i);
@@ -52,8 +52,8 @@ inline void fillpotentialmatrix(gsl_matrix_complex *pot, gsl_vector *momenta, in
 			result=0;
 			for (int k=0; k<sizeofangulargrid; k+=1){
 				errorcode=gsl_integration_glfixed_point(-1, 1, k, &x, &weight, table);
-				qval=pi*pi+pj*pj-2*pi*pj*x;
-				result+=weight*gsl_sf_legendre_Pl(l, x)/(qval*qval+mb*mb)*exp(-1*(qval*qval+mb*mb)/lambda/lambda);//TODO fix qval
+				qvalsquare=pi*pi+pj*pj-2*pi*pj*x;
+				result+=weight*gsl_sf_legendre_Pl(l, x)/(qvalsquare+mb*mb)*exp(-1*(qvalsquare+mb*mb)/lambda/lambda);//TODO fix qval
 			}
 			result*=Apref;
 			if (l==0){
@@ -85,7 +85,7 @@ inline void fillmatrixa(gsl_matrix_complex *a, gsl_matrix_complex *pot, gsl_vect
 		if(i==a->size2-1){result+=1;}
 		for (int m=0; m<a->size2-1; m+=1){
 			pm=gsl_vector_get(momenta, m);
-			result+=2*mu*GSL_REAL(gsl_matrix_complex_get(pot, i, m))*pm*pm*gsl_vector_get(weights, m)/(q*q-pm*pm);//TODO fix V_iN and p_m-> q
+			result+=2*mu*GSL_REAL(gsl_matrix_complex_get(pot, i, pot->size2-1))*q*q*gsl_vector_get(weights, m)/(q*q-pm*pm);//TODO fix V_iN and p_m-> q
 		}
 		result-=mu*q*GSL_REAL(gsl_matrix_complex_get(pot, i, pot->size2-1))*log((pmax+q)/(pmax-q));
 		resultimaginary=M_PI*mu*q*GSL_REAL(gsl_matrix_complex_get(pot, i, pot->size2-1));
@@ -113,7 +113,7 @@ inline void fillmatrixawopm(gsl_matrix_complex *a, gsl_matrix_complex *pot, gsl_
 		if(i==a->size2-1){result+=1;}
 		for (int m=0; m<a->size2-1; m+=1){
 			pm=gsl_vector_get(momenta, m);
-			result+=2*mu*GSL_REAL(gsl_matrix_complex_get(pot, i, m))*pm*pm*gsl_vector_get(weights, m)/(q*q-pm*pm);//TODO fix V_iN and p_m-> q
+			result+=2*mu*GSL_REAL(gsl_matrix_complex_get(pot, i, pot->size2-1))*q*q*gsl_vector_get(weights, m)/(q*q-pm*pm);//TODO fix V_iN and p_m-> q
 		}
 		resultimaginary=M_PI*mu*q*GSL_REAL(gsl_matrix_complex_get(pot, i, pot->size2-1));
 		gsl_matrix_complex_set(a, i, a->size2-1, gsl_complex_rect(result, resultimaginary));
@@ -121,7 +121,7 @@ inline void fillmatrixawopm(gsl_matrix_complex *a, gsl_matrix_complex *pot, gsl_
 } 
 
 /**
- * @brief calculates the modulus of s
+ * @brief calculates s
  * */
 inline gsl_complex calculate_s(gsl_complex tnn, double mu, double q){
 	gsl_complex result=gsl_complex_add_real(gsl_complex_mul_imag(gsl_complex_mul_real(tnn, 2*M_PI*mu*q), -1), 1);
@@ -133,7 +133,7 @@ int main(int argc, char **argv){
 	 * @note set up parameters
 	 * */
 	double hbarc=197.3;
-	double lambda=800/hbarc;
+	double lambda=800.0/hbarc;
 	double Apref=-0.1544435;
 	double C_0=2.470795e-2;
 	int sizeofgrid=60;
@@ -142,7 +142,7 @@ int main(int argc, char **argv){
 	double E=1.0/hbarc;
 	double mu=938.92/hbarc;
 	double mb=138.0/hbarc;
-	double q=sqrt(2*mu*E);
+	double q=sqrt(2.0*mu*E);
 	double pmax=100;
 	gsl_complex tnn, s;
 	int size, angularsize;
@@ -183,7 +183,7 @@ int main(int argc, char **argv){
 		gsl_permutation *permutation= gsl_permutation_calloc(size+1);
 		int signum=1;
 		for (angularsize=4; angularsize<=sizeofangulargrid; angularsize+=4){
-			for (int maxp=1; maxp<=200; maxp+=1){
+			for (int maxp=1; maxp<=200; maxp+=2){
 				pmax=50.0*maxp;
 				getgridpoints(&p.vector, &w.vector, q, pmax, size);
 				fillpotentialmatrix(&V.matrix, &p.vector, l, angularsize, mb, Apref, C_0, lambda);
