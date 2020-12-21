@@ -1,4 +1,4 @@
-%!TeX spellcheck = en_GB
+%!TeX spellcheck = en_UK
 % Die erste (unkommentierte) Zeile im Dokument legt immer die
 % Dokumentklasse fest
 \documentclass{scrartcl} 
@@ -72,20 +72,60 @@ Using some definitions given in the lectures and on the sheet, we are able to di
 	
 	This is exactly the matrix given on the sheet.
 	
-	The potential was given in the lectures as \[
-	V_l(p, p')=2\pi\int_{-1}^{1}\dd x P_l(x)\frac{1}{p^2+p'^2-2pp'x+\mu^2}
-	\]
+\subsection{Calculation of the potential}
 	
+	The potential was given in the lectures as %\[
+%	V_l(p, p')=2\pi\int_{-1}^{1}\dd x P_l(x)\frac{1}{p^2+p'^2-2pp'x+\mu^2}
+%	\]
+	\begin{align*}
+	V(\vec{p}, \vec{p}')&=\frac{A}{2\pi} \frac{1}{(\vec{p}-\vec{p}')^2+m_B^2}\exp(-\frac{(\vec{p}-\vec{p}')^2+m_B^2}{\Lambda^2})+\frac{C_0}{4\pi}\exp(-\frac{\vec{p}^2+\vec{p}'^2}{\Lambda^2})\\
+	k^2&=(\vec{p}-\vec{p}')^2\\
+	&=\vec{p}^2+\vec{p}'^2-2\vec{p}\vec{p}'x\\
+	V_l(\vec{p}, \vec{p}')&=A\int_{-1}^{1}\dd x \frac{P_l(x)}{k^2+m_B^2}\exp(-\frac{k^2+m_B^2}{\Lambda^2})+\delta_{l0}C_0\exp(-\frac{\vec{p}^2+\vec{p}'^2}{\Lambda^2})\\
+	\end{align*}
+	
+	Here $A$ and $C_0$ are constants given on the sheet, $m_B$ is the mass of the bosonic exchange particle, also given on the sheet, and $x$ is the cosine of the angle between incoming and outgoing momentum. $\Lambda$ is a cut-off value to enable normalization of the wavefunction, and $P_l$ are the Legendre-polynomials.
+	
+	The factors of $\pi$ cancel out because we have to integrate over the entire solid angle, the $\delta_{l0}$ comes from the fact that the integration of the Legendre-Polynomials from $-1$ to $1$ is $0$ for all higher order Polynomials. 
 	We also discretize this integral using the Gauss-Legendre-approximation. 
+	%introduce s-wave counter term, limitations through cut-off value.
+	
+\subsection{Calculation of the T- and S-Matrix and the phase}
 	
 	For determining $t(q, q)=t_{NN}$, we use the following manipulation:
-	\[
-	V=At \Leftrightarrow t=A^{-1}V \Leftrightarrow t_{NN}=(A^{-1}V)_{NN}
-	\]
+
+\begin{align*}
+\sum_{k=0}^{N}A_{ik}t_{kj}&=V_{ij}\\
+\sum_{k=0}^{N}A_{ik}t_{kN}&=V_{iN}\\
+\end{align*}
+
+Here, we can identify $A_{ik}$ as a matrix and $t_{kN}, V_{iN}$ as column vectors, with $V_{iN}$ being the last column of $V_{ij}$. We can solve this system of linear equations, and so determine $t_{kN}$ and from there $t_{NN}$. Then we can use the formula given on the sheet,\[
+S(q)=1-2\pi i \mu q t(q)
+\]
+
+to calculate $S$. Then we can also determine $\delta(q)=\frac{1}{2}\arg(S(q))$.
+	
+\subsection{Calculation of the Crosssection}
 	
 \section{Implementation}
 
 Our code is in the github-repo \url{https://github.com/christianegross/CompPhys\_2021}. The simulation itself is in Exercise7/src/main/main.c, the gnuplotscript is in Exercise7/report/plot.gp. 
+
+We implement the Legendre-Polynomial using the GSL-special-functions~\cite{gsldoc_sf}. The discretized integrals are calculated with the GSL-integrate library~\cite{gsldoc_integrate}. For storing our results, we use gsl\_vectors for the momenta, weights and the vectors in the equation system, and gsl\_matrices for $A$ and $V$~\cite{gsldoc_mat}. This is especially handy because we can use subvectors and submatrices when varying the grid size. We solve the equation system using the Linear Algebra-package from the GSL~\cite{gsldoc_linalg}. For the representation of the complex numbers, we use the gsl-datatype gsl\_complex~\cite{gsldoc_complex}.
+
+In the beginning of our programm, we insert the appropriate factor of $\hbar c$ to get all measurements compatible with momenta in $\si{\per\femto\meter}$.
+For our calculations, we write functions to determine the momenta and weights for the integration, and functions to fill the matrices $V$, $A$, and $A$ without the contribution of $p_{max}$. When measuring, we first set up our needed submatrices and vectors, fill these up, put the last column of $V$ in a vector and the solve the equation system. After that we calculate $t_{NN}$ and, if needed, $S$ and $\delta$.
+
+%GSL-functions used: Gauss-Legendre integration, Gaus-Legendre sf, Matrices, Vectors, BLAS and linalg for invertin matrix, complex numbers for matrix, t, s
+
+\section{Results}
+\subsection{Numerical Accuracy of $t_0(q,q)$ for $E=1\si{\mega\electronvolt}$}
+
+\subsection{$|S|$ and $\delta_0(q)$}
+We calculate $|S_0(q)|-1$ with the function \texttt{gsl\_complex\_abs} and see that for all $q$ we look at, this is either 0 or in the order of magnitude of $10^{-16}$, so in the order of numerical accuracy of a computer. So our values for $S$ reproduce the desired properties. 
+
+\subsection{Cross section}
+
 \newpage
 \listoffigures
 \listoftables
