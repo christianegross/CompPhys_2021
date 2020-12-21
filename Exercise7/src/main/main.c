@@ -21,9 +21,8 @@
 void getgridpoints(gsl_vector *momenta, gsl_vector *weights, double q, double pmax, int sizeofgrid){
 	gsl_integration_glfixed_table *table=gsl_integration_glfixed_table_alloc(sizeofgrid);
 	double momentum, weight;
-	int errorcode;
 	for (int k=0; k<sizeofgrid; k+=1){
-		errorcode=gsl_integration_glfixed_point(0, pmax, k, &momentum, &weight, table);
+		gsl_integration_glfixed_point(0, pmax, k, &momentum, &weight, table);
 		gsl_vector_set(momenta, k, momentum);
 		gsl_vector_set(weights, k, weight);
 	}
@@ -39,20 +38,19 @@ void getgridpoints(gsl_vector *momenta, gsl_vector *weights, double q, double pm
 inline void fillpotentialmatrix(gsl_matrix_complex *pot, gsl_vector *momenta, int l, int sizeofangulargrid, double mb, double Apref, double C_0, double lambda){
 	gsl_integration_glfixed_table *table=gsl_integration_glfixed_table_alloc(sizeofangulargrid);
 	double result, x, weight, pi, pj, qvalsquare;
-	int errorcode;
 	for (int i=0; i<pot->size1; i+=1){
 		pi=gsl_vector_get(momenta, i);
 		for (int j=0; j<pot->size2; j+=1){
 			pj=gsl_vector_get(momenta, j);
 			result=0;
 			for (int k=0; k<sizeofangulargrid; k+=1){
-				errorcode=gsl_integration_glfixed_point(-1, 1, k, &x, &weight, table);
+				gsl_integration_glfixed_point(-1, 1, k, &x, &weight, table);
 				qvalsquare=pi*pi+pj*pj-2*pi*pj*x;
-				result+=weight*gsl_sf_legendre_Pl(l, x)/(qvalsquare+mb*mb)*exp(-1*(qvalsquare+mb*mb)/lambda/lambda);
+				result+=weight*gsl_sf_legendre_Pl(l, x)/(qvalsquare+mb*mb)*exp(-1.0*(qvalsquare+mb*mb)/lambda/lambda);
 			}
 			result*=Apref;
 			if (l==0){
-				result+=C_0*exp(-(pi*pi+pj*pj)/lambda/lambda);//TODO fix 1/4pi and 1/2pi
+				result+=C_0*exp(-1.0*(pi*pi+pj*pj)/lambda/lambda);//TODO fix 1/4pi and 1/2pi
 			}
 			gsl_matrix_complex_set(pot, i, j, gsl_complex_rect(result, 0));
 		}
@@ -72,7 +70,7 @@ inline void fillmatrixa(gsl_matrix_complex *a, gsl_matrix_complex *pot, gsl_vect
 			result=0;
 			pk=gsl_vector_get(momenta, k);
 			if(i==k){result+=1;}
-			result-=2*mu*GSL_REAL(gsl_matrix_complex_get(pot, i, k))*pk*pk*gsl_vector_get(weights, k)/(q*q-pk*pk);
+			result-=2.0*mu*GSL_REAL(gsl_matrix_complex_get(pot, i, k))*pk*pk*gsl_vector_get(weights, k)/(q*q-pk*pk);
 			gsl_matrix_complex_set(a, i, k, gsl_complex_rect(result, 0));
 		}
 		//k==N
@@ -80,9 +78,9 @@ inline void fillmatrixa(gsl_matrix_complex *a, gsl_matrix_complex *pot, gsl_vect
 		if(i==a->size2-1){result+=1;}
 		for (int m=0; m<a->size2-1; m+=1){
 			pm=gsl_vector_get(momenta, m);
-			result+=2*mu*GSL_REAL(gsl_matrix_complex_get(pot, i, pot->size2-1))*q*q*gsl_vector_get(weights, m)/(q*q-pm*pm);
+			result+=2.0*mu*GSL_REAL(gsl_matrix_complex_get(pot, i, pot->size2-1))*q*q*gsl_vector_get(weights, m)/(q*q-pm*pm);
 		}
-		result-=mu*q*GSL_REAL(gsl_matrix_complex_get(pot, i, pot->size2-1))*log((pmax+q)/(pmax-q));
+		result-=1.0*mu*q*GSL_REAL(gsl_matrix_complex_get(pot, i, pot->size2-1))*log(1.0*(pmax+q)/(pmax-q));
 		resultimaginary=M_PI*mu*q*GSL_REAL(gsl_matrix_complex_get(pot, i, pot->size2-1));
 		gsl_matrix_complex_set(a, i, a->size2-1, gsl_complex_rect(result, resultimaginary));
 	}
@@ -100,7 +98,7 @@ inline void fillmatrixawopm(gsl_matrix_complex *a, gsl_matrix_complex *pot, gsl_
 			result=0;
 			pk=gsl_vector_get(momenta, k);
 			if(i==k){result+=1;}
-			result-=2*mu*GSL_REAL(gsl_matrix_complex_get(pot, i, k))*pk*pk*gsl_vector_get(weights, k)/(q*q-pk*pk);
+			result-=2.0*mu*GSL_REAL(gsl_matrix_complex_get(pot, i, k))*pk*pk*gsl_vector_get(weights, k)/(q*q-pk*pk);
 			gsl_matrix_complex_set(a, i, k, gsl_complex_rect(result, 0));
 		}
 		//k==N
@@ -108,7 +106,7 @@ inline void fillmatrixawopm(gsl_matrix_complex *a, gsl_matrix_complex *pot, gsl_
 		if(i==a->size2-1){result+=1;}
 		for (int m=0; m<a->size2-1; m+=1){
 			pm=gsl_vector_get(momenta, m);
-			result+=2*mu*GSL_REAL(gsl_matrix_complex_get(pot, i, pot->size2-1))*q*q*gsl_vector_get(weights, m)/(q*q-pm*pm);
+			result+=2.0*mu*GSL_REAL(gsl_matrix_complex_get(pot, i, pot->size2-1))*q*q*gsl_vector_get(weights, m)/(q*q-pm*pm);
 		}
 		resultimaginary=M_PI*mu*q*GSL_REAL(gsl_matrix_complex_get(pot, i, pot->size2-1));
 		gsl_matrix_complex_set(a, i, a->size2-1, gsl_complex_rect(result, resultimaginary));
@@ -153,12 +151,10 @@ int main(int argc, char **argv){
 	gsl_matrix_complex *pot=gsl_matrix_complex_alloc(sizeofgrid+1, sizeofgrid+1);
 	gsl_matrix_complex *a=gsl_matrix_complex_alloc(sizeofgrid+1, sizeofgrid+1);
 	gsl_matrix_complex *awopm=gsl_matrix_complex_alloc(sizeofgrid+1, sizeofgrid+1); 		//a without pmax
-	gsl_matrix_complex *t=gsl_matrix_complex_alloc(sizeofgrid+1, sizeofgrid+1);
-	gsl_matrix_complex *inverse=gsl_matrix_complex_alloc(sizeofgrid+1, sizeofgrid+1);
 	
 	gsl_vector_view p, w;
 	gsl_vector_complex_view tkn, vin;
-	gsl_matrix_complex_view V, A, Awopm, T, inv;
+	gsl_matrix_complex_view V, A, Awopm;
 
 	
 	FILE *test=fopen("data/test.dat", "w");
@@ -170,7 +166,10 @@ int main(int argc, char **argv){
 	 * @note get grids, fill matrices, invert a by doing LU decomposition and inverting that, then multiplying to V to get t 
 	 * */
 	fprintf(result3, "size\tangularsize\tpmax\tR(tnn)\tI(tnn)\tAbs(tnn)\tR(tnnwopm)\tI(tnnwopm)\tAbs(tnnwopm)\n");
-	for (size=4; size<sizeofgrid; size+=8){
+	for (size=4; size<sizeofgrid; size+=4){
+		/**
+		 * @note set up subvectors, submatrices, permutation
+		 * */
 		p=gsl_vector_subvector(momenta, 0, size+1);
 		w=gsl_vector_subvector(weights, 0, size+1);
 		tkn=gsl_vector_complex_subvector(tknvector, 0, size+1);
@@ -178,10 +177,9 @@ int main(int argc, char **argv){
 		V=gsl_matrix_complex_submatrix(pot, 0, 0, size+1, size+1);
 		A=gsl_matrix_complex_submatrix(a, 0, 0, size+1, size+1);
 		Awopm=gsl_matrix_complex_submatrix(awopm, 0, 0, size+1, size+1);
-		T=gsl_matrix_complex_submatrix(t, 0, 0, size+1, size+1);
-		inv=gsl_matrix_complex_submatrix(inverse, 0, 0, size+1, size+1);
-		gsl_permutation *permutation= gsl_permutation_calloc(size+1);
+		gsl_permutation *permutation= gsl_permutation_alloc(size+1);
 		int signum=1;
+		
 		for (angularsize=4; angularsize<=sizeofangulargrid; angularsize+=4){
 			for (int maxp=1; maxp<=200; maxp+=2){
 				pmax=50.0*maxp;
@@ -192,25 +190,13 @@ int main(int argc, char **argv){
 				vin=gsl_matrix_complex_column(&V.matrix, size);
 				fprintf(result3, "%3d\t%3d\t%e\t", size, angularsize, pmax);
 				
-				gsl_matrix_complex_memcpy(&T.matrix, &V.matrix);																	//make copy of V that is later changed and used to store the result
 				gsl_linalg_complex_LU_decomp(&A.matrix, permutation, &signum);														//make LU-decomposition of A
 				gsl_linalg_complex_LU_solve(&A.matrix, permutation, &vin.vector, &tkn.vector);										//solve Aik*tkN=Vin
-				/**for(int u=0;u<permutation->size;u++){
-					printf ("%ld ",permutation->data[u]);
-				}
-				printf ("\n%d\n",signum);**/
-				//~ gsl_blas_ztrsm(CblasLeft, CblasLower, CblasNoTrans, CblasUnit, gsl_complex_rect(1.0, 0), &A.matrix, &T.matrix); 	//multiply 1*(L)⁻1*V
-				//~ gsl_blas_ztrsm(CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit, gsl_complex_rect(1.0, 0), &A.matrix, &T.matrix); 	//multiply 1*(U)⁻1*(L)⁻1*V
-				//~ tnn=gsl_matrix_complex_get(&T.matrix, size, size);
 				tnn=gsl_vector_complex_get(&tkn.vector, size);
 				fprintf(result3, "%e\t%e\t%e\t", GSL_REAL(tnn), GSL_IMAG(tnn), gsl_complex_abs(tnn));
 				
-				//~ gsl_matrix_complex_memcpy(&T.matrix, &V.matrix);																	//make copy of V that is later changed and used to store the result
-				gsl_linalg_complex_LU_decomp(&Awopm.matrix, permutation, &signum);														//make LU-decomposition of A
-				gsl_linalg_complex_LU_solve(&Awopm.matrix, permutation, &vin.vector, &tkn.vector);										//solve Aik*tkN=Vin
-				//~ gsl_blas_ztrsm(CblasLeft, CblasLower, CblasNoTrans, CblasUnit, gsl_complex_rect(1.0, 0), &Awopm.matrix, &T.matrix); 	//multiply 1*(L)⁻1*V
-				//~ gsl_blas_ztrsm(CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit, gsl_complex_rect(1.0, 0), &Awopm.matrix, &T.matrix); 	//multiply 1*(U)⁻1*(L)⁻1*V
-				tnn=gsl_matrix_complex_get(&T.matrix, size, size);
+				gsl_linalg_complex_LU_decomp(&Awopm.matrix, permutation, &signum);													//make LU-decomposition of A
+				gsl_linalg_complex_LU_solve(&Awopm.matrix, permutation, &vin.vector, &tkn.vector);									//solve Aik*tkN=Vin
 				tnn=gsl_vector_complex_get(&tkn.vector, size);
 				fprintf(result3, "%e\t%e\t%e\n", GSL_REAL(tnn), GSL_IMAG(tnn), gsl_complex_abs(tnn));
 			}
@@ -218,10 +204,13 @@ int main(int argc, char **argv){
 		gsl_permutation_free(permutation);
 	}
 	
+	gsl_vector_fprintf(test, &p.vector, "%e");
+	gsl_vector_fprintf(test, &w.vector, "%e");
+	
 	/**
 	 * @note measurements for exercise 4
 	 * */
-	size=20;
+	size=50;
 	angularsize=sizeofangulargrid;
 	p=gsl_vector_subvector(momenta, 0, size+1);
 	w=gsl_vector_subvector(weights, 0, size+1);
@@ -230,8 +219,6 @@ int main(int argc, char **argv){
 	V=gsl_matrix_complex_submatrix(pot, 0, 0, size+1, size+1);
 	A=gsl_matrix_complex_submatrix(a, 0, 0, size+1, size+1);
 	Awopm=gsl_matrix_complex_submatrix(awopm, 0, 0, size+1, size+1);
-	T=gsl_matrix_complex_submatrix(t, 0, 0, size+1, size+1);
-	inv=gsl_matrix_complex_submatrix(inverse, 0, 0, size+1, size+1);
 	gsl_permutation *permutation= gsl_permutation_calloc(size+1);
 	int signum=1;
 	fprintf(result4, "energy\tq\tAbs(s)\tArg(s)\tAbs(swopm)\tArg(swopm)\n");
@@ -246,35 +233,32 @@ int main(int argc, char **argv){
 		vin=gsl_matrix_complex_column(&V.matrix, size);
 		fprintf(result4, "%3d\t%e\t", energy, q);
 		
-		gsl_matrix_complex_memcpy(&T.matrix, &V.matrix);																	//make copy of V that is later changed and used to store the result
 		gsl_linalg_complex_LU_decomp(&A.matrix, permutation, &signum);														//make LU-decomposition of A
 		gsl_linalg_complex_LU_solve(&A.matrix, permutation, &vin.vector, &tkn.vector);										//solve Aik*tkN=Vin
-		//~ gsl_blas_ztrsm(CblasLeft, CblasLower, CblasNoTrans, CblasUnit, gsl_complex_rect(1.0, 0), &A.matrix, &T.matrix); 	//multiply 1*(L)⁻1*V
-		//~ gsl_blas_ztrsm(CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit, gsl_complex_rect(1.0, 0), &A.matrix, &T.matrix); 	//multiply 1*(U)⁻1*(L)⁻1*V
-		//~ tnn=gsl_matrix_complex_get(&T.matrix, size, size);
 		tnn=gsl_vector_complex_get(&tkn.vector, size);
 		s=calculate_s(tnn, mu, q);
-		fprintf(result4, "%e\t%e\t",gsl_complex_abs(s), gsl_complex_arg(s));
+		fprintf(result4, "%e\t%e\t",gsl_complex_abs(s)-1.0, gsl_complex_arg(s));
 		
-		gsl_matrix_complex_memcpy(&T.matrix, &V.matrix);																	//make copy of V that is later changed and used to store the result
-		gsl_linalg_complex_LU_decomp(&Awopm.matrix, permutation, &signum);														//make LU-decomposition of A
-		gsl_linalg_complex_LU_solve(&Awopm.matrix, permutation, &vin.vector, &tkn.vector);										//solve Aik*tkN=Vin
-		//~ gsl_blas_ztrsm(CblasLeft, CblasLower, CblasNoTrans, CblasUnit, gsl_complex_rect(1.0, 0), &Awopm.matrix, &T.matrix); 	//multiply 1*(L)⁻1*V
-		//~ gsl_blas_ztrsm(CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit, gsl_complex_rect(1.0, 0), &Awopm.matrix, &T.matrix); 	//multiply 1*(U)⁻1*(L)⁻1*V
-		//~ tnn=gsl_matrix_complex_get(&T.matrix, size, size);
+		gsl_linalg_complex_LU_decomp(&Awopm.matrix, permutation, &signum);													//make LU-decomposition of A
+		gsl_linalg_complex_LU_solve(&Awopm.matrix, permutation, &vin.vector, &tkn.vector);									//solve Aik*tkN=Vin
 		tnn=gsl_vector_complex_get(&tkn.vector, size);
 		s=calculate_s(tnn, mu, q);
-		fprintf(result4, "%e\t%e\n", gsl_complex_abs(s), gsl_complex_arg(s));
+		fprintf(result4, "%e\t%e\n", gsl_complex_abs(s)-1.0, gsl_complex_arg(s));
 	}
 	gsl_permutation_free(permutation);
+	
+	
 	/**
 	 * @note cleanup
 	 * */
 	
 	gsl_vector_free(momenta);
 	gsl_vector_free(weights);
+	gsl_vector_complex_free(tknvector);
+	gsl_vector_complex_free(potvector);
 	gsl_matrix_complex_free(pot);
 	gsl_matrix_complex_free(a);
+	gsl_matrix_complex_free(awopm);
 	fclose(test);
 	fclose(result3);
 	fclose(result4);

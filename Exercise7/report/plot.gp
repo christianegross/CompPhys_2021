@@ -21,7 +21,7 @@ set out 'test.pdf'
 
 do for [angsize=4:60:8]{
 set title sprintf("with pmax angsize=%d", angsize)
-plot for [size=4:36:4] result3 u (($2==angsize&&$1==size)?$3:1/0):6 title sprintf("%d", size)
+plot for [size=4:56:4] result3 u (($2==angsize&&$1==size)?$3:1/0):6 title sprintf("%d", size)
 }
 do for [angsize=4:60:8]{
 set title sprintf("wo pmax angsize=%d", angsize)
