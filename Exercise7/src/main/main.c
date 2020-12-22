@@ -132,6 +132,7 @@ int main(int argc, char **argv){
 	int sizeofgrid=60;
 	int sizeofangulargrid=60;
 	int l=0;
+	int lmax=7;
 	double E=1.0/hbarc;
 	double mu=938.92/hbarc;
 	double mb=138.0/hbarc;
@@ -145,6 +146,7 @@ int main(int argc, char **argv){
 	 * */
 	gsl_vector *momenta=gsl_vector_alloc(sizeofgrid+1);
 	gsl_vector *weights=gsl_vector_alloc(sizeofgrid+1);
+	gsl_vector_complex *t_l=gsl_vector_complex_alloc (lmax);
 	gsl_vector_complex *tknvector=gsl_vector_complex_alloc(sizeofgrid+1);
 	gsl_vector_complex *potvector=gsl_vector_complex_alloc(sizeofgrid+1);
 	
@@ -160,6 +162,7 @@ int main(int argc, char **argv){
 	FILE *test=fopen("data/test.dat", "w");
 	FILE *result3=fopen("data/result3.dat", "w");
 	FILE *result4=fopen("data/result4.dat", "w");
+	FILE *result5=fopen("data/result5.dat", "w");
 
 	/**
 	 * @note measurements for exercise 3
@@ -247,6 +250,55 @@ int main(int argc, char **argv){
 	}
 	gsl_permutation_free(permutation);
 	
+	/**
+	 * @note measurements for exercise 5
+	 * */
+	E=10.0/hbarc;
+	q=sqrt(2.0*mu*E);
+	size=50;
+	angularsize=sizeofangulargrid;
+	pmax=100000;
+	fprintf(result5, "x\tl\tdc\n");
+	
+	/**
+	 * @note set up subvectors, submatrices, permutation
+	 * */
+	p=gsl_vector_subvector(momenta, 0, size+1);
+	w=gsl_vector_subvector(weights, 0, size+1);
+	tkn=gsl_vector_complex_subvector(tknvector, 0, size+1);
+	vin=gsl_vector_complex_subvector(potvector, 0, size+1);
+	V=gsl_matrix_complex_submatrix(pot, 0, 0, size+1, size+1);
+	A=gsl_matrix_complex_submatrix(a, 0, 0, size+1, size+1);
+	getgridpoints(&p.vector, &w.vector, q, pmax, size);
+	
+	/**
+	 * @note	Save all required t_l
+	 */
+	for (l=0;l<lmax;l++){
+		signum=1;
+		permutation= gsl_permutation_alloc(size+1);
+		fillpotentialmatrix(&V.matrix, &p.vector, l, angularsize, mb, Apref, C_0, lambda);
+		fillmatrixa(&A.matrix, &V.matrix, &p.vector, &w.vector, mu, pmax);
+		vin=gsl_matrix_complex_column(&V.matrix, size);
+	
+		gsl_linalg_complex_LU_decomp(&A.matrix, permutation, &signum);														//make LU-decomposition of A
+		gsl_linalg_complex_LU_solve(&A.matrix, permutation, &vin.vector, &tkn.vector);										//solve Aik*tkN=Vin
+		gsl_vector_complex_set (t_l, l, gsl_vector_complex_get(&tkn.vector, size));
+		gsl_permutation_free(permutation);
+	}
+	
+	/**
+	 * @note Calculate the differential cross sction depending on x
+	 */
+	gsl_complex t=gsl_complex_rect (0, 0);
+	for(double x=-0.99;x<=0.99;x+=0.01){
+		t=gsl_complex_rect (0, 0);
+		for(l=0;l<lmax;l++){
+			t=gsl_complex_add (t, gsl_complex_mul_real(gsl_vector_complex_get(t_l,l),gsl_sf_legendre_Pl(l, x)*(2*l+1)/(4*M_PI)));
+			fprintf(result5, "%e\t%d\t%e\n", x, l, gsl_pow_4 (2*M_PI)*mu*mu*gsl_complex_abs2 (t));
+		}
+	}
+	
 	
 	/**
 	 * @note cleanup
@@ -254,6 +306,7 @@ int main(int argc, char **argv){
 	
 	gsl_vector_free(momenta);
 	gsl_vector_free(weights);
+	gsl_vector_complex_free (t_l);
 	gsl_vector_complex_free(tknvector);
 	gsl_vector_complex_free(potvector);
 	gsl_matrix_complex_free(pot);
@@ -262,6 +315,7 @@ int main(int argc, char **argv){
 	fclose(test);
 	fclose(result3);
 	fclose(result4);
+	fclose(result5);
 	
 	return 0;
 }
