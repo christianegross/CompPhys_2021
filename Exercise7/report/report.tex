@@ -45,7 +45,7 @@ Using some definitions given in the lectures and on the sheet, we are able to di
 	
 	&&\\
 	
-	\dashint_{0}^{p_{max}}\dd p''\frac{1}{q^2-p''^2}&=&\lim\limits_{\epsilon\to 0}\int_{0}^{q-\epsilon}\dd p''\frac{1}{(q+p'')(q-p'')}+\int_{q+\epsilon}^{p_{max}}\dd p''\frac{1}{(q+p'')(q-p'')}\\
+	\dashint_{0}^{p_{max}}\frac{\dd p''}{q^2-p''^2}&=&\lim\limits_{\epsilon\to 0}\int_{0}^{q-\epsilon}\dd p''\frac{1}{(q+p'')(q-p'')}+\int_{q+\epsilon}^{p_{max}}\dd p''\frac{1}{(q+p'')(q-p'')}\\
 	&=&\lim\limits_{\epsilon\to 0}\frac{1}{2q}\left(\int_{0}^{q-\epsilon}\dd p''\frac{1}{q+p''}-\frac{1}{p''-q}+\int_{q+\epsilon}^{p_{max}}\dd p''\frac{1}{q+p''}-\frac{1}{p''-q}\right)\\
 	&=&\lim\limits_{\epsilon\to 0}\frac{1}{2q}\left(\ln\left(\frac{q+p''}{p''-q}\right)_0^{q-\epsilon}+\ln\left(\frac{q+p''}{p''-q}\right)_{q+\epsilon}^{p_{max}}\right)\\
 	&=&\frac{1}{2q}\ln\left(\frac{p_{max}+q}{p_{max}-q}\right)\\
@@ -64,7 +64,7 @@ Using some definitions given in the lectures and on the sheet, we are able to di
 	V_{ij}&=&t_{ij}-2\mu\sum_{k=0}^{N-1}\omega_k\left(\frac{p_k^2V_{ik}t_{kj}}{q^2-p_k^2}-\frac{q^2V_{iN}t_{Nj}}{q^2-p_k^2}\right)-\mu qV_{iN}t_{Nj}\ln\left(\frac{p_{max}+q}{p_{max}-q}\right)+i\pi\mu qV_{iN}t_{Nj}\\
 	
 	&=&\sum_{k=0}^{N-1}\left(\delta_{ik}-\frac{2\mu p_k^2V_{ik}}{q^2-p_k^2}\omega_k\right)t_{kj}\\
-	&&+\left(\delta_{iN}+\sum_{k=0}^{N-1}\frac{2\mu q^2V_{iN}}{q^2-p_k^2}\omega_k-\mu qV_{iN}\ln\left(\frac{p_{max}+q}{p_{max}-q}\right)+i\pi\mu qV_{iN}\right)t_{Nj}\\
+	&&+\left(\delta_{iN}+\sum_{m=0}^{N-1}\frac{2\mu q^2V_{iN}}{q^2-p_m^2}\omega_m-\mu qV_{iN}\ln\left(\frac{p_{max}+q}{p_{max}-q}\right)+i\pi\mu qV_{iN}\right)t_{Nj}\\
 	&=&\sum_{k=0}^{N}A_{ik}t_{kj}\\
 	
 	
@@ -121,8 +121,44 @@ For our calculations, we write functions to determine the momenta and weights fo
 \section{Results}
 \subsection{Numerical Accuracy of $t_0(q,q)$ for $E=1\si{\mega\electronvolt}$}
 
+To check the numericals stability of our results, we vary $p_{max}$, the size of the angular grid we use for calculating the potential and the grid size we use for calculating $A$. The results for a small angular grid size can be seen in fig.~\ref{fig:tnnsmallangsize}, those for a bigger angular grid in fig.~\ref{fig:tnnbigangsize}.
+
+\begin{figure}[htbp]
+	\input{tnnsmallangsize.tex}
+	\caption{Results for $t_0(q,q)$ with an angular grid size of $4$}
+	\label{fig:tnnsmallangsize}
+\end{figure}
+
+\begin{figure}[htbp]
+	\input{tnnbigangsize.tex}
+	\caption{Results for $t_0(q,q)$ with an angular grid size of $60$}
+	\label{fig:tnnbigangsize}
+\end{figure}
+
+We repeat our measurements, however we neglect the term $\sim \ln\left(\frac{p_{max}+q}{p_{max}-q}\right)$ in the matrix $A$. The results can be seen in fig.~\ref{fig:tnnsmallangsizewopm} and fig.~\ref{fig:tnnbigangsizewopm}. 
+
+\begin{figure}[htbp]
+	\input{tnnsmallangsizewopm.tex}
+	\caption{Results for $t_0(q,q)$ with an angular grid size of $4$, neglecting the term $\sim p_{max}$ in $A$}
+	\label{fig:tnnsmallangsizewopm}
+\end{figure}
+
+\begin{figure}[htbp]
+	\input{tnnbigangsizewopm.tex}
+	\caption{Results for $t_0(q,q)$ with an angular grid size of $60$, neglecting the term $\sim p_{max}$ in $A$}
+	\label{fig:tnnbigangsizewopm}
+\end{figure}
+
 \subsection{$|S|$ and $\delta_0(q)$}
 We calculate $|S_0(q)|-1$ with the function \texttt{gsl\_complex\_abs} and see that for all $q$ we look at, this is either 0 or in the order of magnitude of $10^{-16}$, so in the order of numerical accuracy of a computer. So our values for $S$ reproduce the desired properties. 
+
+The phase of $\delta(q)$ is plotted in fig.~\ref{fig:delta}.
+
+\begin{figure}[htbp]
+	\input{delta.tex}
+	\caption{The phase of $S$ for different energies/$q$}
+	\label{fig:delta}
+\end{figure}
 
 \subsection{Cross section}
 
