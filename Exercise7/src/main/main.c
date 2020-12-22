@@ -50,7 +50,7 @@ inline void fillpotentialmatrix(gsl_matrix_complex *pot, gsl_vector *momenta, in
 			}
 			result*=Apref;
 			if (l==0){
-				result+=C_0*exp(-1.0*(pi*pi+pj*pj)/lambda/lambda);//TODO fix 1/4pi and 1/2pi
+				result+=C_0*exp(-1.0*(pi*pi+pj*pj)/lambda/lambda);
 			}
 			gsl_matrix_complex_set(pot, i, j, gsl_complex_rect(result, 0));
 		}
