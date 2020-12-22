@@ -17,6 +17,7 @@ PI=3.14159
 
 result3="../data/result3.dat"
 result4="../data/result4.dat"
+result5="../data/result5.dat"
 
 set terminal pdfcairo size 4in, 4in
 set out 'test.pdf'
@@ -59,4 +60,11 @@ set ylabel '$\delta(q)$'
 set ytics ('$\pi/8$' PI/8,'$\pi/4$' PI/4,'$3\pi/8$' 3*PI/8, '$\pi/2$' PI/2)
 set yrange [0:3*PI/8]
 plot result4 u 2:($4/2) ls 1 title 'with variation of $p_{max}$'
-set output
+
+unset yrange
+unset ytics
+set output 'crossect.tex'
+set ylabel '$\derivative{\sigma}{\hat{q}_f}/\si{\femto\meter^2\mega\electronvolt}$
+set xlabel '$x$'
+set key inside top left title 'l='
+plot for [l=0:6:1] result5 u (($2==l)?$1:1/0):3 ls ((l+1)) title sprintf("%d", l)
