@@ -106,7 +106,12 @@ S(q)=1-2\pi i \mu q t(q)
 to calculate $S$. Then we can also determine $\delta(q)=\frac{1}{2}\arg(S(q))$.
 	
 \subsection{Calculation of the Crosssection}
-	
+To calculate the cross section the following partial wave representation was used: 
+\begin{align*}
+	t(\vec{q}_f,\vec{q}_i)&=\sum\limits_{lm} Y_{lm}(\hat{q}_f)t_{lm}(q_f,q_i)Y_{lm}^*(\hat{q}_i)\\
+	&=\sum\limits_{l} P_{l}(\hat{q}_i\cdot\hat{q}_f)t_{l}(q_f,q_i)\dfrac{2l+1}{4\pi}
+\end{align*}
+Where the first line can be seen by inserting spherical decompositions of unity into $t$ and the last step follows from the rotational in variance of $V$, which directly implies the rotational in variance of $t$.
 \section{Implementation}
 
 Our code is in the github-repo \url{https://github.com/christianegross/CompPhys\_2021}. The simulation itself is in Exercise7/src/main/main.c, the gnuplotscript is in Exercise7/report/plot.gp. 
