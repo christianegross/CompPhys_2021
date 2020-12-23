@@ -123,11 +123,19 @@ For our calculations, we write functions to determine the momenta and weights fo
 
 To check the numericals stability of our results, we vary $p_{max}$, the size of the angular grid we use for calculating the potential and the grid size we use for calculating $A$. The results for a small angular grid size can be seen in fig.~\ref{fig:tnnsmallangsize}, those for a bigger angular grid in fig.~\ref{fig:tnnbigangsize}.
 
+
 \begin{figure}[htbp]
 	\input{tnnsmallangsize.tex}
 	\caption{Results for $t_0(q,q)$ with an angular grid size of $4$}
 	\label{fig:tnnsmallangsize}
 \end{figure}
+
+
+The behaviour is qualitatively the same: at low $p_{max}$, $|t|$ rises fast from zero to a bit below $0.25\si{\femto\meter^2}$. At some points, there is what appears to be pole like behaviour, a sudden drop to zero and then again going near $0.25\si{\femto\meter^2}$ from above. For larger grid sizes, this pole is shifted to higher $p_{max}$, and the poles are also shifted towards higher $p_{max}$ for larger angular grid sizes. After the poles, $|t|$ approaches a value a bit above $0.25\si{\femto\meter^2}$, however for smaller grid sizes, this value is a  bit higher than for larger grid sizes, differing by about $2\%$, or in the third significant digit.
+
+This is not exactly what we were expecting, we would have expected a difference that is not visible when plotting. 
+
+Becaue the poles appear at $p_{max}$ as high as about $9000\si{\per\femto\meter}$, we choose the largest possible angular size for subsequent measurements, a grid size of $50$ and a pmax of $100000$, about seven times as high as the highest pmax we lookes at here. We hope to avoid any complications with poles this way.
 
 \begin{figure}[htbp]
 	\input{tnnbigangsize.tex}
@@ -143,6 +151,8 @@ We repeat our measurements, however we neglect the term $\sim \ln\left(\frac{p_{
 	\label{fig:tnnsmallangsizewopm}
 \end{figure}
 
+The results look very similar to those were we did not neglect this term, and a cloeser look at our results show that the measurements indeed only differ at about the fifth significant digit. This is not so surprising, because $q=\sqrt{2\cdot1\cdot 938.92}/197.3^2=0.22\si{\per\femto\meter}$ is much smaller than any $p_{max}$ we are looking at, and so the term explicitly containing $p_{max}$ is very close to zero anyway.
+
 \begin{figure}[htbp]
 	\input{tnnbigangsizewopm.tex}
 	\caption{Results for $t_0(q,q)$ with an angular grid size of $60$, neglecting the term $\sim p_{max}$ in $A$}
@@ -153,6 +163,8 @@ We repeat our measurements, however we neglect the term $\sim \ln\left(\frac{p_{
 We calculate $|S_0(q)|-1$ with the function \texttt{gsl\_complex\_abs} and see that for all $q$ we look at, this is either 0 or in the order of magnitude of $10^{-16}$, so in the order of numerical accuracy of a computer. So our values for $S$ reproduce the desired properties. 
 
 The phase of $\delta(q)$ is plotted in fig.~\ref{fig:delta}.
+
+The phase returned by the gsl-function is in the region $-\pi<\phi<\pi$, corresponding to $-\pi/2<\delta<\pi/2$. This reproduces the behaviour we want ($\delta\to 0$ for $E\to\infty$) very well, so we do not need to introduce additional factors of $\pi/2$. We see that there is a steep rise from $\delta(0)=0$ to $\delta(q=0.5\si{\per\femto\meter})=3\pi/8$, where the maximum is reached. After that, $\delta$ gets monotonously smaller and reaches $\delta(q=3.11\si{\per\femto\meter})=0.2\pi$.
 
 \begin{figure}[htbp]
 	\input{delta.tex}
@@ -167,7 +179,7 @@ The phase of $\delta(q)$ is plotted in fig.~\ref{fig:delta}.
 	\caption{The differential cross section for different $l$}
 	\label{fig:crossect}
 \end{figure}
-As expected the cross section, shown inf fig. \ref{fig:crossect}, is peaked at $x=1$, because this corresponds to $\Theta=0$. Furthermore only after summation of up to $l=2$ or higher a good approximation is reached. For $l=0$ the differential cross section is constant, because $P_0=\text{const}$.
+As expected the cross section, shown in fig. \ref{fig:crossect}, is peaked at $x=1$, because this corresponds to $\Theta=0$. Furthermore only after summation of up to $l=2$ or higher a good approximation is reached. For $l=0$ the differential cross section is constant, because $P_0=\text{const}$.
 \newpage
 \listoffigures
 \listoftables

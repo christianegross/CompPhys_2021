@@ -166,7 +166,7 @@ int main(int argc, char **argv){
 
 	/**
 	 * @note measurements for exercise 3
-	 * @note get grids, fill matrices, invert a by doing LU decomposition and inverting that, then multiplying to V to get t 
+	 * @note get grids, fill matrices, do LU decomposition, solve system Aik*tkN=ViN, do the same for Awopm
 	 * */
 	fprintf(result3, "size\tangularsize\tpmax\tR(tnn)\tI(tnn)\tAbs(tnn)\tR(tnnwopm)\tI(tnnwopm)\tAbs(tnnwopm)\n");
 	for (size=4; size<sizeofgrid; size+=4){
@@ -184,8 +184,8 @@ int main(int argc, char **argv){
 		int signum=1;
 		
 		for (angularsize=4; angularsize<=sizeofangulargrid; angularsize+=4){
-			for (int maxp=1; maxp<=200; maxp+=2){
-				pmax=50.0*maxp;
+			for (int maxp=1; maxp<=200; maxp+=1){
+				pmax=75.0*maxp;
 				getgridpoints(&p.vector, &w.vector, q, pmax, size);
 				fillpotentialmatrix(&V.matrix, &p.vector, l, angularsize, mb, Apref, C_0, lambda);
 				fillmatrixa(&A.matrix, &V.matrix, &p.vector, &w.vector, mu, pmax);
@@ -207,8 +207,6 @@ int main(int argc, char **argv){
 		gsl_permutation_free(permutation);
 	}
 	
-	gsl_vector_fprintf(test, &p.vector, "%e");
-	gsl_vector_fprintf(test, &w.vector, "%e");
 	
 	/**
 	 * @note measurements for exercise 4
