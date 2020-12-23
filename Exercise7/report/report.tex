@@ -30,7 +30,7 @@
 
 \subsection{Discretization of the Lippmann-Schwinger-equation}
 
-Using some definitions given in the lectures and on the sheet, we are able to discretize the Lippmann-Schwinger-equation given on the sheet. we use Gauss-Legendre-integration and get the following matrix-equation:
+Using some definitions given in the lectures and on the sheet, we are able to discretize the Lippmann-Schwinger-equation given on the sheet. We use Gauss-Legendre-integration and get the following matrix-equation:
 
 \begin{longtable}{>{$\displaystyle}r<{$}>{$\displaystyle}c<{$}>{$\displaystyle}l<{$}}
 	f(p'')&=&2\mu p''^2V_l(p, p'')t_l(p'', p')\\
@@ -111,7 +111,7 @@ To calculate the cross section the following partial wave representation was use
 	t(\vec{q}_f,\vec{q}_i)&=\sum\limits_{lm} Y_{lm}(\hat{q}_f)t_{lm}(q_f,q_i)Y_{lm}^*(\hat{q}_i)\\
 	&=\sum\limits_{l} P_{l}(\hat{q}_i\cdot\hat{q}_f)t_{l}(q_f,q_i)\dfrac{2l+1}{4\pi}
 \end{align*}
-Where the first line can be seen by inserting spherical decompositions of unity into $t$ and the last step follows from the rotational in variance of $V$, which directly implies the rotational in variance of $t$.
+Where the first line can be seen by inserting spherical decompositions of unity into $t$ and the last step follows from the rotational invariance of $V$, which directly implies the rotational invariance of $t$.
 \section{Implementation}
 
 Our code is in the github-repo \url{https://github.com/christianegross/CompPhys\_2021}. The simulation itself is in Exercise7/src/main/main.c, the gnuplotscript is in Exercise7/report/plot.gp. 
@@ -119,14 +119,14 @@ Our code is in the github-repo \url{https://github.com/christianegross/CompPhys\
 We implement the Legendre-Polynomial using the GSL-special-functions~\cite{gsldoc_sf}. The discretized integrals are calculated with the GSL-integrate library~\cite{gsldoc_integrate}. For storing our results, we use gsl\_vectors for the momenta, weights and the vectors in the equation system, and gsl\_matrices for $A$ and $V$~\cite{gsldoc_mat}. This is especially handy because we can use subvectors and submatrices when varying the grid size. We solve the equation system using the Linear Algebra-package from the GSL~\cite{gsldoc_linalg}. For the representation of the complex numbers, we use the gsl-datatype gsl\_complex~\cite{gsldoc_complex}.
 
 In the beginning of our programm, we insert the appropriate factor of $\hbar c$ to get all measurements compatible with momenta in $\si{\per\femto\meter}$.
-For our calculations, we write functions to determine the momenta and weights for the integration, and functions to fill the matrices $V$, $A$, and $A$ without the contribution of $p_{max}$. When measuring, we first set up our needed submatrices and vectors, fill these up, put the last column of $V$ in a vector and the solve the equation system. After that we calculate $t_{NN}$ and, if needed, $S$ and $\delta$.
+For our calculations, we write functions to determine the momenta and weights for the integration, and functions to fill the matrices $V$, $A$, and $A$ without the contribution of $p_{max}$. When measuring, we first set up our needed submatrices and vectors, fill these up, put the last column of $V$ in a vector and then solve the equation system. After that we calculate $t_{NN}$ and, if needed, $S$ and $\delta$.
 
 %GSL-functions used: Gauss-Legendre integration, Gaus-Legendre sf, Matrices, Vectors, BLAS and linalg for invertin matrix, complex numbers for matrix, t, s
 
 \section{Results}
 \subsection{Numerical Accuracy of $t_0(q,q)$ for $E=1\si{\mega\electronvolt}$}
 
-To check the numericals stability of our results, we vary $p_{max}$, the size of the angular grid we use for calculating the potential and the grid size we use for calculating $A$. The results for a small angular grid size can be seen in fig.~\ref{fig:tnnsmallangsize}, those for a bigger angular grid in fig.~\ref{fig:tnnbigangsize}.
+To check the numerical stability of our results, we vary $p_{max}$, the size of the angular grid we use for calculating the potential and the grid size we use for calculating $A$. The results for a small angular grid size can be seen in fig.~\ref{fig:tnnsmallangsize}, those for a bigger angular grid in fig.~\ref{fig:tnnbigangsize}.
 
 
 \begin{figure}[htbp]
@@ -140,7 +140,7 @@ The behaviour is qualitatively the same: at low $p_{max}$, $|t|$ rises fast from
 
 This is not exactly what we were expecting, we would have expected a difference that is not visible when plotting. 
 
-Becaue the poles appear at $p_{max}$ as high as about $9000\si{\per\femto\meter}$, we choose the largest possible angular size for subsequent measurements, a grid size of $50$ and a pmax of $100000$, about seven times as high as the highest pmax we lookes at here. We hope to avoid any complications with poles this way.
+Because the poles appear at $p_{max}$ as high as about $9000\si{\per\femto\meter}$, we choose the largest possible angular size for subsequent measurements, a grid size of $50$ and a $p_{max}$ of $100000$, about seven times as high as the highest $p_{max}$ we looked at here. We hope to avoid any complications with poles this way.
 
 \begin{figure}[htbp]
 	\input{tnnbigangsize.tex}
@@ -169,7 +169,7 @@ We calculate $|S_0(q)|-1$ with the function \texttt{gsl\_complex\_abs} and see t
 
 The phase of $\delta(q)$ is plotted in fig.~\ref{fig:delta}.
 
-The phase returned by the gsl-function is in the region $-\pi<\phi<\pi$, corresponding to $-\pi/2<\delta<\pi/2$. This reproduces the behaviour we want ($\delta\to 0$ for $E\to\infty$) very well, so we do not need to introduce additional factors of $\pi/2$. We see that there is a steep rise from $\delta(0)=0$ to $\delta(q=0.5\si{\per\femto\meter})=3\pi/8$, where the maximum is reached. After that, $\delta$ gets monotonously smaller and reaches $\delta(q=3.11\si{\per\femto\meter})=0.2\pi$.
+The phase returned by the gsl-function is in the region $-\pi<\phi<\pi$, corresponding to $-\pi/2<\delta<\pi/2$. This reproduces the behaviour we want ($\delta\to 0$ for $E\to\infty$) very well, so we do not need to introduce additional factors of $\pi/2$. We see that there is a steep rise from $\delta(0)=0$ to $\delta(q=0.5\si{\per\femto\meter})\approx 3\pi/8$, where the maximum is reached. After that, $\delta$ gets monotonously smaller and reaches $\delta(q=3.11\si{\per\femto\meter})\approx 0.2\pi$.
 
 \begin{figure}[htbp]
 	\input{delta.tex}
@@ -187,6 +187,6 @@ The phase returned by the gsl-function is in the region $-\pi<\phi<\pi$, corresp
 As expected the cross section, shown in fig. \ref{fig:crossect}, is peaked at $x=1$, because this corresponds to $\Theta=0$. Furthermore only after summation of up to $l=2$ or higher a good approximation is reached. For $l=0$ the differential cross section is constant, because $P_0=\text{const}$.
 \newpage
 \listoffigures
-\listoftables
+%\listoftables
 \printbibliography
 \end{document}
