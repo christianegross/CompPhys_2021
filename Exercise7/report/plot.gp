@@ -39,6 +39,7 @@ unset title
 set xlabel '$p_{max}/\si{\per\femto\meter}$
 set ylabel '$|t_0(q,q)|/\si{\femto\meter^2}$'
 set key top rmargin title 'Grid points'
+set xrange [0:15000]
 
 set out 'tnnsmallangsize.tex'
 plot for [size=4:56:8] result3 u (($2==4&&$1==size)?$3:1/0):6 ls ((size+4)/8) title sprintf("%d", size)
@@ -52,6 +53,7 @@ plot for [size=4:56:8] result3 u (($2==4&&$1==size)?$3:1/0):9 ls ((size+4)/8) ti
 set out 'tnnbigangsizewopm.tex'
 plot for [size=4:56:8] result3 u (($2==60&&$1==size)?$3:1/0):9 ls ((size+4)/8) title sprintf("%d", size)
 
+unset xrange
 set key inside top right title ''
 
 set output 'delta.tex'
@@ -59,12 +61,14 @@ set xlabel '$q/\si{\per\femto\meter}$
 set ylabel '$\delta(q)$'
 set ytics ('$\pi/8$' PI/8,'$\pi/4$' PI/4,'$3\pi/8$' 3*PI/8, '$\pi/2$' PI/2)
 set yrange [0:3*PI/8]
-plot result4 u 2:($4/2) ls 1 title 'with variation of $p_{max}$'
+set xrange [0:sqrt(2*200*938.92)/197.3]
+plot result4 u 2:($4/2) ls 1 title ''
 
 unset yrange
 unset ytics
 set output 'crossect.tex'
 set ylabel '$\derivative{\sigma}{\hat{q}_f}/\si{\femto\meter^2\mega\electronvolt}$
 set xlabel '$x$'
+set xrange [-1:1]
 set key inside top left title 'l='
 plot for [l=0:6:1] result5 u (($2==l)?$1:1/0):3 ls ((l+1)) title sprintf("%d", l)
