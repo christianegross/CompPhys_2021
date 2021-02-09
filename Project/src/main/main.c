@@ -35,7 +35,7 @@ gsl_complex trace(gsl_matrix_complex *matrix){
  * @note loops over i, conjugates diagonal elements, saves ij, sets ij=(ji)*, sets ji=(ij, old)*
  * */
 void conjugatetranspose(gsl_matrix_complex *matrix){
-	if (matrix->size1!=matrix->size2){fprintf(stderr, "argument has to be square matrix!\n");return GSL_NAN;}
+	if (matrix->size1!=matrix->size2){fprintf(stderr, "argument has to be square matrix!\n");return;}
 	gsl_complex number=GSL_COMPLEX_ZERO;
 	for (int i=0;i<matrix->size1;i+=1){
 		gsl_matrix_complex_set(matrix, i,i, gsl_complex_conjugate(gsl_matrix_complex_get(matrix, i,i)));
@@ -50,14 +50,14 @@ void conjugatetranspose(gsl_matrix_complex *matrix){
 
 void generatesu2(gsl_matrix_complex * matrix, double epsilon, gsl_rng * generator){
 	//error handling
-	if(matrix->size1!=2||matrix->size2!=2){fprintf(stderr, "argument has to be 2x2 matrix!\n");return GSL_NAN;}
+	if(matrix->size1!=2||matrix->size2!=2){fprintf(stderr, "argument has to be 2x2 matrix!\n");return;}
 	//generate random numbers
 	double e,f,g, det;
 	gsl_vector_complex_view columnzero;
 	e=2.0*gsl_rng_uniform(generator)-1.0;
 	f=2.0*gsl_rng_uniform(generator)-1.0;
 	g=2.0*gsl_rng_uniform(generator)-1.0;
-	//set matrix up to be hermitian
+	//set matrix 0 column of 1+i*epsilon*H
 	gsl_matrix_complex_set(matrix, 0, 0, gsl_complex_rect(1, epsilon*e));
 	gsl_matrix_complex_set(matrix, 1, 0, gsl_complex_rect(epsilon*g, epsilon*f));
 	//normalize vector zero to make sure determinant is one
@@ -200,6 +200,8 @@ int main(int argc, char **argv){
 		gsl_matrix_complex_fprintf(stdout,one, "%f");
 		complexproduct=trace(one);
 		printf("\ntrace\n%f+%f*i\t%f\n\n", GSL_REAL(complexproduct), GSL_IMAG(complexproduct), gsl_complex_abs(complexproduct));
+		complexproduct=gsl_complex_sub(gsl_complex_mul(gsl_matrix_complex_get(one, 0,0), gsl_matrix_complex_get(one, 1,1)), gsl_complex_mul(gsl_matrix_complex_get(one, 1,0), gsl_matrix_complex_get(one, 0,1)));
+		printf("\ndet\n%f+%f*i\t%f\n\n", GSL_REAL(complexproduct), GSL_IMAG(complexproduct), gsl_complex_abs(complexproduct));
 	}
 	
 		complexproduct=trace(five);
