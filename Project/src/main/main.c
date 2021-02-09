@@ -30,6 +30,23 @@ gsl_complex trace(gsl_matrix_complex *matrix){
 	return number;
 }
 
+
+/**
+ * @brief returns det of complex matrix
+ * */
+gsl_complex det(gsl_matrix_complex *matrix){
+	if (matrix->size1!=matrix->size2){fprintf(stderr, "argument has to be square matrix!\n");return GSL_COMPLEX_NAN;}
+	gsl_complex number=GSL_COMPLEX_ZERO;
+	number=gsl_complex_add(number,gsl_complex_mul(gsl_complex_mul(gsl_matrix_complex_get(matrix,0,0),gsl_matrix_complex_get(matrix,1,1)),gsl_matrix_complex_get(matrix,2,2)));
+	number=gsl_complex_add(number,gsl_complex_mul(gsl_complex_mul(gsl_matrix_complex_get(matrix,0,1),gsl_matrix_complex_get(matrix,1,2)),gsl_matrix_complex_get(matrix,2,0)));
+	number=gsl_complex_add(number,gsl_complex_mul(gsl_complex_mul(gsl_matrix_complex_get(matrix,0,2),gsl_matrix_complex_get(matrix,1,0)),gsl_matrix_complex_get(matrix,2,1)));
+
+	number=gsl_complex_sub(number,gsl_complex_mul(gsl_complex_mul(gsl_matrix_complex_get(matrix,0,2),gsl_matrix_complex_get(matrix,1,1)),gsl_matrix_complex_get(matrix,2,0)));
+	number=gsl_complex_sub(number,gsl_complex_mul(gsl_complex_mul(gsl_matrix_complex_get(matrix,0,1),gsl_matrix_complex_get(matrix,1,0)),gsl_matrix_complex_get(matrix,2,2)));
+	number=gsl_complex_sub(number,gsl_complex_mul(gsl_complex_mul(gsl_matrix_complex_get(matrix,0,0),gsl_matrix_complex_get(matrix,1,2)),gsl_matrix_complex_get(matrix,2,1)));
+	return number;
+}
+
 /**
  * @brief transforms matrix into its conjugate transposed. 
  * @note loops over i, conjugates diagonal elements, saves ij, sets ij=(ji)*, sets ji=(ij, old)*
@@ -48,6 +65,15 @@ void conjugatetranspose(gsl_matrix_complex *matrix){
 	}
 }
 
+/**
+ * @brief
+ * @note
+ */
+void crossproduct(gsl_vector_complex* a,gsl_vector_complex* b,gsl_vector_complex* result){
+	gsl_vector_complex_set (result, 0, gsl_complex_sub(gsl_complex_mul (gsl_vector_complex_get(a,1), gsl_vector_complex_get(b,2)),gsl_complex_mul (gsl_vector_complex_get(a,2), gsl_vector_complex_get(b,1))));
+	gsl_vector_complex_set (result, 1, gsl_complex_sub(gsl_complex_mul (gsl_vector_complex_get(a,2), gsl_vector_complex_get(b,0)),gsl_complex_mul (gsl_vector_complex_get(a,0), gsl_vector_complex_get(b,2))));
+	gsl_vector_complex_set (result, 2, gsl_complex_sub(gsl_complex_mul (gsl_vector_complex_get(a,0), gsl_vector_complex_get(b,1)),gsl_complex_mul (gsl_vector_complex_get(a,1), gsl_vector_complex_get(b,0))));
+}
 void generatesu2(gsl_matrix_complex * matrix, double epsilon, gsl_rng * generator){
 	//error handling
 	if(matrix->size1!=2||matrix->size2!=2){fprintf(stderr, "argument has to be 2x2 matrix!\n");return;}
@@ -75,7 +101,7 @@ void generatesu3(gsl_matrix_complex * matrix, double epsilon, gsl_rng * generato
 	if(matrix->size1!=3||matrix->size2!=3){fprintf(stderr, "argument has to be 3x3 matrix!\n");return;}
 	//generate random numbers
 	double e,f,g,h,j,k,l,m, norm;
-	gsl_vector_complex_view columnzero,columnone;
+	gsl_vector_complex_view columnzero,columnone,columntwo;
 	gsl_complex complexscalarproduct=GSL_COMPLEX_ZERO;
 	e=2.0*gsl_rng_uniform(generator)-1.0;
 	f=2.0*gsl_rng_uniform(generator)-1.0;
@@ -105,9 +131,8 @@ void generatesu3(gsl_matrix_complex * matrix, double epsilon, gsl_rng * generato
 	norm=gsl_blas_dznrm2(&columnone.vector);
 	gsl_blas_zdscal(1.0/norm, &columnone.vector);
 	//TODO: add cross product
-	gsl_matrix_complex_set(matrix, 0, 2, gsl_complex_rect(epsilon*g, epsilon*f));
-	gsl_matrix_complex_set(matrix, 1, 2, gsl_complex_rect(1, epsilon*k));
-	gsl_matrix_complex_set(matrix, 2, 2, gsl_complex_rect(-epsilon*m, epsilon*l));
+	columntwo=gsl_matrix_complex_column(matrix, 2);
+	crossproduct(&columnzero.vector,&columnone.vector,&columntwo.vector);
 }
 
 
@@ -232,17 +257,17 @@ int main(int argc, char **argv){
 		//~ printf("\ntrace\n%f+%f*i\t%f\n\n", GSL_REAL(complexproduct), GSL_IMAG(complexproduct), gsl_complex_abs(complexproduct));
 	//~ }
 	
-	for(int i=0; i<100; i+=1){
+	for(int i=0; i<50; i+=1){
 		epsilon=0.01*i;
 		generatesu2(one, epsilon, generator);
 		gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, gsl_complex_rect(1,0), one, one, gsl_complex_rect(0,0), multiplied);
-		printf("\n multiplied in run %d\n", i);
+		//printf("\n multiplied in run %d\n", i);
 		//~ gsl_matrix_complex_fprintf(stdout, multiplied, "%f");
-		gsl_matrix_complex_fprintf(stdout,one, "%f");
+		//gsl_matrix_complex_fprintf(stdout,one, "%f");
 		complexproduct=trace(one);
-		printf("\ntrace\n%f+%f*i\t%f\n\n", GSL_REAL(complexproduct), GSL_IMAG(complexproduct), gsl_complex_abs(complexproduct));
+		//printf("\ntrace\n%f+%f*i\t%f\n\n", GSL_REAL(complexproduct), GSL_IMAG(complexproduct), gsl_complex_abs(complexproduct));
 		complexproduct=gsl_complex_sub(gsl_complex_mul(gsl_matrix_complex_get(one, 0,0), gsl_matrix_complex_get(one, 1,1)), gsl_complex_mul(gsl_matrix_complex_get(one, 1,0), gsl_matrix_complex_get(one, 0,1)));
-		printf("\ndet\n%f+%f*i\t%f\n\n", GSL_REAL(complexproduct), GSL_IMAG(complexproduct), gsl_complex_abs(complexproduct));
+		//printf("\ndet\n%f+%f*i\t%f\n\n", GSL_REAL(complexproduct), GSL_IMAG(complexproduct), gsl_complex_abs(complexproduct));
 
 
 		generatesu3(three, epsilon, generator);
@@ -252,6 +277,8 @@ int main(int argc, char **argv){
 		gsl_matrix_complex_fprintf(stdout,three, "%f");
 		complexproduct=trace(three);
 		printf("\ntrace\n%f+%f*i\t%f\n\n", GSL_REAL(complexproduct), GSL_IMAG(complexproduct), gsl_complex_abs(complexproduct));
+		complexproduct=det(three);
+		printf("\ndet\n%f+%f*i\t%f\n\n", GSL_REAL(complexproduct), GSL_IMAG(complexproduct), gsl_complex_abs(complexproduct));
 	}
 	
 		complexproduct=trace(five);
