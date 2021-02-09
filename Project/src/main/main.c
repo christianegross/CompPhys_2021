@@ -15,6 +15,35 @@
 #include <gsl/gsl_rng.h>				//random number generator
 #include <gsl/gsl_randist.h>			//pull random number from gaussian
 
+/**
+ * @brief returns trace of complex matrix
+ * */
+gsl_complex trace(gsl_matrix_complex *matrix){
+	gsl_complex number=GSL_COMPLEX_ZERO;
+	for (int i=0; i<matrix->size1; i+=1){
+		number=gsl_complex_add(number, gsl_matrix_complex_get(matrix, i, i));
+	}
+	return number;
+}
+
+/**
+ * @brief transforms matrix into its conjugate transposed. 
+ * @note loops over i, conjugates diagonal elements, saves ij, sets ij=(ji)*, sets ji=(ij, old)*
+ * */
+void conjugatetranspose(gsl_matrix_complex *matrix){
+	if (matrix->size1!=matrix->size2){fprintf(stderr, "argument has to be square matrix!\n");return GSL_NAN;}
+	gsl_complex number=GSL_COMPLEX_ZERO;
+	for (int i=0;i<matrix->size1;i+=1){
+		gsl_matrix_complex_set(matrix, i,i, gsl_complex_conjugate(gsl_matrix_complex_get(matrix, i,i)));
+		for(int j=i+1;j<matrix->size1;j+=1){
+			number=gsl_matrix_complex_get(matrix, i, j);
+			gsl_matrix_complex_set(matrix, i,j, gsl_complex_conjugate(gsl_matrix_complex_get(matrix, j,i)));
+			gsl_matrix_complex_set(matrix, j,i, gsl_complex_conjugate(number))
+			;
+		}
+	}
+}
+
 
 
 int main(int argc, char **argv){
@@ -80,39 +109,59 @@ int main(int argc, char **argv){
 		h=2.0*gsl_rng_uniform(generator)-1.0;
 		
 		gsl_matrix_complex_set(three, 0, 0, gsl_complex_rect(e, 0));
-		gsl_matrix_complex_set(three, 1, 1, gsl_complex_rect(h, 0));
+		gsl_matrix_complex_set(three, 1, 1, gsl_complex_rect(-e, 0));
 		gsl_matrix_complex_set(three, 0, 1, gsl_complex_rect(f, g));
 		gsl_matrix_complex_set(three, 1, 0, gsl_complex_rect(f,-g));
 		
 		gsl_matrix_complex_set(four, 0, 0, gsl_complex_rect(1, epsilon*e));
-		gsl_matrix_complex_set(four, 1, 1, gsl_complex_rect(1, epsilon*h));
+		gsl_matrix_complex_set(four, 1, 1, gsl_complex_rect(1, -epsilon*e));
 		gsl_matrix_complex_set(four, 0, 1, gsl_complex_rect(-epsilon*g, epsilon*f));
 		gsl_matrix_complex_set(four, 1, 0, gsl_complex_rect(epsilon*g, epsilon*f));
 		
 		
+		printf("\n four before normalization\n");
 		gsl_matrix_complex_fprintf(stdout, four, "%f");
 		
 		columnzero=gsl_matrix_complex_column(four, 0);	//set up columns as vectors
 		columnone=gsl_matrix_complex_column(four, 1);
 		
+		
+		gsl_blas_zdotu(&columnzero.vector, &columnone.vector, &complexproduct); //check orthogonality
+		printf("\northogonal?\n%f+%f*i\n\n", GSL_REAL(complexproduct), GSL_IMAG(complexproduct));
+		
 		det=gsl_blas_dznrm2(&columnzero.vector);		//normalize vector zero
 		gsl_blas_zdscal(1.0/det, &columnzero.vector);
 		
-		gsl_blas_zdotu(&columnzero.vector, &columnone.vector, &complexproduct);		//do Gram-Schmidt orthonormalization as in Script from T. Raesch
-		gsl_blas_zaxpy(gsl_complex_mul_real(complexproduct, -1.0), &columnzero.vector, &columnone.vector); // should be one=-1*complexprodukt*zero+one
+		//~ gsl_blas_zdotu(&columnzero.vector, &columnone.vector, &complexproduct);		//do Gram-Schmidt orthonormalization as in Script from T. Raesch
+		//~ gsl_blas_zaxpy(gsl_complex_mul_real(complexproduct, -1.0), &columnzero.vector, &columnone.vector); // should be one=-1*complexprodukt*zero+one
 		
-		det=gsl_blas_dznrm2(&columnone.vector);		//normalize vector one
-		gsl_blas_zdscal(1.0/det, &columnone.vector);
+		//~ det=gsl_blas_dznrm2(&columnone.vector);		//normalize vector one
+		//~ gsl_blas_zdscal(1.0/det, &columnone.vector);
 		
+		//set 11=(00)*, 01=-(10)*
+		gsl_matrix_complex_set(four, 1,1,gsl_complex_conjugate(gsl_matrix_complex_get(four, 0,0)));
+		gsl_matrix_complex_set(four, 0,1,gsl_complex_mul_real(gsl_complex_conjugate(gsl_matrix_complex_get(four, 1,0)), -1.0));
+		
+		printf("\n vectors normalized?\n");
 		printf("\n%f\n", gsl_blas_dznrm2(&columnzero.vector));		//check normalization and Matrix
 		printf("%f\n", gsl_blas_dznrm2(&columnone.vector));
+		
+		printf("\n four after normalization\n");
 		gsl_matrix_complex_fprintf(stdout, four, "%f");
 		
-		complexproduct=gsl_complex_add(gsl_complex_mul(gsl_matrix_complex_get(four, 0,0), gsl_matrix_complex_get(four, 1,1)), gsl_complex_mul_real(gsl_complex_mul(gsl_matrix_complex_get(four, 1,0), gsl_matrix_complex_get(four, 1,0)), -1.0));
-		printf("\n%f+%f*i\n", GSL_REAL(complexproduct), GSL_IMAG(complexproduct));
+		complexproduct=gsl_complex_sub(gsl_complex_mul(gsl_matrix_complex_get(four, 0,0), gsl_matrix_complex_get(four, 1,1)), gsl_complex_mul(gsl_matrix_complex_get(four, 1,0), gsl_matrix_complex_get(four, 0,1)));
+		printf("\ndeterminant\n%f+%f*i\t%f\n\n", GSL_REAL(complexproduct), GSL_IMAG(complexproduct), gsl_complex_abs(complexproduct));
 		
 		gsl_blas_zdotu(&columnzero.vector, &columnone.vector, &complexproduct); //check determinant and orthogonality
-		printf("\n%f+%f*i\n\n", GSL_REAL(complexproduct), GSL_IMAG(complexproduct));
+		printf("\northogonal\n%f+%f*i\t%f\n\n", GSL_REAL(complexproduct), GSL_IMAG(complexproduct), gsl_complex_abs(complexproduct));
+		
+		
+		gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, gsl_complex_rect(1,0), four, four, gsl_complex_rect(0,0), multiplied);
+		printf("\n multiplied\n");
+		gsl_matrix_complex_fprintf(stdout, multiplied, "%f");
+		complexproduct=trace(four);
+		
+		printf("\ntrace\n%f+%f*i\t%f\n\n", GSL_REAL(complexproduct), GSL_IMAG(complexproduct), gsl_complex_abs(complexproduct));
 	}
 	
 	gsl_rng_free(generator);
