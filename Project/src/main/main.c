@@ -70,6 +70,46 @@ void generatesu2(gsl_matrix_complex * matrix, double epsilon, gsl_rng * generato
 	gsl_matrix_complex_set(matrix, 0,1,gsl_complex_mul_real(gsl_complex_conjugate(gsl_matrix_complex_get(matrix, 1,0)), -1.0));	
 }
 
+void generatesu3(gsl_matrix_complex * matrix, double epsilon, gsl_rng * generator){
+	//error handling
+	if(matrix->size1!=3||matrix->size2!=3){fprintf(stderr, "argument has to be 3x3 matrix!\n");return;}
+	//generate random numbers
+	double e,f,g,h,j,k,l,m, norm;
+	gsl_vector_complex_view columnzero,columnone;
+	gsl_complex complexscalarproduct=GSL_COMPLEX_ZERO;
+	e=2.0*gsl_rng_uniform(generator)-1.0;
+	f=2.0*gsl_rng_uniform(generator)-1.0;
+	g=2.0*gsl_rng_uniform(generator)-1.0;
+	h=2.0*gsl_rng_uniform(generator)-1.0;
+	j=2.0*gsl_rng_uniform(generator)-1.0;
+	k=2.0*gsl_rng_uniform(generator)-1.0;
+	l=2.0*gsl_rng_uniform(generator)-1.0;
+	m=2.0*gsl_rng_uniform(generator)-1.0;
+	//set matrix 0 column of 1+i*epsilon*H
+	gsl_matrix_complex_set(matrix, 0, 0, gsl_complex_rect(1, epsilon*e));
+	gsl_matrix_complex_set(matrix, 1, 0, gsl_complex_rect(-epsilon*g, epsilon*f));
+	gsl_matrix_complex_set(matrix, 2, 0, gsl_complex_rect(-epsilon*j, epsilon*h));
+	//set matrix 1 column of 1+i*epsilon*H
+	gsl_matrix_complex_set(matrix, 0, 1, gsl_complex_rect(epsilon*g, epsilon*f));
+	gsl_matrix_complex_set(matrix, 1, 1, gsl_complex_rect(1, epsilon*k));
+	gsl_matrix_complex_set(matrix, 2, 1, gsl_complex_rect(-epsilon*m, epsilon*l));
+	//normalize vector zero to make sure determinant is one
+	//rescale by 1/norm
+	columnzero=gsl_matrix_complex_column(matrix, 0);
+	norm=gsl_blas_dznrm2(&columnzero.vector);
+	gsl_blas_zdscal(1.0/norm, &columnzero.vector);
+
+	columnone=gsl_matrix_complex_column(matrix, 1);
+	gsl_blas_zdotu (&columnone.vector, &columnzero.vector, &complexscalarproduct);
+	gsl_blas_zaxpy (gsl_complex_mul_real(complexscalarproduct, -1.0), &columnzero.vector, &columnone.vector);
+	norm=gsl_blas_dznrm2(&columnone.vector);
+	gsl_blas_zdscal(1.0/norm, &columnone.vector);
+	//TODO: add cross product
+	gsl_matrix_complex_set(matrix, 0, 2, gsl_complex_rect(epsilon*g, epsilon*f));
+	gsl_matrix_complex_set(matrix, 1, 2, gsl_complex_rect(1, epsilon*k));
+	gsl_matrix_complex_set(matrix, 2, 2, gsl_complex_rect(-epsilon*m, epsilon*l));
+}
+
 
 
 int main(int argc, char **argv){
@@ -79,9 +119,10 @@ int main(int argc, char **argv){
 	gsl_complex complexproduct=GSL_COMPLEX_ZERO;
 	gsl_matrix_complex *one=gsl_matrix_complex_alloc(2,2);
 	gsl_matrix_complex *two=gsl_matrix_complex_alloc(2,2);
-	//~ gsl_matrix_complex *three=gsl_matrix_complex_alloc(2,2);
+	gsl_matrix_complex *three=gsl_matrix_complex_alloc(3,3);
 	//~ gsl_matrix_complex *four=gsl_matrix_complex_alloc(2,2);
 	gsl_matrix_complex *multiplied=gsl_matrix_complex_alloc(2,2);	
+	gsl_matrix_complex *multiplied3=gsl_matrix_complex_alloc(3,3);
 	gsl_matrix_complex *five=gsl_matrix_complex_calloc(3,2);	
 	//~ gsl_vector_complex_view columnzero, columnone;
 	int seed=2;//use fixed seed: result should be exactly reproduced using the same seed
@@ -202,6 +243,15 @@ int main(int argc, char **argv){
 		printf("\ntrace\n%f+%f*i\t%f\n\n", GSL_REAL(complexproduct), GSL_IMAG(complexproduct), gsl_complex_abs(complexproduct));
 		complexproduct=gsl_complex_sub(gsl_complex_mul(gsl_matrix_complex_get(one, 0,0), gsl_matrix_complex_get(one, 1,1)), gsl_complex_mul(gsl_matrix_complex_get(one, 1,0), gsl_matrix_complex_get(one, 0,1)));
 		printf("\ndet\n%f+%f*i\t%f\n\n", GSL_REAL(complexproduct), GSL_IMAG(complexproduct), gsl_complex_abs(complexproduct));
+
+
+		generatesu3(three, epsilon, generator);
+		gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, gsl_complex_rect(1,0), three, three, gsl_complex_rect(0,0), multiplied3);
+		printf("\n multiplied3 in run %d\n", i);
+		//~ gsl_matrix_complex_fprintf(stdout, multiplied3, "%f");
+		gsl_matrix_complex_fprintf(stdout,three, "%f");
+		complexproduct=trace(three);
+		printf("\ntrace\n%f+%f*i\t%f\n\n", GSL_REAL(complexproduct), GSL_IMAG(complexproduct), gsl_complex_abs(complexproduct));
 	}
 	
 		complexproduct=trace(five);
@@ -211,7 +261,7 @@ int main(int argc, char **argv){
 	gsl_rng_free(generator);
 	gsl_matrix_complex_free(one);
 	gsl_matrix_complex_free(two);
-	//~ gsl_matrix_complex_free(three);
+	gsl_matrix_complex_free(three);
 	//~ gsl_matrix_complex_free(four);
 	gsl_matrix_complex_free(multiplied);
 	gsl_matrix_complex_free(five);
