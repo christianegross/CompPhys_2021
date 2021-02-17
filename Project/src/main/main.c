@@ -66,8 +66,32 @@ void conjugatetranspose(gsl_matrix_complex *matrix){
 		for(int j=i+1;j<matrix->size1;j+=1){
 			number=gsl_matrix_complex_get(matrix, i, j);
 			gsl_matrix_complex_set(matrix, i,j, gsl_complex_conjugate(gsl_matrix_complex_get(matrix, j,i)));
-			gsl_matrix_complex_set(matrix, j,i, gsl_complex_conjugate(number))
-			;
+			gsl_matrix_complex_set(matrix, j,i, gsl_complex_conjugate(number));
+		}
+	}
+}
+
+/** sets all matrix elements to zero **/
+void settozero(gsl_matrix_complex *matrix){
+	if (matrix->size1!=matrix->size2){fprintf(stderr, "argument has to be square matrix!\n");return;}
+	for (int i=0;i<matrix->size1;i+=1){
+		gsl_matrix_complex_set(matrix, i,i, GSL_COMPLEX_ZERO);
+		for(int j=i+1;j<matrix->size1;j+=1){
+			gsl_matrix_complex_set(matrix, i,j, GSL_COMPLEX_ZERO);
+			gsl_matrix_complex_set(matrix, j,i, GSL_COMPLEX_ZERO);
+	
+		}
+	}
+}
+
+/** sets matrix to unity matrix **/
+void settounity(gsl_matrix_complex *matrix){
+	if (matrix->size1!=matrix->size2){fprintf(stderr, "argument has to be square matrix!\n");return;}
+	for (int i=0;i<matrix->size1;i+=1){
+		gsl_matrix_complex_set(matrix, i,i, GSL_COMPLEX_ONE);
+		for(int j=i+1;j<matrix->size1;j+=1){
+			gsl_matrix_complex_set(matrix, i,j, GSL_COMPLEX_ZERO);
+			gsl_matrix_complex_set(matrix, j,i, GSL_COMPLEX_ZERO);
 		}
 	}
 }
@@ -147,14 +171,24 @@ void generatesu3(gsl_matrix_complex * matrix, double epsilon, gsl_rng * generato
 
 /** @brief returns the difference in action before and after change of one link
  * @note prototype: returns a random number between -1 and 1 to test MH-setup*/
-inline double deltaS(gsl_rng * generator){
+inline double deltaS1(gsl_rng * generator){
 return 2.0*gsl_rng_uniform(generator)-1.0;
+}
+
+/** @brief returns the difference in action before and after change of one link
+ * @note takes sum over unchanged matrices as argument, same computation results can be used for several hits, precalculation in loop 
+ * @note caqlculates (newmatrix-oldmatrix)*sum over contributions from different directions **/
+inline double deltaS(gsl_matrix_complex *deltacontribution, gsl_matrix_complex* newmatrix, gsl_matrix_complex *oldmatrix, gsl_matrix_complex *helpone, gsl_matrix_complex *helptwo){
+	gsl_matrix_complex_memcpy(helpone, newmatrix);
+	gsl_matrix_complex_sub(helpone, oldmatrix);
+	gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, gsl_complex_rect(1,0), helpone, deltacontribution, gsl_complex_rect(0,0), helptwo);
+	return 0.5*GSL_REAL(trace(helptwo));
 }
 
 int main(int argc, char **argv){
 	//~ double a,b,c,d,det;
 	//set up constants, matrices, generator
-	double epsilon=1;
+	double epsilon=0.2;
 	int size=8;
 	//~ double e,f,g,h;
 	gsl_complex complexproduct=GSL_COMPLEX_ZERO;
@@ -162,6 +196,12 @@ int main(int argc, char **argv){
 	gsl_matrix_complex *two=gsl_matrix_complex_alloc(2,2);
 	gsl_matrix_complex *multiplier=gsl_matrix_complex_alloc(2,2);
 	gsl_matrix_complex *result=gsl_matrix_complex_alloc(2,2);
+	gsl_matrix_complex *newmatrix=gsl_matrix_complex_alloc(2,2);
+	gsl_matrix_complex *plaquettecontribution=gsl_matrix_complex_alloc(2,2);
+	gsl_matrix_complex *deltacontribution=gsl_matrix_complex_alloc(2,2);
+	gsl_matrix_complex *helpone=gsl_matrix_complex_alloc(2,2);
+	gsl_matrix_complex *helpthree=gsl_matrix_complex_alloc(2,2);
+	gsl_matrix_complex *helptwo=gsl_matrix_complex_alloc(2,2);
 	gsl_matrix_complex *three=gsl_matrix_complex_alloc(3,3);
 	//~ gsl_matrix_complex *four=gsl_matrix_complex_alloc(2,2);
 	gsl_matrix_complex *multiplied=gsl_matrix_complex_alloc(2,2);	
@@ -178,29 +218,51 @@ int main(int argc, char **argv){
 	gsl_matrix_complex* matrixarray[size*size*size*size*4];
 	for (int i=0;i<size*size*size*size*4;i+=1){
 		matrixarray[i]=gsl_matrix_complex_alloc(2,2);
-		generatesu2(matrixarray[i], epsilon, generator);
+		//~ generatesu2(matrixarray[i], epsilon, generator);  //set up as random or unity to test different configurations
+		settounity(matrixarray[i]);
 		complexproduct=det2(matrixarray[i]);
 		//~ fprintf(stdout, "det of %d:\t%f+%fi\n", i, GSL_REAL(complexproduct), GSL_IMAG(complexproduct));
 	}
 	
 	//test of MH: go through lattice, perform 10 accept/reject steps at every link, measure acceptance rate
 	int counter;
+	int neighbour[4]; //for implementing periodic boundary conditions
+	double plaquetteexpectation;
 	for(int runs=0;runs<100;runs+=1){
 		int acceptance=0;
+		plaquetteexpectation=0;
 		for (int x=0;x<size;x+=1){
+			neighbour[0]=(x==size-1)?-(size-1)*pow(size, 3)*4:pow(size,3)*4;
 			for (int y=0;y<size;y+=1){
+				neighbour[1]=(y==size-1)?-(size-1)*pow(size, 2)*4:pow(size,2)*4;
 				for (int z=0;z<size;z+=1){
+					neighbour[2]=(z==size-1)?-(size-1)*size*4:size*4;
 					for (int t=0;t<size;t+=1){
-						for (int dir=0;dir<4;dir+=1){
+						neighbour[3]=(x==size-1)?-(size-1)*4:4;
+						for (int mu=0;mu<4;mu+=1){
+							counter=x*size*size*size*4+y*size*size*4+z*size*4+t*4+mu;
+							settozero(plaquettecontribution); settozero(deltacontribution);
+							//calculate contribution of different plaquettes to action
+							//U_nu(x+amu)*U^dagger_mu(x+anu)*U^dagger_nu(x)
+							for (int nu =0;nu<4;nu+=1){
+								if(mu!=nu){
+								gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, matrixarray[counter-mu+neighbour[mu]+nu], matrixarray[counter+neighbour[nu]], GSL_COMPLEX_ZERO, helpone);
+								gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, helpone, matrixarray[counter-mu+nu] , GSL_COMPLEX_ZERO, helptwo);
+								gsl_matrix_complex_add(deltacontribution, helptwo);
+								//~ fprintf(stdout, "%.1f\t", GSL_REAL(det2(helptwo)));
+								if(mu>nu){gsl_matrix_complex_add(plaquettecontribution, helptwo);}
+							}}
 							for (int attempts=0;attempts<10;attempts+=1){
 								generatesu2(multiplier, epsilon, generator);
-								counter=x*size*size*size*4+y*size*size*4+y*size*4+t*4+dir;
-								gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, gsl_complex_rect(1,0), multiplier, matrixarray[counter], gsl_complex_rect(0,0), result);
+								gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, gsl_complex_rect(1,0), multiplier, matrixarray[counter], gsl_complex_rect(0,0), newmatrix);
 								//~ fprintf(stdout, "%.1f\t", GSL_REAL(det2(result)));
-								if (exp(-1.0*deltaS(generator))>gsl_rng_uniform(generator)){
+								//beta in exp(-betaDeltaS)
+								if (exp(/*-1.0* */2.3*deltaS(plaquettecontribution, newmatrix, matrixarray[counter], helpone, helptwo))>gsl_rng_uniform(generator)){
 									acceptance+=1;
-									gsl_matrix_complex_memcpy(matrixarray[counter], result);
+									gsl_matrix_complex_memcpy(matrixarray[counter], newmatrix); 
 								}
+								gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, gsl_complex_rect(1,0), matrixarray[counter], plaquettecontribution, gsl_complex_rect(0,0), helpone);
+								plaquetteexpectation+=0.5*GSL_REAL(trace(helpone));
 							}
 						}
 					}
@@ -208,6 +270,8 @@ int main(int argc, char **argv){
 			}
 		}
 		//~ fprintf(stdout, "\nacceptance rate: %f\n", (double)acceptance/((double)10*size*size*size*size*4));
+		//~ fprintf(stdout, "\nplaquette expectation: %f\n", plaquetteexpectation/((double)10*size*size*size*size*4*3*0.5));
+		fprintf(stdout, "%f\t%f\n", (double)acceptance/((double)10*size*size*size*size*4),plaquetteexpectation/((double)10*size*size*size*size*4*3*0.5));
 	}
 	
 	
@@ -249,6 +313,12 @@ int main(int argc, char **argv){
 	gsl_matrix_complex_free(two);
 	gsl_matrix_complex_free(multiplier);
 	gsl_matrix_complex_free(result);
+	gsl_matrix_complex_free(newmatrix);
+	gsl_matrix_complex_free(deltacontribution);
+	gsl_matrix_complex_free(plaquettecontribution);
+	gsl_matrix_complex_free(helpone);
+	gsl_matrix_complex_free(helptwo);
+	gsl_matrix_complex_free(helpthree);
 	gsl_matrix_complex_free(three);
 	//~ gsl_matrix_complex_free(four);
 	gsl_matrix_complex_free(multiplied);
