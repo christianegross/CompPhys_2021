@@ -15,7 +15,7 @@ gsl_complex det(gsl_matrix_complex *matrix);
 
 /** 
  * @brief returns the determinant of a complex 2x2 matrix {{a,b},{c,d}} by returning ad-bc */
-extern inline gsl_complex det2(gsl_matrix_complex *matrix);
+gsl_complex det2(gsl_matrix_complex *matrix);
 
 /**
  * @brief transforms square matrix into its conjugate transposed. 
@@ -35,3 +35,20 @@ void settounity(gsl_matrix_complex *matrix);
  */
 void crossproduct(gsl_vector_complex* a,gsl_vector_complex* b,gsl_vector_complex* result);
 
+/**
+ * @brief 	takes data points in measurements and writes bins over lengthofbin in binneddata
+ */
+void binning(gsl_vector *measurements, gsl_vector *binneddata, int lengthofbin);
+
+/**
+ * @brief makes one bootstrapreplica out of the data in measurements
+ */
+double makebootstrapreplica(gsl_vector * measurements, gsl_rng * generator);
+
+/**
+ * @brief uses the bootstrapmethod to calculate mean and variance of the data in measurements
+ */ 
+void bootstrap(gsl_vector *measurements, gsl_rng *generator, int R, double *mean, double *variance);
+
+
+void autocorrelation(gsl_vector *measurements, gsl_vector *results, double mean);
