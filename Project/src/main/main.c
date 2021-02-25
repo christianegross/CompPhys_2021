@@ -14,7 +14,7 @@
 #include <gsl/gsl_permutation.h>		//needed for LU-decomp
 #include <gsl/gsl_rng.h>				//random number generator
 #include <gsl/gsl_randist.h>			//pull random number from gaussian
-#include "auxiliary.h"
+#include "auxiliary.h"					//own functions, e.g. trace, det,..., analysis by binning/bootstrapping...
 
 #define GSL_COMPLEX_NAN (gsl_complex_rect(GSL_NAN,0.0))
 
@@ -89,13 +89,13 @@ return 2.0*gsl_rng_uniform(generator)-1.0;
 
 /** @brief returns the difference in action before and after change of one link
  * @note takes sum over unchanged matrices as argument, same computation results can be used for several hits, precalculation in loop 
- * @note calculates (newmatrix-oldmatrix)*sum over contributions from different directions **/
+ * @note calculates (newmatrix-oldmatrix)*sum over contributions from different directions 
+ * **/
 inline double deltaS(gsl_matrix_complex *deltacontribution, gsl_matrix_complex* newmatrix, gsl_matrix_complex *oldmatrix, gsl_matrix_complex *helpone, gsl_matrix_complex *helptwo){
 	gsl_matrix_complex_memcpy(helpone, newmatrix);
 	gsl_matrix_complex_sub(helpone, oldmatrix);
 	gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, gsl_complex_rect(1,0), helpone, deltacontribution, gsl_complex_rect(0,0), helptwo);
 	//possibly wrong numerical prefactor
-	//~ fprintf(stdout, "%f\n", 0.5*GSL_REAL(trace(helptwo))); 
 	return 0.5*GSL_REAL(trace(helptwo));
 }
 
@@ -106,14 +106,13 @@ inline double deltaS(gsl_matrix_complex *deltacontribution, gsl_matrix_complex* 
 void calculateGamma(int * neighbour, int counter, int mu, int size, gsl_matrix_complex *plaquettecontribution, gsl_matrix_complex *deltacontribution, gsl_matrix_complex *helpone, gsl_matrix_complex *helptwo, gsl_matrix_complex **matrixarray){
 	/**
 	*forward U_nu(x+amu)*U^dagger_mu(x+anu)*U^dagger_nu(x)
-	*backward U^dagger_nu(x+amu-anu)*U^dagger_mu(x-anu)*U_nu(x-anu) 
+	*backward U^dagger_nu(x+amu-anu)*U^dagger_mu(x-anu)*U_nu(x-anu) -> gives P_munu(x-anu) when multiplied by U_mu(x)
 	* */
 	for (int nu =0;nu<4;nu+=1){ if(mu!=nu){
 		//forward plaquette
 		gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, matrixarray[counter+neighbour[2*mu]-mu+nu], matrixarray[counter+neighbour[2*nu]], GSL_COMPLEX_ZERO, helpone);
 		gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, helpone, matrixarray[counter-mu+nu] , GSL_COMPLEX_ZERO, helptwo);
 		gsl_matrix_complex_add(deltacontribution, helptwo);
-		//~ fprintf(stdout, "%.1f\t", GSL_REAL(det2(helptwo)));
 		if(mu>nu){gsl_matrix_complex_add(plaquettecontribution, helptwo);}
 		//backward plaquette
 		gsl_blas_zgemm(CblasConjTrans, CblasConjTrans, GSL_COMPLEX_ONE, matrixarray[counter+neighbour[2*mu]+neighbour[2*nu+1]-mu+nu], matrixarray[counter+neighbour[2*nu+1]], GSL_COMPLEX_ZERO, helpone);
@@ -132,6 +131,13 @@ double calculateplaquette(gsl_matrix_complex ** matrixarray, int counter, int* n
 	gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, helpone, helptwo, GSL_COMPLEX_ZERO, helpthree);
 	return 0.5*GSL_REAL(trace(helpthree));
 }
+
+double calculatewilsonloop(gsl_matrix_complex ** matrixarray, int counter, int t, int x, int y, int z){return GSL_NAN;}
+/** see two problems:
+ * 1. What order to use for x,y,z contributions? average over all possible permutations (xyz, xzy, yxz, yzx, zxy, zyx) oder always do order xyz?
+ * 2. How to implement boundary conditions? How to see, where to insert boundaries?
+ * ->probably made easier by using x, y, z, t seperately, maybe not put counter as an argument, but individual values for x,y,z,t?
+ * **/
 	
 
 int main(int argc, char **argv){
@@ -155,8 +161,8 @@ int main(int argc, char **argv){
 	gsl_rng_set(generator, seed);
 	
 	
-	//set up array to store link matrices, put SU(2) matrix in every link
-	//every matrix can be initialised to unity or a random SU(2) matrix
+	/**set up array to store link matrices, put SU(2) matrix in every link
+	every matrix can be initialised to unity or a random SU(2) matrix**/
 	gsl_matrix_complex* matrixarray[size*size*size*size*4];
 	for (int i=0;i<size*size*size*size*4;i+=1){
 		matrixarray[i]=gsl_matrix_complex_alloc(2,2);
@@ -179,13 +185,13 @@ int main(int argc, char **argv){
 	/**thermalizations**/
 	/**neighbours: need two neighbours for every direction, one forward and one backward
 	 * 0: t-forward	1:t-backward
-	 * 2: t-forward	3:t-backward
-	 * 4: t-forward	5:t-backward
-	 * 6: t-forward	7:t-backward
-	 * forward: 2*mu, backward, 2*mu+1
+	 * 2: z-forward	3:z-backward
+	 * 4: y-forward	5:y-backward
+	 * 6: x-forward	7:x-backward
+	 * forward: 2*mu, backward: 2*mu+1
 	 * **/
 	int counter, acceptance;
-	int neighbour[8]; //for implementing periodic boundary conditions
+	int neighbour[8]; //for implementing (periodic) boundary conditions
 	double plaquetteexpectation, plaquetteafter;
 	for(int runs=0;runs<numberofthermalizations;runs+=1){
 		acceptance=0;
@@ -204,38 +210,28 @@ int main(int argc, char **argv){
 						neighbour[0]=(t==size-1)?-(size-1)*4:4;
 						neighbour[1]=(t==0)?(size-1)*4:-4;
 						for (int mu=0;mu<4;mu+=1){
+							
 							counter=x*size*size*size*4+y*size*size*4+z*size*4+t*4+mu;
-							//~ fprintf(stdout, "%d\n", counter);
 							settozero(plaquettecontribution); settozero(deltacontribution);
-							//~ /**calculate contribution of different plaquettes to action
-							//~ *U_nu(x+amu)*U^dagger_mu(x+anu)*U^dagger_nu(x)*/
-							//~ for (int nu =0;nu<4;nu+=1){
-								//~ if(mu!=nu){
-								//~ gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, matrixarray[counter-mu+neighbour[mu]+nu], matrixarray[counter+neighbour[nu]], GSL_COMPLEX_ZERO, helpone);
-								//~ gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, helpone, matrixarray[counter-mu+nu] , GSL_COMPLEX_ZERO, helptwo);
-								//~ gsl_matrix_complex_add(deltacontribution, helptwo);
-								//~ fprintf(stdout, "%.1f\t", GSL_REAL(det2(helptwo)));
-								//~ if(mu>nu){gsl_matrix_complex_add(plaquettecontribution, helptwo);}
-							//~ }}
 							calculateGamma(neighbour, counter, mu, size, plaquettecontribution, deltacontribution, helpone, helptwo, matrixarray);
 							for (int attempts=0;attempts<10;attempts+=1){
 								generatesu2(multiplier, epsilon, generator);
 								gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, gsl_complex_rect(1,0), multiplier, matrixarray[counter], gsl_complex_rect(0,0), newmatrix);
-								//~ fprintf(stdout, "%.1f\t", GSL_REAL(det2(result)));
-								//beta in exp(-betaDeltaS)
 								if (exp(beta*deltaS(deltacontribution, newmatrix, matrixarray[counter], helpone, helptwo))>gsl_rng_uniform(generator)){
 									acceptance+=1;
 									gsl_matrix_complex_memcpy(matrixarray[counter], newmatrix); 
 								}
-								//what to use for plaquette: sum over (mu>nu) or 1/2*sum over (mu)
+								/**what to use for plaquette: sum over (mu>nu) or 1/2*sum over (mu)? Also include backwards plaquettes?**/
 								gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, gsl_complex_rect(1,0), matrixarray[counter], plaquettecontribution, gsl_complex_rect(0,0), helpone);
 								plaquetteexpectation+=GSL_REAL(trace(helpone));
+								
 							}
 						}
 					}
 				}
 			}
 		}	
+		/**measure plaquette after one sweep is complete**/
 		for (int x=0;x<size;x+=1){
 			neighbour[6]=(x==size-1)?-(size-1)*pow(size, 3)*4:pow(size,3)*4;
 			neighbour[7]=(x==0)?(size-1)*pow(size, 3)*4:-pow(size,3)*4;
@@ -258,30 +254,27 @@ int main(int argc, char **argv){
 				}
 			}
 		}
-							
-		//~ fprintf(stdout, "\nacceptance rate: %f\n", (double)acceptance/((double)10*size*size*size*size*4));
-		//~ fprintf(stdout, "\nplaquette expectation: %f\n", plaquetteexpectation/((double)10*size*size*size*size*4*3*0.5));
+		/**where to measure plaquette? measure directly after one link is switched, and get contributions from links that are changed in the next step, or loop over entire lattice after every sweep and take longer? 
+		Or maybe not longer, since matrix links are looked at ten times per sweep? Maybe look during sweep, but only after ten attempts have ben made?**/
+		/**factors for plaquette and acceptance rate: both have to be 1.0 when filled with unity matrices and epsilon=0**/
 		fprintf(stdout, "%f\t%f\t%f\n", (double)acceptance/((double)10*size*size*size*size*4),plaquetteexpectation/((double)10*size*size*size*size*4*3), plaquetteafter/((double)size*size*size*size*4*3*0.5));
 	}
 	
-	//~ printf("measured\n");
 	
-	//~ /**measuerements **/
+	//~ /**measurements **/
 	//~ for(int runs=0;runs<numberofmeasurements;runs+=1){
 		//~ acceptance=0;
 		//~ plaquetteexpectation=0;
-//~ //copy from thermalization
+/**copy from thermalization-> still to be done, but set up functions for gamma, plaquette, wilson-loop, etc first**/
 		//~ gsl_vector_set(plaquette, runs, plaquetteexpectation/((double)10*size*size*size*size*4*3*0.5));
 	//~ }
 	
-	//~ printf("measured\n");
+	/** analysis by binning and bootstrapping**/
 	//~ fprintf(plaquette_analysis, "bin\t<plaq>\tvar(plaq)\n", binsize, mean_plaquette, var_plaquette);
 	//~ for (int binsize=1;binsize<33;binsize*=2){
 		//~ binned_plaquette=gsl_vector_subvector(binned_plaquette_mem, 0, plaquette->size/binsize);
 		//~ binning(plaquette, &binned_plaquette.vector, binsize);
-		//~ printf("binned\n");
 		//~ bootstrap(&binned_plaquette.vector, generator, 2, &mean_plaquette, &var_plaquette);
-		//~ printf("bootstrapped\n");
 		//~ autocorrelation(&binned_plaquette.vector, plaquette_correlation_binned, mean_plaquette);
 		
 		//~ fprintf(plaquette_data, "\nbinsize %d\n", binsize);
@@ -314,7 +307,6 @@ int main(int argc, char **argv){
 	fclose(plaquette_data);
 	fclose(plaquette_autocorrelation);
 	fclose(plaquette_analysis);
-	//~ printf("freed\n");
 	return 0;
 }
 
