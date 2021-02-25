@@ -99,9 +99,12 @@ inline double deltaS(gsl_matrix_complex *deltacontribution, gsl_matrix_complex* 
 	return 0.5*GSL_REAL(trace(helptwo));
 }
 
+/**@fn calculateGamma(int * neighbour, int counter, int mu, int size, gsl_matrix_complex *plaquettecontribution, gsl_matrix_complex *deltacontribution, gsl_matrix_complex *helpone, gsl_matrix_complex *helptwo, gsl_matrix_complex **matrixarray)
+ * @brief calculates the contribution to all plaquettes U_mu(x) is involved in
+ * @note U-mu(x) is involved in six different plaquettes. calculating all of them every time for the change in the action would take too long
+ * **/ 
 void calculateGamma(int * neighbour, int counter, int mu, int size, gsl_matrix_complex *plaquettecontribution, gsl_matrix_complex *deltacontribution, gsl_matrix_complex *helpone, gsl_matrix_complex *helptwo, gsl_matrix_complex **matrixarray){
 	/**
-	* calculate contribution of different plaquettes to action
 	*forward U_nu(x+amu)*U^dagger_mu(x+anu)*U^dagger_nu(x)
 	*backward U^dagger_nu(x+amu-anu)*U^dagger_mu(x-anu)*U_nu(x-anu) 
 	* */
@@ -119,6 +122,10 @@ void calculateGamma(int * neighbour, int counter, int mu, int size, gsl_matrix_c
 	}}
 }
 
+/**
+ * @fn calculateplaquette(gsl_matrix_complex ** matrixarray, int counter, int* neighbour, int mu, int nu, gsl_matrix_complex *helpone, gsl_matrix_complex *helptwo, gsl_matrix_complex *helpthree)
+ * @brief calculates the plaquette at the position counter in the direction mu and nu
+ * **/
 double calculateplaquette(gsl_matrix_complex ** matrixarray, int counter, int* neighbour, int mu, int nu, gsl_matrix_complex *helpone, gsl_matrix_complex *helptwo, gsl_matrix_complex *helpthree){
 	gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, matrixarray[counter+mu], matrixarray[counter+neighbour[2*mu]+nu], GSL_COMPLEX_ZERO, helpone);
 	gsl_blas_zgemm(CblasConjTrans, CblasConjTrans, GSL_COMPLEX_ONE, matrixarray[counter+neighbour[2*nu]+mu], matrixarray[counter+nu], GSL_COMPLEX_ZERO, helptwo);
@@ -132,7 +139,7 @@ int main(int argc, char **argv){
 	double epsilon=0.2;
 	int size=8;
 	double beta=2.3;
-	int numberofthermalizations=100;
+	int numberofthermalizations=1000;
 	int numberofmeasurements=2048; //=pow(2, 13)
 	
 	gsl_matrix_complex *newmatrix=gsl_matrix_complex_alloc(2,2);
@@ -153,8 +160,8 @@ int main(int argc, char **argv){
 	gsl_matrix_complex* matrixarray[size*size*size*size*4];
 	for (int i=0;i<size*size*size*size*4;i+=1){
 		matrixarray[i]=gsl_matrix_complex_alloc(2,2);
-		generatesu2(matrixarray[i], epsilon, generator);  //set up as random or unity to test different configurations
-		//~ settounity(matrixarray[i]);
+		//~ generatesu2(matrixarray[i], epsilon, generator);  //set up as random or unity to test different configurations
+		settounity(matrixarray[i]);
 	}
 	
 	/** set up vectors and streams for analysis of results **/
