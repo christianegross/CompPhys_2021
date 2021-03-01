@@ -48,6 +48,9 @@
 %%height=10in,a5paper,hmargin={3cm,0.8in},
 %]{geometry}
 
+\DeclareMathOperator{\Tr}{Tr}
+\renewcommand{\Re}{\operatorname{Re}}
+
 \begin{document}
 
 \title{Yang-Mills on the Lattice}% Force line breaks with \\
@@ -78,19 +81,45 @@
 
 \section{Introduction}
 
-some random text
+%We want to calculate the potential between two infinitely heavy quarks. To do this, we first simulate an empty lattice and then use the fact that static quarks do not vary their location when the time is varied.
 
 \section{Theoretical basis}
 
-Some citation \citet{gsldoc_complex}
+%Some citation \citet{gsldoc_complex}
+
+Most of the theoretical basis given here is adapted from \citet{lepagelqcd}. We simulate a lattice with one temporal and three spatial dimensions, with the distande $a$ between neighbouring points. The nearest neighbours in this lattice are linked, with the links characterized by SU(2) or SU(3) matrices $U_\mu(x)$, where $\mu=0\dots3$ is the direction of the link. Backwards links are defined as the hermitian adjoint of the forward-facing link. The plaquette is the smallest possible square on the lattice and is defined as $P_{\mu\nu}(x)=\frac{1}{N}\Re\Tr\left(U_\mu(x)U_\nu(x+a\mu)U_\mu^\dagger(x+a\nu)U^\dagger_\nu(x)\right)$, where $N$ describes the dimension of the unitary matrices used to simulate the links. Building on this, we define the action to be $S=\frac{2N}{g^2}\sum_{x}\sum_{\mu>\nu}\left(1-P_{\mu\nu}(x)\right)$.
+
+Definition wilson-loop: maybe draw loop? How?
+
+$W(r,t)\sim \mathrm{e}^{aV(r)t}\Leftrightarrow \frac{W(r,t+a)}{W(r,t)}\sim aV(r)$
 
 \section{Methods}
 
+%another citation \citet{creutzsu2} and another \citet{lepagelqcd}.
+
+The code and data from our simulations can be found in the git-repo \url{https://github.com/christianegross/CompPhys_2021} in the folder \texttt{Project}.
+
+We use a Metropolis-Hastings algorithm to simulate the lattice, i.e we go through every link of the lattice, transform the link $U_\mu(x)\to U_\mu'(x)=MU_\mu(x)$, where $M$ is a randomly generated SU(N) matrix, and accept the change with the probabilty $\min[1, \exp(-\beta(S-S'))]$. We use the gnu scientific library for the calculations with complex numbers and matrices.
+
+%How to generate SU(N) Matrices: describe.
+We want to be able to specify how much our matrices differ from the unity matrix with the paramater $\epsilon$. To do so, we generate a special unitary matrix $H$ with only imaginary numbers on the diagonal and then take the Matrix $U=1+i\epsilon H$ and make it a SU matrix by orthonormalizing its columns. In SU(2), we simply normalize the first column $\begin{pmatrix}z_1&z_2\end{pmatrix}^T$ and then set the second column to be $\begin{pmatrix}
+-z_2^*&z_1^*\end{pmatrix}^T$.
+
 \section{Results}
+
+pictures
+
+how to extract V(r) from W(r).
+
+fit to potential
 
 \section{Discussion}
 
+Differences between SU(2) and SU(3)?
+
 \section{Summary}
+
+Reproduce confinement?
 
 %complicated way of specifying file, but does not need absolute path and simply writing refs did not work
 \bibliography{../report/refs}
