@@ -88,6 +88,7 @@ void generatesu3(gsl_matrix_complex * matrix, double epsilon, gsl_rng * generato
 	gsl_blas_zaxpy (gsl_complex_mul_real(complexscalarproduct2, -1.0), &columnone.vector, &columntwo.vector);
 	norm=gsl_blas_dznrm2(&columntwo.vector);
 	gsl_blas_zdscal(1.0/norm, &columntwo.vector);
+	//~ printf("%f\t%f\n", GSL_REAL(complexscalarproduct), GSL_REAL(complexscalarproduct2));
 }
 
 /** @brief returns the difference in action before and after change of one link
@@ -147,53 +148,54 @@ double calculatewilsonloop(gsl_matrix_complex ** matrixarray, gsl_matrix_complex
  * 2. How to implement boundary conditions? How to see, where to insert boundaries?
  * ->probably made easier by using x, y, z, t seperately, maybe not put counter as an argument, but individual values for x,y,z,t?
  * **/
+
  /** first calculation: go in x-direction for r1 steps, y for r2 steps, z for r3 steps, t for tdistance steps, and back with xdagger, ydagger, zdagger, tdagger
   first multiplication: U_x(pos)U_x(pos+ax)**/
  gsl_matrix_complex * loopcontribution=gsl_matrix_complex_calloc(dim,dim);
  settounity(helparray[0]);
-if(r1>=1){gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, matrixarray[x*size*size*size*4+y*size*size*4+z*size*4+t*4+0], matrixarray[((x+1)%size)*size*size*size*4+y*size*size*4+z*size*4+t*4+0], GSL_COMPLEX_ZERO, helparray[1]); }
+if(r1>=1){gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, matrixarray[x*size*size*size*4+y*size*size*4+z*size*4+t*4+3], matrixarray[((x+1)%size)*size*size*size*4+y*size*size*4+z*size*4+t*4+3], GSL_COMPLEX_ZERO, helparray[1]); }
 for (int len1=2;len1<=r1;len1+=1){
 	//~ printf("%d\t", len1);
-	gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, helparray[len1-1], matrixarray[((x+len1)%size)*size*size*size*4+y*size*size*4+z*size*4+t*4], GSL_COMPLEX_ZERO, helparray[len1]);
+	gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, helparray[len1-1], matrixarray[((x+len1)%size)*size*size*size*4+y*size*size*4+z*size*4+t*4+3], GSL_COMPLEX_ZERO, helparray[len1]);
 }
 for (int len2=1;len2<=r2;len2+=1){
 	//~ printf("%d\t", len2);
-	gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, helparray[r1+len2-1], matrixarray[((x+r1)%size)*size*size*size*4+((y+len2)%size)*size*size*4+z*size*4+t*4+1], GSL_COMPLEX_ZERO, helparray[r1+len2]);
+	gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, helparray[r1+len2-1], matrixarray[((x+r1)%size)*size*size*size*4+((y+len2)%size)*size*size*4+z*size*4+t*4+2], GSL_COMPLEX_ZERO, helparray[r1+len2]);
 }
 for (int len3=1;len3<=r3;len3+=1){
 	//~ printf("%d\t", len3);
-	gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, helparray[r1+r2+len3-1], matrixarray[((x+r1)%size)*size*size*size*4+((y+r2)%size)*size*size*4+((z+len3)%size)*size*4+t*4+2], GSL_COMPLEX_ZERO, helparray[r1+r2+len3]);
+	gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, helparray[r1+r2+len3-1], matrixarray[((x+r1)%size)*size*size*size*4+((y+r2)%size)*size*size*4+((z+len3)%size)*size*4+t*4+1], GSL_COMPLEX_ZERO, helparray[r1+r2+len3]);
 }
 for (int lent=1;lent<=tdistance;lent+=1){
 	//~ printf("%d\t", lent);
-	gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, helparray[r1+r2+r3+lent-1], matrixarray[((x+r1)%size)*size*size*size*4+((y+r2)%size)*size*size*4+((z+r3)%size)*size*4+((t+lent)%size)*4+3], GSL_COMPLEX_ZERO, helparray[r1+r2+r3+lent]);
+	gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, helparray[r1+r2+r3+lent-1], matrixarray[((x+r1)%size)*size*size*size*4+((y+r2)%size)*size*size*4+((z+r3)%size)*size*4+((t+lent)%size)*4+0], GSL_COMPLEX_ZERO, helparray[r1+r2+r3+lent]);
 }
 for (int len1=1;len1<=r1;len1+=1){
-	gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, helparray[r1+r2+r3+tdistance+len1-1], matrixarray[((x+r1-len1)%size)*size*size*size*4+((y+r2)%size)*size*size*4+((z+r3)%size)*size*4+((t+tdistance)%size)*4+0], GSL_COMPLEX_ZERO, helparray[r1+r2+r3+tdistance+len1]);
+	gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, helparray[r1+r2+r3+tdistance+len1-1], matrixarray[((x+r1-len1)%size)*size*size*size*4+((y+r2)%size)*size*size*4+((z+r3)%size)*size*4+((t+tdistance)%size)*4+3], GSL_COMPLEX_ZERO, helparray[r1+r2+r3+tdistance+len1]);
 }
 for (int len2=1;len2<=r2;len2+=1){
-	gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, helparray[2*r1+r2+r3+tdistance+len2-1], matrixarray[x*size*size*size*4+((y+r2-len2)%size)*size*size*4+((z+r3)%size)*size*4+((t+tdistance)%size)*4+1], GSL_COMPLEX_ZERO, helparray[2*r1+r2+r3+tdistance+len2]);
+	gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, helparray[2*r1+r2+r3+tdistance+len2-1], matrixarray[x*size*size*size*4+((y+r2-len2)%size)*size*size*4+((z+r3)%size)*size*4+((t+tdistance)%size)*4+2], GSL_COMPLEX_ZERO, helparray[2*r1+r2+r3+tdistance+len2]);
 }
 for (int len3=1;len3<=r3;len3+=1){
-	gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, helparray[2*r1+2*r2+r3+tdistance+len3-1], matrixarray[x*size*size*size*4+y*size*size*4+((z+r3-len3)%size)*size*4+((t+tdistance)%size)*4+2], GSL_COMPLEX_ZERO, helparray[2*r1+2*r2+r3+tdistance+len3]);
+	gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, helparray[2*r1+2*r2+r3+tdistance+len3-1], matrixarray[x*size*size*size*4+y*size*size*4+((z+r3-len3)%size)*size*4+((t+tdistance)%size)*4+1], GSL_COMPLEX_ZERO, helparray[2*r1+2*r2+r3+tdistance+len3]);
 }
 for (int lent=1;lent<=tdistance;lent+=1){
-	gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, helparray[2*r1+2*r2+2*r3+tdistance+lent-1], matrixarray[x*size*size*size*4+y*size*size*4+z*size*4+((t+tdistance-lent)%size)*4+3], GSL_COMPLEX_ZERO, helparray[2*r1+2*r2+2*r3+tdistance+lent]);
+	gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, helparray[2*r1+2*r2+2*r3+tdistance+lent-1], matrixarray[x*size*size*size*4+y*size*size*4+z*size*4+((t+tdistance-lent)%size)*4+0], GSL_COMPLEX_ZERO, helparray[2*r1+2*r2+2*r3+tdistance+lent]);
 }
 gsl_matrix_complex_add(loopcontribution, helparray[2*(r1+r2+r3+tdistance)]);
 /** possible additional runs: x-r1-z-r2-y-r3, ...**/
- return 0.5*GSL_REAL(trace(loopcontribution));
+ return GSL_REAL(trace(loopcontribution))/dim;
  }
 	
 
 int main(int argc, char **argv){
 	//set up constants, matrices, generator
 	int dim=3; //switches between SU2 and SU3
-	double epsilon=0.1;
+	double epsilon=0;
 
 	int size=8;
 	double beta=2.3;
-	int numberofthermalizations=10;
+	int numberofthermalizations=100;
 
 	int numberofmeasurements=2048; //=pow(2, 13)
 	
@@ -248,15 +250,16 @@ int main(int argc, char **argv){
 	 * forward: 2*mu, backward: 2*mu+1
 	 * relative to position
 	 * mu			0	1	2	3
-	 * direction	x	y	z	t
+	 * direction	t	z	y	x
 	 * **/
 	int counter, acceptance;
 	int neighbour[8]; //for implementing (periodic) boundary conditions
-	double plaquetteexpectation, plaquetteafter, wilsonexpectation;
+	double plaquetteexpectation, plaquetteafter, wilsonexpectation, wilsonexpectationmedium;
 	for(int runs=0;runs<numberofthermalizations;runs+=1){
 		acceptance=0;
 		plaquetteexpectation=0;
 		wilsonexpectation=0;
+		wilsonexpectationmedium=0;
 		plaquetteafter=0;
 		for (int x=0;x<size;x+=1){
 			neighbour[6]=(x==size-1)?-(size-1)*pow(size, 3)*4:pow(size,3)*4;
@@ -293,6 +296,7 @@ int main(int argc, char **argv){
 								
 							}
 						}
+
 						wilsonexpectation+=calculatewilsonloop(matrixarray, helparray, x, y, z, t, 2, 2,2,4,size,dim);
 					}
 				}
