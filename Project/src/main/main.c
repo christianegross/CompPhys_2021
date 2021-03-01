@@ -65,9 +65,10 @@ void generatesu3(gsl_matrix_complex * matrix, double epsilon, gsl_rng * generato
 	gsl_matrix_complex_set(matrix, 0, 1, gsl_complex_rect(epsilon*g, epsilon*f));
 	gsl_matrix_complex_set(matrix, 1, 1, gsl_complex_rect(1, epsilon*k));
 	gsl_matrix_complex_set(matrix, 2, 1, gsl_complex_rect(-epsilon*m, epsilon*l));
-	gsl_matrix_complex_set(matrix, 0, 2, GSL_COMPLEX_ONE);
+	//TODO: add hermiticety
+	gsl_matrix_complex_set(matrix, 0, 2, GSL_COMPLEX_ZERO);
 	gsl_matrix_complex_set(matrix, 1, 2, GSL_COMPLEX_ZERO);
-	gsl_matrix_complex_set(matrix, 2, 2, GSL_COMPLEX_ZERO);
+	gsl_matrix_complex_set(matrix, 2, 2, GSL_COMPLEX_ONE);
 	//normalize vector zero to make sure determinant is one
 	//rescale by 1/norm
 	columnzero=gsl_matrix_complex_column(matrix, 0);
@@ -79,7 +80,6 @@ void generatesu3(gsl_matrix_complex * matrix, double epsilon, gsl_rng * generato
 	gsl_blas_zaxpy (gsl_complex_mul_real(complexscalarproduct, -1.0), &columnzero.vector, &columnone.vector);
 	norm=gsl_blas_dznrm2(&columnone.vector);
 	gsl_blas_zdscal(1.0/norm, &columnone.vector);
-	//TODO: add cross product
 	columntwo=gsl_matrix_complex_column(matrix, 2);
 	//crossproduct(&columnzero.vector,&columnone.vector,&columntwo.vector);
 	gsl_blas_zdotc (&columnzero.vector, &columntwo.vector, &complexscalarproduct);
@@ -139,7 +139,7 @@ double calculateplaquette(gsl_matrix_complex ** matrixarray, int counter, int* n
 	gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, matrixarray[counter+mu], matrixarray[counter+neighbour[2*mu]+nu], GSL_COMPLEX_ZERO, helpone);
 	gsl_blas_zgemm(CblasConjTrans, CblasConjTrans, GSL_COMPLEX_ONE, matrixarray[counter+neighbour[2*nu]+mu], matrixarray[counter+nu], GSL_COMPLEX_ZERO, helptwo);
 	gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, helpone, helptwo, GSL_COMPLEX_ZERO, helpthree);
-	return GSL_REAL(trace(helpthree))/dim;
+	return GSL_REAL(trace(helpthree))/((double)dim);
 }
 
 double calculatewilsonloop(gsl_matrix_complex ** matrixarray, gsl_matrix_complex ** helparray, int x, int y, int z, int t, int r1, int r2, int r3, int tdistance, int size, int dim){
@@ -192,7 +192,7 @@ int main(int argc, char **argv){
 	//set up constants, matrices, generator
 	int dim=3; //switches between SU2 and SU3
 	double epsilon=0;
-
+	int hotstart=1;
 	int size=8;
 	double beta=2.3;
 	int numberofthermalizations=100;
@@ -219,7 +219,15 @@ int main(int argc, char **argv){
 	for (int i=0;i<size*size*size*size*4;i+=1){
 		matrixarray[i]=gsl_matrix_complex_alloc(dim,dim);
 		//~ generatesu2(matrixarray[i], epsilon, generator);  //set up as random or unity to test different configurations
-		settounity(matrixarray[i]);
+		if(hotstart){
+			if(dim==2){
+				generatesu2(matrixarray[i], epsilon, generator);
+			}else if (dim==3){
+		 		generatesu3(matrixarray[i], epsilon, generator);
+			}else {fprintf (stderr, "Invalid value for dim.");return -1;}
+		}else{
+			settounity(matrixarray[i]);
+		}
 	}
 	/** set up array with helpmatrices to store intermediate results
 	 * size: max(3, 2*(r1max+r2max+r3max+tmax)) **/
@@ -329,7 +337,7 @@ int main(int argc, char **argv){
 		/**where to measure plaquette? measure directly after one link is switched, and get contributions from links that are changed in the next step, or loop over entire lattice after every sweep and take longer? 
 		Or maybe not longer, since matrix links are looked at ten times per sweep? Maybe look during sweep, but only after ten attempts have ben made?**/
 		/**factors for plaquette and acceptance rate: both have to be 1.0 when filled with unity matrices and epsilon=0**/
-		fprintf(stdout, "%d\t%f\t%f\t%f\t%f\n", runs, (double)acceptance/((double)10*size*size*size*size*4),plaquetteexpectation/((double)10*size*size*size*size*4*3), plaquetteafter/((double)size*size*size*size*4*3*0.5), wilsonexpectation/((double)size*size*size*size));
+		fprintf(stdout, "%d\t%f\t%f\t%f\t%f\n", runs, (double)acceptance/((double)10*size*size*size*size*4),plaquetteexpectation/((double)10*size*size*size*size*4*3*dim/2), plaquetteafter/((double)size*size*size*size*4*3*0.5), wilsonexpectation/((double)size*size*size*size));
 	}
 	
 	
