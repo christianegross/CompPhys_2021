@@ -18,6 +18,31 @@ PI=3.14159
 set terminal pdfcairo size 4in, 4in
 set out 'test.pdf'
 
+set xrange [0:100]
+
+set title 'acceptance rate early'
+plot '../data/plaquettethermhotstartepsilon0point2beta2point3.dat' u 0:1 ls 1 title 'ar hot',\
+	 '../data/plaquettethermcoldstartepsilon0point2beta2point3.dat' u 0:1 ls 4 title 'ar cold'
+
+set title 'plaquette early'
+plot '../data/plaquettethermhotstartepsilon0point2beta2point3.dat' u 0:2 ls 2 title 'pd hot',\
+	 '../data/plaquettethermhotstartepsilon0point2beta2point3.dat' u 0:3 ls 3 title 'pa hot',\
+	 '../data/plaquettethermcoldstartepsilon0point2beta2point3.dat' u 0:2 ls 5 title 'pd cold',\
+	 '../data/plaquettethermcoldstartepsilon0point2beta2point3.dat' u 0:3 ls 6 title 'pa cold'
+
+set xrange [900:1000]
+
+set title 'acceptance rate late'
+plot '../data/plaquettethermhotstartepsilon0point2beta2point3.dat' u 0:1 ls 1 title 'ar hot',\
+	 '../data/plaquettethermcoldstartepsilon0point2beta2point3.dat' u 0:1 ls 4 title 'ar cold'
+
+set title 'plaquette late'
+plot '../data/plaquettethermhotstartepsilon0point2beta2point3.dat' u 0:2 ls 2 title 'pd hot',\
+	 '../data/plaquettethermhotstartepsilon0point2beta2point3.dat' u 0:3 ls 3 title 'pa hot',\
+	 '../data/plaquettethermcoldstartepsilon0point2beta2point3.dat' u 0:2 ls 5 title 'pd cold',\
+	 '../data/plaquettethermcoldstartepsilon0point2beta2point3.dat' u 0:3 ls 6 title 'pa cold'
+	 
+	 
 set ter epslatex size 15 cm, 10 cm color colortext
 unset title
 set output
