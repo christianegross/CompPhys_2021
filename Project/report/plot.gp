@@ -46,7 +46,49 @@ plot '../data/plaquettethermhotstartepsilon0point2beta2point3.dat' u 0:2 ls 2 ti
 	 '../data/plaquettethermhotstartepsilon0point2beta2point3.dat' u 0:3 ls 3 title 'pa hot',\
 	 '../data/plaquettethermcoldstartepsilon0point2beta2point3.dat' u 0:2 ls 5 title 'pd cold',\
 	 '../data/plaquettethermcoldstartepsilon0point2beta2point3.dat' u 0:3 ls 6 title 'pa cold'
+
+
+unset xrange
+
+set mytics 4
+set mxtics 2
+
+set xrange [0:50]
+
+set out 'comparisoncreutz.pdf'
+
+set title "plaquette, measured during sweep"
+plot "../data/beta12.dat" u 1:3 title "1.2",\
+	 "../data/beta16.dat" u 1:3 title "1.6",\
+	 "../data/beta20.dat" u 1:3 title "2.0",\
+	 "../data/beta24.dat" u 1:3 title "2.4",\
+	 "../data/beta28.dat" u 1:3 title "2.8",\
+	 "../data/beta32.dat" u 1:3 title "3.2"	 
+
+set title "1-plaquette, measured during sweep"
+plot "../data/beta12.dat" u 1:(1-$3) title "1.2",\
+	 "../data/beta16.dat" u 1:(1-$3) title "1.6",\
+	 "../data/beta20.dat" u 1:(1-$3) title "2.0",\
+	 "../data/beta24.dat" u 1:(1-$3) title "2.4",\
+	 "../data/beta28.dat" u 1:(1-$3) title "2.8",\
+	 "../data/beta32.dat" u 1:(1-$3) title "3.2"	 
 	 
+set title "plaquette, measured after sweep"
+plot "../data/beta12.dat" u 1:4 title "1.2",\
+	 "../data/beta16.dat" u 1:4 title "1.6",\
+	 "../data/beta20.dat" u 1:4 title "2.0",\
+	 "../data/beta24.dat" u 1:4 title "2.4",\
+	 "../data/beta28.dat" u 1:4 title "2.8",\
+	 "../data/beta32.dat" u 1:4 title "3.2"	 
+
+set title "1-plaquette, measured after sweep"
+plot "../data/beta12.dat" u 1:(1-$4) title "1.2",\
+	 "../data/beta16.dat" u 1:(1-$4) title "1.6",\
+	 "../data/beta20.dat" u 1:(1-$4) title "2.0",\
+	 "../data/beta24.dat" u 1:(1-$4) title "2.4",\
+	 "../data/beta28.dat" u 1:(1-$4) title "2.8",\
+	 "../data/beta32.dat" u 1:(1-$4) title "3.2"	 
+
 	 
 set ter epslatex size 15 cm, 10 cm color colortext
 unset title
