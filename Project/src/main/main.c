@@ -88,6 +88,7 @@ void generatesu3(gsl_matrix_complex * matrix, double epsilon, gsl_rng * generato
 	gsl_blas_zaxpy (gsl_complex_mul_real(complexscalarproduct2, -1.0), &columnone.vector, &columntwo.vector);
 	norm=gsl_blas_dznrm2(&columntwo.vector);
 	gsl_blas_zdscal(1.0/norm, &columntwo.vector);
+	//~ printf("%f\t%f\n", GSL_REAL(complexscalarproduct), GSL_REAL(complexscalarproduct2));
 }
 
 /** @brief returns the difference in action before and after change of one link
@@ -155,42 +156,42 @@ double calculatewilsonloop(gsl_matrix_complex ** matrixarray, gsl_matrix_complex
 if(r1>=1){gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, matrixarray[x*size*size*size*4+y*size*size*4+z*size*4+t*4+3], matrixarray[((x+1)%size)*size*size*size*4+y*size*size*4+z*size*4+t*4+3], GSL_COMPLEX_ZERO, helparray[1]); }
 for (int len1=2;len1<=r1;len1+=1){
 	//~ printf("%d\t", len1);
-	gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, helparray[len1-1], matrixarray[((x+len1)%size)*size*size*size*4+y*size*size*4+z*size*4+t*4], GSL_COMPLEX_ZERO, helparray[len1]);
+	gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, helparray[len1-1], matrixarray[((x+len1)%size)*size*size*size*4+y*size*size*4+z*size*4+t*4+3], GSL_COMPLEX_ZERO, helparray[len1]);
 }
 for (int len2=1;len2<=r2;len2+=1){
 	//~ printf("%d\t", len2);
-	gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, helparray[r1+len2-1], matrixarray[((x+r1)%size)*size*size*size*4+((y+len2)%size)*size*size*4+z*size*4+t*4+1], GSL_COMPLEX_ZERO, helparray[r1+len2]);
+	gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, helparray[r1+len2-1], matrixarray[((x+r1)%size)*size*size*size*4+((y+len2)%size)*size*size*4+z*size*4+t*4+2], GSL_COMPLEX_ZERO, helparray[r1+len2]);
 }
 for (int len3=1;len3<=r3;len3+=1){
 	//~ printf("%d\t", len3);
-	gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, helparray[r1+r2+len3-1], matrixarray[((x+r1)%size)*size*size*size*4+((y+r2)%size)*size*size*4+((z+len3)%size)*size*4+t*4+2], GSL_COMPLEX_ZERO, helparray[r1+r2+len3]);
+	gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, helparray[r1+r2+len3-1], matrixarray[((x+r1)%size)*size*size*size*4+((y+r2)%size)*size*size*4+((z+len3)%size)*size*4+t*4+1], GSL_COMPLEX_ZERO, helparray[r1+r2+len3]);
 }
 for (int lent=1;lent<=tdistance;lent+=1){
 	//~ printf("%d\t", lent);
-	gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, helparray[r1+r2+r3+lent-1], matrixarray[((x+r1)%size)*size*size*size*4+((y+r2)%size)*size*size*4+((z+r3)%size)*size*4+((t+lent)%size)*4+3], GSL_COMPLEX_ZERO, helparray[r1+r2+r3+lent]);
+	gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, helparray[r1+r2+r3+lent-1], matrixarray[((x+r1)%size)*size*size*size*4+((y+r2)%size)*size*size*4+((z+r3)%size)*size*4+((t+lent)%size)*4+0], GSL_COMPLEX_ZERO, helparray[r1+r2+r3+lent]);
 }
 for (int len1=1;len1<=r1;len1+=1){
-	gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, helparray[r1+r2+r3+tdistance+len1-1], matrixarray[((x+r1-len1)%size)*size*size*size*4+((y+r2)%size)*size*size*4+((z+r3)%size)*size*4+((t+tdistance)%size)*4+0], GSL_COMPLEX_ZERO, helparray[r1+r2+r3+tdistance+len1]);
+	gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, helparray[r1+r2+r3+tdistance+len1-1], matrixarray[((x+r1-len1)%size)*size*size*size*4+((y+r2)%size)*size*size*4+((z+r3)%size)*size*4+((t+tdistance)%size)*4+3], GSL_COMPLEX_ZERO, helparray[r1+r2+r3+tdistance+len1]);
 }
 for (int len2=1;len2<=r2;len2+=1){
-	gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, helparray[2*r1+r2+r3+tdistance+len2-1], matrixarray[x*size*size*size*4+((y+r2-len2)%size)*size*size*4+((z+r3)%size)*size*4+((t+tdistance)%size)*4+1], GSL_COMPLEX_ZERO, helparray[2*r1+r2+r3+tdistance+len2]);
+	gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, helparray[2*r1+r2+r3+tdistance+len2-1], matrixarray[x*size*size*size*4+((y+r2-len2)%size)*size*size*4+((z+r3)%size)*size*4+((t+tdistance)%size)*4+2], GSL_COMPLEX_ZERO, helparray[2*r1+r2+r3+tdistance+len2]);
 }
 for (int len3=1;len3<=r3;len3+=1){
-	gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, helparray[2*r1+2*r2+r3+tdistance+len3-1], matrixarray[x*size*size*size*4+y*size*size*4+((z+r3-len3)%size)*size*4+((t+tdistance)%size)*4+2], GSL_COMPLEX_ZERO, helparray[2*r1+2*r2+r3+tdistance+len3]);
+	gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, helparray[2*r1+2*r2+r3+tdistance+len3-1], matrixarray[x*size*size*size*4+y*size*size*4+((z+r3-len3)%size)*size*4+((t+tdistance)%size)*4+1], GSL_COMPLEX_ZERO, helparray[2*r1+2*r2+r3+tdistance+len3]);
 }
 for (int lent=1;lent<=tdistance;lent+=1){
-	gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, helparray[2*r1+2*r2+2*r3+tdistance+lent-1], matrixarray[x*size*size*size*4+y*size*size*4+z*size*4+((t+tdistance-lent)%size)*4+3], GSL_COMPLEX_ZERO, helparray[2*r1+2*r2+2*r3+tdistance+lent]);
+	gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, helparray[2*r1+2*r2+2*r3+tdistance+lent-1], matrixarray[x*size*size*size*4+y*size*size*4+z*size*4+((t+tdistance-lent)%size)*4+0], GSL_COMPLEX_ZERO, helparray[2*r1+2*r2+2*r3+tdistance+lent]);
 }
 gsl_matrix_complex_add(loopcontribution, helparray[2*(r1+r2+r3+tdistance)]);
 /** possible additional runs: x-r1-z-r2-y-r3, ...**/
- return 0.5*GSL_REAL(trace(loopcontribution));
+ return GSL_REAL(trace(loopcontribution))/dim;
  }
 	
 
 int main(int argc, char **argv){
 	//set up constants, matrices, generator
 	int dim=3; //switches between SU2 and SU3
-	double epsilon=0.1;
+	double epsilon=0;
 
 	int size=8;
 	double beta=2.3;
@@ -328,7 +329,7 @@ int main(int argc, char **argv){
 		/**where to measure plaquette? measure directly after one link is switched, and get contributions from links that are changed in the next step, or loop over entire lattice after every sweep and take longer? 
 		Or maybe not longer, since matrix links are looked at ten times per sweep? Maybe look during sweep, but only after ten attempts have ben made?**/
 		/**factors for plaquette and acceptance rate: both have to be 1.0 when filled with unity matrices and epsilon=0**/
-		fprintf(stdout, "%d\t%f\t%f\t%f\t%f\t%f\n", runs, (double)acceptance/((double)10*size*size*size*size*4),plaquetteexpectation/((double)10*size*size*size*size*4*3), plaquetteafter/((double)size*size*size*size*4*3*0.5), wilsonexpectation/((double)size*size*size*size), wilsonexpectationmedium/((double)size*size*size*size));
+		fprintf(stdout, "%d\t%f\t%f\t%f\t%f\n", runs, (double)acceptance/((double)10*size*size*size*size*4),plaquetteexpectation/((double)10*size*size*size*size*4*3), plaquetteafter/((double)size*size*size*size*4*3*0.5), wilsonexpectation/((double)size*size*size*size));
 	}
 	
 	
@@ -357,23 +358,23 @@ int main(int argc, char **argv){
 	//~ }
 	
 	//Test SU3:
-	//~ gsl_matrix_complex *su3=gsl_matrix_complex_alloc(3,3);
-	//~ gsl_vector_complex_view columnzero,columnone,columntwo;
-	//~ double norm;
-	//~ gsl_complex dot01, dot02, dot12;
-	//~ for(int i=0;i<50;i++){
-		//~ generatesu3 (su3, i/50., generator);
-		//~ //gsl_matrix_complex_fprintf (stdout, su3, "%e");
-		//~ columnzero=gsl_matrix_complex_column(su3, 0);
-		//~ columnone=gsl_matrix_complex_column(su3, 1);
-		//~ columntwo=gsl_matrix_complex_column(su3, 2);
-		//~ gsl_blas_zdotc (&columnzero.vector, &columnone.vector, &dot01);
-		//~ gsl_blas_zdotc (&columnzero.vector, &columntwo.vector, &dot02);
-		//~ gsl_blas_zdotc (&columnone.vector, &columntwo.vector, &dot12);
-		//~ norm=gsl_blas_dznrm2(&columntwo.vector);
-		//~ printf ("eps: %e\tnorm: %e\tdot01: %e\tdot02: %e\tdot12: %e\n",i/50.,norm,gsl_complex_abs (dot01),gsl_complex_abs (dot02),gsl_complex_abs (dot12));
-		//~ gsl_matrix_complex_set_zero (su3);
-	//~ }
+	gsl_matrix_complex *su3=gsl_matrix_complex_alloc(3,3);
+	gsl_vector_complex_view columnzero,columnone,columntwo;
+	double norm;
+	gsl_complex dot01, dot02, dot12;
+	for(int i=0;i<50;i++){
+		generatesu3 (su3, i/50., generator);
+		//gsl_matrix_complex_fprintf (stdout, su3, "%e");
+		columnzero=gsl_matrix_complex_column(su3, 0);
+		columnone=gsl_matrix_complex_column(su3, 1);
+		columntwo=gsl_matrix_complex_column(su3, 2);
+		gsl_blas_zdotc (&columnzero.vector, &columnone.vector, &dot01);
+		gsl_blas_zdotc (&columnzero.vector, &columntwo.vector, &dot02);
+		gsl_blas_zdotc (&columnone.vector, &columntwo.vector, &dot12);
+		norm=gsl_blas_dznrm2(&columntwo.vector);
+		printf ("eps: %e\tnorm: %e\tdot01: %e\tdot02: %e\tdot12: %e\n",i/50.,norm,gsl_complex_abs (dot01),gsl_complex_abs (dot02),gsl_complex_abs (dot12));
+		gsl_matrix_complex_set_zero (su3);
+	}
 
 
 
