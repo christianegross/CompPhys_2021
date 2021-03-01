@@ -102,7 +102,7 @@ The code and data from our simulations can be found in the git-repo \url{https:/
 We use a Metropolis-Hastings algorithm to simulate the lattice, i.e we go through every link of the lattice, transform the link $U_\mu(x)\to U_\mu'(x)=MU_\mu(x)$, where $M$ is a randomly generated SU(N) matrix, and accept the change with the probabilty $\min[1, \exp(-\beta(S-S'))]$. We use the gnu scientific library for the calculations with complex numbers and matrices.
 
 %How to generate SU(N) Matrices: describe.
-We want to be able to specify how much our matrices differ from the unity matrix with the paramater $\epsilon$. To do so, we generate a special unitary matrix $H$ with only imaginary numbers on the diagonal and then take the Matrix $U=1+i\epsilon H$ and make it a SU matrix by orthonormalizing its columns. In SU(2), we simply normalize the first column $\begin{pmatrix}z_1&z_2\end{pmatrix}^T$ and then set the second column to be $\begin{pmatrix}
+We want to be able to specify how much our matrices differ from the unity matrix with the paramater $\epsilon$. To do so, we generate a hermitian matrix $H$ and then take the Matrix $U=1+i\epsilon H$ and make it a SU matrix by orthonormalizing its columns. In SU(2), we simply normalize the first column $\begin{pmatrix}z_1&z_2\end{pmatrix}^T$ and then set the second column to be $\begin{pmatrix}
 -z_2^*&z_1^*\end{pmatrix}^T$.
 
 \section{Results}
