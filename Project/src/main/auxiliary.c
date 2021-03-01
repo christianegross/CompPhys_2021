@@ -104,9 +104,9 @@ void settounity(gsl_matrix_complex *matrix){
  * @note
  */
 void crossproduct(gsl_vector_complex* a,gsl_vector_complex* b,gsl_vector_complex* result){
-	gsl_vector_complex_set (result, 0, gsl_complex_sub(gsl_complex_mul (gsl_vector_complex_get(a,1), gsl_vector_complex_get(b,2)),gsl_complex_mul (gsl_vector_complex_get(a,2), gsl_vector_complex_get(b,1))));
-	gsl_vector_complex_set (result, 1, gsl_complex_sub(gsl_complex_mul (gsl_vector_complex_get(a,2), gsl_vector_complex_get(b,0)),gsl_complex_mul (gsl_vector_complex_get(a,0), gsl_vector_complex_get(b,2))));
-	gsl_vector_complex_set (result, 2, gsl_complex_sub(gsl_complex_mul (gsl_vector_complex_get(a,0), gsl_vector_complex_get(b,1)),gsl_complex_mul (gsl_vector_complex_get(a,1), gsl_vector_complex_get(b,0))));
+	gsl_vector_complex_set (result, 0, gsl_complex_sub(gsl_complex_mul (gsl_vector_complex_get(a,1), gsl_complex_conjugate (gsl_vector_complex_get(b,2))),gsl_complex_mul (gsl_vector_complex_get(a,2), gsl_complex_conjugate (gsl_vector_complex_get(b,1)))));
+	gsl_vector_complex_set (result, 1, gsl_complex_sub(gsl_complex_mul (gsl_vector_complex_get(a,2), gsl_complex_conjugate (gsl_vector_complex_get(b,0))),gsl_complex_mul (gsl_vector_complex_get(a,0), gsl_complex_conjugate (gsl_vector_complex_get(b,2)))));
+	gsl_vector_complex_set (result, 2, gsl_complex_sub(gsl_complex_mul (gsl_vector_complex_get(a,0), gsl_complex_conjugate (gsl_vector_complex_get(b,1))),gsl_complex_mul (gsl_vector_complex_get(a,1), gsl_complex_conjugate (gsl_vector_complex_get(b,0)))));
 }
 
 

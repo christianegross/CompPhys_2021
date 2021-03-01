@@ -48,7 +48,7 @@ void generatesu3(gsl_matrix_complex * matrix, double epsilon, gsl_rng * generato
 	//generate random numbers
 	double e,f,g,h,j,k,l,m, norm;
 	gsl_vector_complex_view columnzero,columnone,columntwo;
-	gsl_complex complexscalarproduct=GSL_COMPLEX_ZERO;
+	gsl_complex complexscalarproduct=GSL_COMPLEX_ZERO, complexscalarproduct2=GSL_COMPLEX_ZERO;
 	e=2.0*gsl_rng_uniform(generator)-1.0;
 	f=2.0*gsl_rng_uniform(generator)-1.0;
 	g=2.0*gsl_rng_uniform(generator)-1.0;
@@ -65,6 +65,9 @@ void generatesu3(gsl_matrix_complex * matrix, double epsilon, gsl_rng * generato
 	gsl_matrix_complex_set(matrix, 0, 1, gsl_complex_rect(epsilon*g, epsilon*f));
 	gsl_matrix_complex_set(matrix, 1, 1, gsl_complex_rect(1, epsilon*k));
 	gsl_matrix_complex_set(matrix, 2, 1, gsl_complex_rect(-epsilon*m, epsilon*l));
+	gsl_matrix_complex_set(matrix, 0, 2, GSL_COMPLEX_ONE);
+	gsl_matrix_complex_set(matrix, 1, 2, GSL_COMPLEX_ZERO);
+	gsl_matrix_complex_set(matrix, 2, 2, GSL_COMPLEX_ZERO);
 	//normalize vector zero to make sure determinant is one
 	//rescale by 1/norm
 	columnzero=gsl_matrix_complex_column(matrix, 0);
@@ -72,13 +75,19 @@ void generatesu3(gsl_matrix_complex * matrix, double epsilon, gsl_rng * generato
 	gsl_blas_zdscal(1.0/norm, &columnzero.vector);
 
 	columnone=gsl_matrix_complex_column(matrix, 1);
-	gsl_blas_zdotu (&columnone.vector, &columnzero.vector, &complexscalarproduct);
+	gsl_blas_zdotc (&columnzero.vector, &columnone.vector, &complexscalarproduct);
 	gsl_blas_zaxpy (gsl_complex_mul_real(complexscalarproduct, -1.0), &columnzero.vector, &columnone.vector);
 	norm=gsl_blas_dznrm2(&columnone.vector);
 	gsl_blas_zdscal(1.0/norm, &columnone.vector);
 	//TODO: add cross product
 	columntwo=gsl_matrix_complex_column(matrix, 2);
-	crossproduct(&columnzero.vector,&columnone.vector,&columntwo.vector);
+	//crossproduct(&columnzero.vector,&columnone.vector,&columntwo.vector);
+	gsl_blas_zdotc (&columnzero.vector, &columntwo.vector, &complexscalarproduct);
+	gsl_blas_zdotc (&columnone.vector, &columntwo.vector, &complexscalarproduct2);
+	gsl_blas_zaxpy (gsl_complex_mul_real(complexscalarproduct, -1.0), &columnzero.vector, &columntwo.vector);
+	gsl_blas_zaxpy (gsl_complex_mul_real(complexscalarproduct2, -1.0), &columnone.vector, &columntwo.vector);
+	norm=gsl_blas_dznrm2(&columntwo.vector);
+	gsl_blas_zdscal(1.0/norm, &columntwo.vector);
 }
 
 /** @brief returns the difference in action before and after change of one link
@@ -145,7 +154,7 @@ int main(int argc, char **argv){
 	double epsilon=0.2;
 	int size=8;
 	double beta=2.3;
-	int numberofthermalizations=1000;
+	int numberofthermalizations=10;
 	int numberofmeasurements=2048; //=pow(2, 13)
 	
 	gsl_matrix_complex *newmatrix=gsl_matrix_complex_alloc(2,2);
@@ -285,9 +294,29 @@ int main(int argc, char **argv){
 		//~ fprintf(plaquette_analysis, "%.2d\t%f\t%f\n", binsize, mean_plaquette, var_plaquette);
 	//~ }
 	
-	
-	
-	
+	//Test SU3:
+	gsl_matrix_complex *su3=gsl_matrix_complex_alloc(3,3);
+	gsl_vector_complex_view columnzero,columnone,columntwo;
+	double norm;
+	gsl_complex dot01, dot02, dot12;
+	for(int i=0;i<50;i++){
+		generatesu3 (su3, i/50., generator);
+		//gsl_matrix_complex_fprintf (stdout, su3, "%e");
+		columnzero=gsl_matrix_complex_column(su3, 0);
+		columnone=gsl_matrix_complex_column(su3, 1);
+		columntwo=gsl_matrix_complex_column(su3, 2);
+		gsl_blas_zdotc (&columnzero.vector, &columnone.vector, &dot01);
+		gsl_blas_zdotc (&columnzero.vector, &columntwo.vector, &dot02);
+		gsl_blas_zdotc (&columnone.vector, &columntwo.vector, &dot12);
+		norm=gsl_blas_dznrm2(&columntwo.vector);
+		printf ("eps: %e\tnorm: %e\tdot01: %e\tdot02: %e\tdot12: %e\n",i/50.,norm,gsl_complex_abs (dot01),gsl_complex_abs (dot02),gsl_complex_abs (dot12));
+		gsl_matrix_complex_set_zero (su3);
+	}
+
+
+
+
+
 	//cleanup
 	gsl_rng_free(generator);
 	gsl_matrix_complex_free(multiplier);
