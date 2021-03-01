@@ -151,19 +151,20 @@ double calculatewilsonloop(gsl_matrix_complex ** matrixarray, int counter, int t
 
 int main(int argc, char **argv){
 	//set up constants, matrices, generator
+	int dim=2; //switches between SU2 and SU3
 	double epsilon=0.2;
 	int size=8;
 	double beta=2.3;
 	int numberofthermalizations=10;
 	int numberofmeasurements=2048; //=pow(2, 13)
 	
-	gsl_matrix_complex *newmatrix=gsl_matrix_complex_alloc(2,2);
-	gsl_matrix_complex *multiplier=gsl_matrix_complex_alloc(2,2);
-	gsl_matrix_complex *plaquettecontribution=gsl_matrix_complex_alloc(2,2);
-	gsl_matrix_complex *deltacontribution=gsl_matrix_complex_alloc(2,2);
-	gsl_matrix_complex *helpone=gsl_matrix_complex_alloc(2,2);
-	gsl_matrix_complex *helpthree=gsl_matrix_complex_alloc(2,2);
-	gsl_matrix_complex *helptwo=gsl_matrix_complex_alloc(2,2);
+	gsl_matrix_complex *newmatrix=gsl_matrix_complex_alloc(dim,dim);
+	gsl_matrix_complex *multiplier=gsl_matrix_complex_alloc(dim,dim);
+	gsl_matrix_complex *plaquettecontribution=gsl_matrix_complex_alloc(dim,dim);
+	gsl_matrix_complex *deltacontribution=gsl_matrix_complex_alloc(dim,dim);
+	gsl_matrix_complex *helpone=gsl_matrix_complex_alloc(dim,dim);
+	gsl_matrix_complex *helpthree=gsl_matrix_complex_alloc(dim,dim);
+	gsl_matrix_complex *helptwo=gsl_matrix_complex_alloc(dim,dim);
 	int seed=2;//use fixed seed: result should be exactly reproduced using the same seed
 	gsl_rng *generator;
 	generator=gsl_rng_alloc(gsl_rng_mt19937);//use mersenne-twister
@@ -174,7 +175,7 @@ int main(int argc, char **argv){
 	every matrix can be initialised to unity or a random SU(2) matrix**/
 	gsl_matrix_complex* matrixarray[size*size*size*size*4];
 	for (int i=0;i<size*size*size*size*4;i+=1){
-		matrixarray[i]=gsl_matrix_complex_alloc(2,2);
+		matrixarray[i]=gsl_matrix_complex_alloc(dim,dim);
 		//~ generatesu2(matrixarray[i], epsilon, generator);  //set up as random or unity to test different configurations
 		settounity(matrixarray[i]);
 	}
