@@ -232,9 +232,9 @@ int main(int argc, char **argv){
 	int size=8;
 	double beta=2.3;
 	const int maxR=4,maxT=4;
-	int numberofthermalizations=100;
+	int numberofthermalizations=200;
 
-	int numberofmeasurements=200; //=pow(2, 13)
+	int numberofmeasurements=2048; //=pow(2, 13)
 	
 
 	gsl_matrix_complex *newmatrix=gsl_matrix_complex_alloc(dim,dim);
@@ -301,6 +301,10 @@ int main(int argc, char **argv){
 	int counter, acceptance;
 	int neighbour[8]; //for implementing (periodic) boundary conditions
 	double plaquetteexpectation, wilsonexpectation[maxR*maxT],wilsonexpectationmedium[maxR*maxT];
+	for(int i=0;i<maxT*maxR;i++){
+		wilsonexpectationmedium[i]=0;
+		wilsonexpectation[i]=0;
+	}
 	for(int runs=0;runs<numberofthermalizations;runs+=1){
 		acceptance=0;
 		plaquetteexpectation=0;
