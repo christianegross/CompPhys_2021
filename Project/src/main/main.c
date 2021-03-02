@@ -152,38 +152,75 @@ double calculatewilsonloop(gsl_matrix_complex ** matrixarray, gsl_matrix_complex
 
  /** first calculation: go in x-direction for r1 steps, y for r2 steps, z for r3 steps, t for tdistance steps, and back with xdagger, ydagger, zdagger, tdagger
   first multiplication: U_x(pos)U_x(pos+ax)**/
- gsl_matrix_complex * loopcontribution=gsl_matrix_complex_calloc(dim,dim);
- settounity(helparray[0]);
-if(r1>=1){gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, matrixarray[x*size*size*size*4+y*size*size*4+z*size*4+t*4+3], matrixarray[((x+1)%size)*size*size*size*4+y*size*size*4+z*size*4+t*4+3], GSL_COMPLEX_ZERO, helparray[1]); }
-for (int len1=2;len1<=r1;len1+=1){
-	//~ printf("%d\t", len1);
-	gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, helparray[len1-1], matrixarray[((x+len1)%size)*size*size*size*4+y*size*size*4+z*size*4+t*4+3], GSL_COMPLEX_ZERO, helparray[len1]);
-}
-for (int len2=1;len2<=r2;len2+=1){
-	//~ printf("%d\t", len2);
-	gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, helparray[r1+len2-1], matrixarray[((x+r1)%size)*size*size*size*4+((y+len2)%size)*size*size*4+z*size*4+t*4+2], GSL_COMPLEX_ZERO, helparray[r1+len2]);
-}
-for (int len3=1;len3<=r3;len3+=1){
-	//~ printf("%d\t", len3);
-	gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, helparray[r1+r2+len3-1], matrixarray[((x+r1)%size)*size*size*size*4+((y+r2)%size)*size*size*4+((z+len3)%size)*size*4+t*4+1], GSL_COMPLEX_ZERO, helparray[r1+r2+len3]);
-}
-for (int lent=1;lent<=tdistance;lent+=1){
-	//~ printf("%d\t", lent);
-	gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, helparray[r1+r2+r3+lent-1], matrixarray[((x+r1)%size)*size*size*size*4+((y+r2)%size)*size*size*4+((z+r3)%size)*size*4+((t+lent)%size)*4+0], GSL_COMPLEX_ZERO, helparray[r1+r2+r3+lent]);
-}
-for (int len1=1;len1<=r1;len1+=1){
-	gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, helparray[r1+r2+r3+tdistance+len1-1], matrixarray[((x+r1-len1)%size)*size*size*size*4+((y+r2)%size)*size*size*4+((z+r3)%size)*size*4+((t+tdistance)%size)*4+3], GSL_COMPLEX_ZERO, helparray[r1+r2+r3+tdistance+len1]);
-}
-for (int len2=1;len2<=r2;len2+=1){
-	gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, helparray[2*r1+r2+r3+tdistance+len2-1], matrixarray[x*size*size*size*4+((y+r2-len2)%size)*size*size*4+((z+r3)%size)*size*4+((t+tdistance)%size)*4+2], GSL_COMPLEX_ZERO, helparray[2*r1+r2+r3+tdistance+len2]);
-}
-for (int len3=1;len3<=r3;len3+=1){
-	gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, helparray[2*r1+2*r2+r3+tdistance+len3-1], matrixarray[x*size*size*size*4+y*size*size*4+((z+r3-len3)%size)*size*4+((t+tdistance)%size)*4+1], GSL_COMPLEX_ZERO, helparray[2*r1+2*r2+r3+tdistance+len3]);
-}
-for (int lent=1;lent<=tdistance;lent+=1){
-	gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, helparray[2*r1+2*r2+2*r3+tdistance+lent-1], matrixarray[x*size*size*size*4+y*size*size*4+z*size*4+((t+tdistance-lent)%size)*4+0], GSL_COMPLEX_ZERO, helparray[2*r1+2*r2+2*r3+tdistance+lent]);
-}
-gsl_matrix_complex_add(loopcontribution, helparray[2*(r1+r2+r3+tdistance)]);
+	gsl_matrix_complex* m1,*m2, *intermediate;
+ 	gsl_matrix_complex * loopcontribution=gsl_matrix_complex_calloc(dim,dim);
+	int len1init=0,len2init=0,len3init=0,lentinit=0;
+	if(r1>=1){
+		gsl_matrix_complex_memcpy (helparray[0], matrixarray[x*size*size*size*4+y*size*size*4+z*size*4+t*4+3]);
+		len1init=1;
+	}else if(r2>=1){
+		gsl_matrix_complex_memcpy (helparray[0], matrixarray[x*size*size*size*4+y*size*size*4+z*size*4+t*4+2]);
+		len2init=1;
+	}else if(r3>=1){
+		gsl_matrix_complex_memcpy (helparray[0], matrixarray[x*size*size*size*4+y*size*size*4+z*size*4+t*4+1]);
+		len3init=1;
+	}else{
+		gsl_matrix_complex_memcpy (helparray[0], matrixarray[x*size*size*size*4+y*size*size*4+z*size*4+t*4+0]);
+		lentinit=1;
+	}
+	m1=helparray[0];
+	m2=helparray[1];
+	//forwards:
+	for (int len1=len1init;len1<r1;len1+=1){
+		gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, m1, matrixarray[((x+len1)%size)*size*size*size*4+y*size*size*4+z*size*4+t*4+3], GSL_COMPLEX_ZERO, m2);
+		intermediate=m1;
+		m1=m2;
+		m2=intermediate;
+	}
+	for (int len2=len2init;len2<r2;len2+=1){
+		gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, m1, matrixarray[((x+r1)%size)*size*size*size*4+((y+len2)%size)*size*size*4+z*size*4+t*4+2], GSL_COMPLEX_ZERO, m2);
+		intermediate=m1;
+		m1=m2;
+		m2=intermediate;
+	}
+	for (int len3=len3init;len3<r3;len3+=1){
+		gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, m1, matrixarray[((x+r1)%size)*size*size*size*4+((y+r2)%size)*size*size*4+((z+len3)%size)*size*4+t*4+1], GSL_COMPLEX_ZERO, m2);
+		intermediate=m1;
+		m1=m2;
+		m2=intermediate;
+	}
+	for (int lent=lentinit;lent<tdistance;lent+=1){
+		gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, m1, matrixarray[((x+r1)%size)*size*size*size*4+((y+r2)%size)*size*size*4+((z+r3)%size)*size*4+((t+lent)%size)*4+0], GSL_COMPLEX_ZERO, m2);
+		intermediate=m1;
+		m1=m2;
+		m2=intermediate;
+	}
+	//backwards:
+	for (int len1=1;len1<=r1;len1+=1){
+		gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, m1, matrixarray[((x+r1-len1)%size)*size*size*size*4+((y+r2)%size)*size*size*4+((z+r3)%size)*size*4+((t+tdistance)%size)*4+3], GSL_COMPLEX_ZERO, m2);
+		intermediate=m1;
+		m1=m2;
+		m2=intermediate;
+	}
+	for (int len2=1;len2<=r2;len2+=1){
+		gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, m1, matrixarray[x*size*size*size*4+((y+r2-len2)%size)*size*size*4+((z+r3)%size)*size*4+((t+tdistance)%size)*4+2], GSL_COMPLEX_ZERO, m2);
+		intermediate=m1;
+		m1=m2;
+		m2=intermediate;
+	}
+	for (int len3=1;len3<=r3;len3+=1){
+		gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, m1, matrixarray[x*size*size*size*4+y*size*size*4+((z+r3-len3)%size)*size*4+((t+tdistance)%size)*4+1], GSL_COMPLEX_ZERO, m2);
+		intermediate=m1;
+		m1=m2;
+		m2=intermediate;
+	}
+	for (int lent=1;lent<=tdistance;lent+=1){
+		gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, m1, matrixarray[x*size*size*size*4+y*size*size*4+z*size*4+((t+tdistance-lent)%size)*4+0], GSL_COMPLEX_ZERO, m2);
+		intermediate=m1;
+		m1=m2;
+		m2=intermediate;
+	}
+gsl_matrix_complex_add(loopcontribution, m2);
 /** possible additional runs: x-r1-z-r2-y-r3, ...**/
  return GSL_REAL(trace(loopcontribution))/dim;
  }
@@ -263,11 +300,14 @@ int main(int argc, char **argv){
 	 * **/
 	int counter, acceptance;
 	int neighbour[8]; //for implementing (periodic) boundary conditions
-	double plaquetteexpectation, plaquetteafter, wilsonexpectation, wilsonexpectationmedium;
+	double plaquetteexpectation, plaquetteafter, wilsonexpectation[4], wilsonexpectationmedium;
 	for(int runs=0;runs<numberofthermalizations;runs+=1){
 		acceptance=0;
 		plaquetteexpectation=0;
-		wilsonexpectation=0;
+		wilsonexpectation[0]=0;
+		wilsonexpectation[1]=0;
+		wilsonexpectation[2]=0;
+		wilsonexpectation[3]=0;
 		wilsonexpectationmedium=0;
 		plaquetteafter=0;
 		for (int x=0;x<size;x+=1){
@@ -306,14 +346,17 @@ int main(int argc, char **argv){
 							}
 						}
 
-						wilsonexpectation+=calculatewilsonloop(matrixarray, helparray, x, y, z, t, 2, 2,2,4,size,dim);
+						wilsonexpectation[0]+=calculatewilsonloop(matrixarray, helparray, x, y, z, t, 4, 0,0,1,size,dim);
+						wilsonexpectation[1]+=calculatewilsonloop(matrixarray, helparray, x, y, z, t, 4, 0,0,2,size,dim);
+						wilsonexpectation[2]+=calculatewilsonloop(matrixarray, helparray, x, y, z, t, 4, 0,0,3,size,dim);
+						wilsonexpectation[3]+=calculatewilsonloop(matrixarray, helparray, x, y, z, t, 4, 0,0,4,size,dim);
 					}
 				}
 			}
 		}	
 		/**measure plaquette after one sweep is complete**/
 		/** counter defined as position without direction**/
-		for (int x=0;x<size;x+=1){
+		/**for (int x=0;x<size;x+=1){
 			neighbour[6]=(x==size-1)?-(size-1)*pow(size, 3)*4:pow(size,3)*4;
 			neighbour[7]=(x==0)?(size-1)*pow(size, 3)*4:-pow(size,3)*4;
 			for (int y=0;y<size;y+=1){
@@ -334,11 +377,12 @@ int main(int argc, char **argv){
 					}
 				}
 			}
-		}
+		}**/
 		/**where to measure plaquette? measure directly after one link is switched, and get contributions from links that are changed in the next step, or loop over entire lattice after every sweep and take longer? 
 		Or maybe not longer, since matrix links are looked at ten times per sweep? Maybe look during sweep, but only after ten attempts have ben made?**/
 		/**factors for plaquette and acceptance rate: both have to be 1.0 when filled with unity matrices and epsilon=0**/
-		fprintf(stdout, "%d\t%f\t%f\t%f\t%f\n", runs, (double)acceptance/((double)10*size*size*size*size*4),plaquetteexpectation/((double)10*size*size*size*size*4*3*dim/2), plaquetteafter/((double)size*size*size*size*4*3*0.5), wilsonexpectation/((double)size*size*size*size));
+		fprintf(stdout, "%d\tacc=%f\tplaq=%f\tw1=%f\tw2=%f\tw3=%f\tw4=%f\n", runs, (double)acceptance/((double)10*size*size*size*size*4),plaquetteexpectation/((double)10*size*size*size*size*4*3*dim/2),
+				/**plaquetteafter/((double)size*size*size*size*4*3*0.5),**/ wilsonexpectation[0]/((double)size*size*size*size),wilsonexpectation[1]/((double)size*size*size*size),wilsonexpectation[2]/((double)size*size*size*size),wilsonexpectation[3]/((double)size*size*size*size));
 	}
 	
 	
