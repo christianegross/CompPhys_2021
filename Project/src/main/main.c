@@ -231,9 +231,10 @@ int main(int argc, char **argv){
 	int hotstart=1;
 	int size=8;
 	double beta=2.3;
+	const int maxR=4,maxT=4;
 	int numberofthermalizations=100;
 
-	int numberofmeasurements=2048; //=pow(2, 13)
+	int numberofmeasurements=200; //=pow(2, 13)
 	
 
 	gsl_matrix_complex *newmatrix=gsl_matrix_complex_alloc(dim,dim);
@@ -299,7 +300,7 @@ int main(int argc, char **argv){
 	 * **/
 	int counter, acceptance;
 	int neighbour[8]; //for implementing (periodic) boundary conditions
-	double plaquetteexpectation, wilsonexpectation[4], wilsonexpectationmedium[4];
+	double plaquetteexpectation, wilsonexpectation[maxR*maxT],wilsonexpectationmedium[maxR*maxT];
 	for(int runs=0;runs<numberofthermalizations;runs+=1){
 		acceptance=0;
 		plaquetteexpectation=0;
@@ -361,11 +362,6 @@ int main(int argc, char **argv){
 
 	//~ /**measurements **/
 
-	for(int R=1;R<=size/2;R++){
-		wilsonexpectationmedium[0]=0;
-		wilsonexpectationmedium[1]=0;
-		wilsonexpectationmedium[2]=0;
-		wilsonexpectationmedium[3]=0;
 	for(int runs=0;runs<numberofmeasurements;runs+=1){
 		acceptance=0;
 		plaquetteexpectation=0;
@@ -408,28 +404,31 @@ int main(int argc, char **argv){
 
 							}
 						}
-
-						wilsonexpectation[0]+=calculatewilsonloop(matrixarray, helparray, x, y, z, t, R, 0,0,1,size,dim);
-						wilsonexpectation[1]+=calculatewilsonloop(matrixarray, helparray, x, y, z, t, R, 0,0,2,size,dim);
-						wilsonexpectation[2]+=calculatewilsonloop(matrixarray, helparray, x, y, z, t, R, 0,0,3,size,dim);
-						wilsonexpectation[3]+=calculatewilsonloop(matrixarray, helparray, x, y, z, t, R, 0,0,4,size,dim);
+						for(int R=1;R<=maxR;R++){
+							for(int T=1;T<=maxT;T++){
+								wilsonexpectation[(R-1)*maxT+(T-1)]+=calculatewilsonloop(matrixarray, helparray, x, y, z, t, R, 0,0,T,size,dim);
+							}
+						}
 					}
 				}
 			}
 		}
-		/**where to measure plaquette? measure directly after one link is switched, and get contributions from links that are changed in the next step, or loop over entire lattice after every sweep and take longer? 
+		/**where to measure plaquette? measure directly after one link is switched, and get contributions from links that are changed in the next step, or loop over entire lattice after every sweep and take longer?
 		Or maybe not longer, since matrix links are looked at ten times per sweep? Maybe look during sweep, but only after ten attempts have ben made?**/
 		/**factors for plaquette and acceptance rate: both have to be 1.0 when filled with unity matrices and epsilon=0**/
-		wilsonexpectationmedium[0]+=wilsonexpectation[0]/((double)size*size*size*size);
-		wilsonexpectationmedium[1]+=wilsonexpectation[1]/((double)size*size*size*size);
-		wilsonexpectationmedium[2]+=wilsonexpectation[2]/((double)size*size*size*size);
-		wilsonexpectationmedium[3]+=wilsonexpectation[3]/((double)size*size*size*size);
-		fprintf(stdout, "%d\tacc=%f\tplaq=%f\tw1=%f\tw2=%f\tw3=%f\tw4=%f\n", runs, (double)acceptance/((double)10*size*size*size*size*4),plaquetteexpectation/((double)10*size*size*size*size*4*3*dim/2),
-				/**plaquetteafter/((double)size*size*size*size*4*3*0.5),**/ wilsonexpectationmedium[0]/((double)(runs+1)),wilsonexpectationmedium[1]/((double)(runs+1)),wilsonexpectationmedium[2]/((double)(runs+1)),wilsonexpectationmedium[3]/((double)(runs+1)));
+		for(int i=0;i<maxT*maxR;i++){
+			wilsonexpectationmedium[i]+=wilsonexpectation[i];
+		}
+		fprintf(stdout, "%d\tacc=%f\tplaq=%f\n", runs, (double)acceptance/((double)10*size*size*size*size*4),plaquetteexpectation/((double)10*size*size*size*size*4*3*dim/2));
 	}
-		fprintf(wilson_data, "%d\t%f\t%f\t%f\t%f\n",R,wilsonexpectationmedium[0]/((double)(numberofmeasurements)),wilsonexpectationmedium[1]/((double)(numberofmeasurements)),wilsonexpectationmedium[2]/((double)(numberofmeasurements)),wilsonexpectationmedium[3]/((double)(numberofmeasurements)));
+	fprintf(wilson_data,"R\tT\tW(R,T)\n");
+	for(int R=1;R<=maxR;R++){
+		for(int T=1;T<=maxT;T++){
+			fprintf(wilson_data, "%d\t%d\t%f\n",R,T,wilsonexpectation[(R-1)*maxT+(T-1)]/((double)(numberofmeasurements*size*size*size*size)));
+	
+		}
 	}
-	/** analysis by binning and bootstrapping**/
+		/** analysis by binning and bootstrapping**/
 	//~ fprintf(plaquette_analysis, "bin\t<plaq>\tvar(plaq)\n", binsize, mean_plaquette, var_plaquette);
 	//~ for (int binsize=1;binsize<33;binsize*=2){
 		//~ binned_plaquette=gsl_vector_subvector(binned_plaquette_mem, 0, plaquette->size/binsize);
