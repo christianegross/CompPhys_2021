@@ -153,7 +153,6 @@ double calculatewilsonloop(gsl_matrix_complex ** matrixarray, gsl_matrix_complex
  /** first calculation: go in x-direction for r1 steps, y for r2 steps, z for r3 steps, t for tdistance steps, and back with xdagger, ydagger, zdagger, tdagger
   first multiplication: U_x(pos)U_x(pos+ax)**/
 	gsl_matrix_complex* m1,*m2, *intermediate;
- 	gsl_matrix_complex * loopcontribution=gsl_matrix_complex_calloc(dim,dim);
 	int len1init=0,len2init=0,len3init=0,lentinit=0;
 	if(r1>=1){
 		gsl_matrix_complex_memcpy (helparray[0], matrixarray[x*size*size*size*4+y*size*size*4+z*size*4+t*4+3]);
@@ -220,9 +219,8 @@ double calculatewilsonloop(gsl_matrix_complex ** matrixarray, gsl_matrix_complex
 		m1=m2;
 		m2=intermediate;
 	}
-gsl_matrix_complex_add(loopcontribution, m2);
 /** possible additional runs: x-r1-z-r2-y-r3, ...**/
- return GSL_REAL(trace(loopcontribution))/dim;
+ return GSL_REAL(trace(m1))/dim;
  }
 	
 
