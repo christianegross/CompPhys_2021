@@ -46,7 +46,7 @@ void generatesu3(gsl_matrix_complex * matrix, double epsilon, gsl_rng * generato
 	//error handling
 	if(matrix->size1!=3||matrix->size2!=3){fprintf(stderr, "argument has to be 3x3 matrix!\n");return;}
 	//generate random numbers
-	double e,f,g,h,j,k,l,m, norm;
+	double e,f,g,h,j,k,l,m,r, norm;
 	gsl_vector_complex_view columnzero,columnone,columntwo;
 	gsl_complex complexscalarproduct=GSL_COMPLEX_ZERO, complexscalarproduct2=GSL_COMPLEX_ZERO;
 	e=2.0*gsl_rng_uniform(generator)-1.0;
@@ -57,6 +57,7 @@ void generatesu3(gsl_matrix_complex * matrix, double epsilon, gsl_rng * generato
 	k=2.0*gsl_rng_uniform(generator)-1.0;
 	l=2.0*gsl_rng_uniform(generator)-1.0;
 	m=2.0*gsl_rng_uniform(generator)-1.0;
+	r=2.0*gsl_rng_uniform(generator)-1.0;
 	//set matrix 0 column of 1+i*epsilon*H
 	gsl_matrix_complex_set(matrix, 0, 0, gsl_complex_rect(1, epsilon*e));
 	gsl_matrix_complex_set(matrix, 1, 0, gsl_complex_rect(-epsilon*g, epsilon*f));
@@ -65,10 +66,10 @@ void generatesu3(gsl_matrix_complex * matrix, double epsilon, gsl_rng * generato
 	gsl_matrix_complex_set(matrix, 0, 1, gsl_complex_rect(epsilon*g, epsilon*f));
 	gsl_matrix_complex_set(matrix, 1, 1, gsl_complex_rect(1, epsilon*k));
 	gsl_matrix_complex_set(matrix, 2, 1, gsl_complex_rect(-epsilon*m, epsilon*l));
-	//TODO: add hermiticety
-	gsl_matrix_complex_set(matrix, 0, 2, GSL_COMPLEX_ZERO);
-	gsl_matrix_complex_set(matrix, 1, 2, GSL_COMPLEX_ZERO);
-	gsl_matrix_complex_set(matrix, 2, 2, GSL_COMPLEX_ONE);
+	//set matrix 2 column of 1+i*epsilon*H
+	gsl_matrix_complex_set(matrix, 0, 2, gsl_complex_rect(epsilon*j, epsilon*h));
+	gsl_matrix_complex_set(matrix, 1, 2, gsl_complex_rect(epsilon*m, epsilon*l));
+	gsl_matrix_complex_set(matrix, 2, 2, gsl_complex_rect(1, epsilon*r));
 	//normalize vector zero to make sure determinant is one
 	//rescale by 1/norm
 	columnzero=gsl_matrix_complex_column(matrix, 0);
@@ -191,7 +192,7 @@ gsl_matrix_complex_add(loopcontribution, helparray[2*(r1+r2+r3+tdistance)]);
 int main(int argc, char **argv){
 	//set up constants, matrices, generator
 	int dim=3; //switches between SU2 and SU3
-	double epsilon=0;
+	double epsilon=0.2;
 	int hotstart=1;
 	int size=8;
 	double beta=2.3;
