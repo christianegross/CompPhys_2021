@@ -90,7 +90,10 @@ void generatesu3(gsl_matrix_complex * matrix, double epsilon, gsl_rng * generato
 	norm=gsl_blas_dznrm2(&columntwo.vector);
 	gsl_blas_zdscal(1.0/norm, &columntwo.vector);
 	//~ printf("%f\t%f\n", GSL_REAL(complexscalarproduct), GSL_REAL(complexscalarproduct2));
+	complexscalarproduct=det(matrix);
+	gsl_matrix_complex_scale(matrix, gsl_complex_polar(1.0/gsl_complex_abs(complexscalarproduct), -gsl_complex_arg(complexscalarproduct)/3));
 }
+
 
 /** @brief returns the difference in action before and after change of one link
  * @note prototype: returns a random number between -1 and 1 to test MH-setup*/
@@ -107,7 +110,7 @@ inline double deltaS(gsl_matrix_complex *deltacontribution, gsl_matrix_complex* 
 	gsl_matrix_complex_sub(helpone, oldmatrix);
 	gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, gsl_complex_rect(1,0), helpone, deltacontribution, gsl_complex_rect(0,0), helptwo);
 	//possibly wrong numerical prefactor
-	return GSL_REAL(trace(helptwo))/dim;
+	return GSL_REAL(trace(helptwo))/((double)dim);
 }
 
 /**@fn calculateGamma(int * neighbour, int counter, int mu, int size, gsl_matrix_complex *plaquettecontribution, gsl_matrix_complex *deltacontribution, gsl_matrix_complex *helpone, gsl_matrix_complex *helptwo, gsl_matrix_complex **matrixarray)
@@ -226,20 +229,20 @@ double calculatewilsonloop(gsl_matrix_complex ** matrixarray, gsl_matrix_complex
 
 int main(int argc, char **argv){
 	//set up constants, matrices, generator
-	int dim=3; //switches between SU2 and SU3
-	double epsilon=1.8;
-	int hotstart=1;
+	int dim=3; 				//switches between SU2 and SU3
+	double epsilon=0.3;
+	int hotstart=0; 		/**0: cold start, all unity, 1: hot start, random**/
 	int size=8;
-	double beta=2.3;
-	const int maxR=4,maxT=4;
+	double beta=5.5;
+	const int maxR=4,maxT=4;   /**size wilsonloops**/
 	int numberofthermalizations=200;
 
 	int numberofmeasurements=2048; //=pow(2, 13)
 	
 
-	gsl_matrix_complex *newmatrix=gsl_matrix_complex_alloc(dim,dim);
-	gsl_matrix_complex *multiplier=gsl_matrix_complex_alloc(dim,dim);
-	gsl_matrix_complex *plaquettecontribution=gsl_matrix_complex_alloc(dim,dim);
+	gsl_matrix_complex *newmatrix=gsl_matrix_complex_alloc(dim,dim); //proposed matrix in MH
+	gsl_matrix_complex *multiplier=gsl_matrix_complex_alloc(dim,dim);	//used to change matrix in MH
+	gsl_matrix_complex *plaquettecontribution=gsl_matrix_complex_alloc(dim,dim);	
 	gsl_matrix_complex *deltacontribution=gsl_matrix_complex_alloc(dim,dim);
 	//~ gsl_matrix_complex *helpone=gsl_matrix_complex_alloc(2,2);
 	//~ gsl_matrix_complex *helpthree=gsl_matrix_complex_alloc(2,2);
@@ -250,8 +253,8 @@ int main(int argc, char **argv){
 	gsl_rng_set(generator, seed);
 	
 	
-	/**set up array to store link matrices, put SU(2) matrix in every link
-	every matrix can be initialised to unity or a random SU(2) matrix**/
+	/**set up array to store link matrices, put SU(2/3) matrix in every link
+	every matrix can be initialised to unity or a random SU(2/3) matrix**/
 	gsl_matrix_complex* matrixarray[size*size*size*size*4];
 	for (int i=0;i<size*size*size*size*4;i+=1){
 		matrixarray[i]=gsl_matrix_complex_alloc(dim,dim);
@@ -274,6 +277,10 @@ int main(int argc, char **argv){
 	 }
 	
 	/** set up vectors and streams for analysis of results **/
+	/**observable: measured in loops
+	 * binned_observable_mem: construct needed to be able to do binning of different sizes
+	 * binned_observable: used to put binned data, used for bootstrapping
+	 * **/
 	double mean_plaquette, var_plaquette;
 	gsl_vector * plaquette=gsl_vector_alloc(numberofmeasurements);
 	gsl_vector * binned_plaquette_mem=gsl_vector_alloc(numberofmeasurements);
@@ -300,7 +307,7 @@ int main(int argc, char **argv){
 	 * **/
 	int counter, acceptance;
 	int neighbour[8]; //for implementing (periodic) boundary conditions
-	double plaquetteexpectation, wilsonexpectation[maxR*maxT],wilsonexpectationmedium[maxR*maxT];
+	double plaquetteexpectation, plaquetteafter, wilsonexpectation[maxR*maxT],wilsonexpectationmedium[maxR*maxT], pcount;
 	for(int i=0;i<maxT*maxR;i++){
 		wilsonexpectationmedium[i]=0;
 		wilsonexpectation[i]=0;
@@ -308,6 +315,8 @@ int main(int argc, char **argv){
 	for(int runs=0;runs<numberofthermalizations;runs+=1){
 		acceptance=0;
 		plaquetteexpectation=0;
+		plaquetteafter=0;
+		pcount=0;
 		wilsonexpectation[0]=0;
 		wilsonexpectation[1]=0;
 		wilsonexpectation[2]=0;
@@ -342,16 +351,43 @@ int main(int argc, char **argv){
 									gsl_matrix_complex_memcpy(matrixarray[counter], newmatrix); 
 								}
 								/**what to use for plaquette: sum over (mu>nu) or 1/2*sum over (mu)? Also include backwards plaquettes?**/
-								gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, gsl_complex_rect(1,0), matrixarray[counter], plaquettecontribution, gsl_complex_rect(0,0), helparray[0]);
+								gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, matrixarray[counter], plaquettecontribution, gsl_complex_rect(0,0), helparray[0]);
 								plaquetteexpectation+=GSL_REAL(trace(helparray[0]));
+								//~ printf("%f\t%e\t%f\t%e\n", GSL_REAL(det(multiplier)), GSL_IMAG(det(multiplier)), gsl_complex_abs(det(multiplier)), gsl_complex_arg(det(multiplier)));
 								
+								//~ gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, matrixarray[counter], matrixarray[counter], gsl_complex_rect(0,0), helparray[10]);
 							}
 						}
-
-						wilsonexpectation[0]+=calculatewilsonloop(matrixarray, helparray, x, y, z, t, 4, 0,0,1,size,dim);
-						wilsonexpectation[1]+=calculatewilsonloop(matrixarray, helparray, x, y, z, t, 4, 0,0,2,size,dim);
-						wilsonexpectation[2]+=calculatewilsonloop(matrixarray, helparray, x, y, z, t, 4, 0,0,3,size,dim);
-						wilsonexpectation[3]+=calculatewilsonloop(matrixarray, helparray, x, y, z, t, 4, 0,0,4,size,dim);
+				
+						//~ wilsonexpectation[0]+=calculatewilsonloop(matrixarray, helparray, x, y, z, t, 4, 0,0,1,size,dim);
+						//~ wilsonexpectation[1]+=calculatewilsonloop(matrixarray, helparray, x, y, z, t, 4, 0,0,2,size,dim);
+						//~ wilsonexpectation[2]+=calculatewilsonloop(matrixarray, helparray, x, y, z, t, 4, 0,0,3,size,dim);
+						//~ wilsonexpectation[3]+=calculatewilsonloop(matrixarray, helparray, x, y, z, t, 4, 0,0,4,size,dim);
+					}
+				}
+			}
+		}
+		/**measure plaquette after one sweep is complete**/
+		for (int x=0;x<size;x+=1){
+			neighbour[6]=(x==size-1)?-(size-1)*pow(size, 3)*4:pow(size,3)*4;
+			neighbour[7]=(x==0)?(size-1)*pow(size, 3)*4:-pow(size,3)*4;
+			for (int y=0;y<size;y+=1){
+				neighbour[4]=(y==size-1)?-(size-1)*pow(size, 2)*4:pow(size,2)*4;
+				neighbour[5]=(y==0)?(size-1)*pow(size, 2)*4:-pow(size,2)*4;
+				for (int z=0;z<size;z+=1){
+					neighbour[2]=(z==size-1)?-(size-1)*size*4:size*4;
+					neighbour[3]=(z==0)?(size-1)*size*4:-size*4;
+					for (int t=0;t<size;t+=1){
+						neighbour[0]=(t==size-1)?-(size-1)*4:4;
+						neighbour[1]=(t==0)?(size-1)*4:-4;
+						counter=x*size*size*size*4+y*size*size*4+z*size*4+t*4;
+						plaquetteafter+=calculateplaquette(matrixarray, counter, neighbour, 1,0, helparray[0], helparray[1], helparray[2], dim);
+						plaquetteafter+=calculateplaquette(matrixarray, counter, neighbour, 2,0, helparray[0], helparray[1], helparray[2], dim);
+						plaquetteafter+=calculateplaquette(matrixarray, counter, neighbour, 3,0, helparray[0], helparray[1], helparray[2], dim);
+						plaquetteafter+=calculateplaquette(matrixarray, counter, neighbour, 2,1, helparray[0], helparray[1], helparray[2], dim);
+						plaquetteafter+=calculateplaquette(matrixarray, counter, neighbour, 3,1, helparray[0], helparray[1], helparray[2], dim);
+						plaquetteafter+=calculateplaquette(matrixarray, counter, neighbour, 3,2, helparray[0], helparray[1], helparray[2], dim);
+						pcount+=6;
 					}
 				}
 			}
@@ -359,8 +395,8 @@ int main(int argc, char **argv){
 		/**where to measure plaquette? measure directly after one link is switched, and get contributions from links that are changed in the next step, or loop over entire lattice after every sweep and take longer?
 		Or maybe not longer, since matrix links are looked at ten times per sweep? Maybe look during sweep, but only after ten attempts have ben made?**/
 		/**factors for plaquette and acceptance rate: both have to be 1.0 when filled with unity matrices and epsilon=0**/
-		fprintf(stdout, "%d\tacc=%f\tplaq=%f\tw1=%f\tw2=%f\tw3=%f\tw4=%f\n", runs, (double)acceptance/((double)10*size*size*size*size*4),plaquetteexpectation/((double)10*size*size*size*size*4*3*dim/2),
-				/**plaquetteafter/((double)size*size*size*size*4*3*0.5),**/ wilsonexpectation[0]/((double)size*size*size*size),wilsonexpectation[1]/((double)size*size*size*size),wilsonexpectation[2]/((double)size*size*size*size),wilsonexpectation[3]/((double)size*size*size*size));
+		fprintf(stdout, "%d\t%f\t%f\t%f\n"/*tw1=%f\tw2=%f\tw3=%f\tw4=%f\n"*/, runs, (double)acceptance/((double)10*size*size*size*size*4),plaquetteexpectation/((double)10*size*size*size*size*4*3*dim/2),plaquetteafter/(double)pcount/*,*/
+				/**plaquetteafter/((double)size*size*size*size*4*3*0.5),**/ /* wilsonexpectation[0]/((double)size*size*size*size),wilsonexpectation[1]/((double)size*size*size*size),wilsonexpectation[2]/((double)size*size*size*size),wilsonexpectation[3]/((double)size*size*size*size)*/);
 	}
 
 
@@ -369,10 +405,9 @@ int main(int argc, char **argv){
 	for(int runs=0;runs<numberofmeasurements;runs+=1){
 		acceptance=0;
 		plaquetteexpectation=0;
-		wilsonexpectation[0]=0;
-		wilsonexpectation[1]=0;
-		wilsonexpectation[2]=0;
-		wilsonexpectation[3]=0;
+	for(int i=0;i<maxT*maxR;i++){
+		wilsonexpectation[i]=0;
+	}
 		for (int x=0;x<size;x+=1){
 			neighbour[6]=(x==size-1)?-(size-1)*pow(size, 3)*4:pow(size,3)*4;
 			neighbour[7]=(x==0)?(size-1)*pow(size, 3)*4:-pow(size,3)*4;
@@ -423,12 +458,12 @@ int main(int argc, char **argv){
 		for(int i=0;i<maxT*maxR;i++){
 			wilsonexpectationmedium[i]+=wilsonexpectation[i];
 		}
-		fprintf(stdout, "%d\tacc=%f\tplaq=%f\n", runs, (double)acceptance/((double)10*size*size*size*size*4),plaquetteexpectation/((double)10*size*size*size*size*4*3*dim/2));
+		fprintf(stdout, "%d\tacc=%f\tplaq=%e\n", runs, (double)acceptance/((double)10*size*size*size*size*4),plaquetteexpectation/((double)10*size*size*size*size*4*3*dim/2));
 	}
 	fprintf(wilson_data,"R\tT\tW(R,T)\n");
 	for(int R=1;R<=maxR;R++){
 		for(int T=1;T<=maxT;T++){
-			fprintf(wilson_data, "%d\t%d\t%f\n",R,T,wilsonexpectation[(R-1)*maxT+(T-1)]/((double)(numberofmeasurements*size*size*size*size)));
+			fprintf(wilson_data, "%d\t%d\t%e\n",R,T,wilsonexpectation[(R-1)*maxT+(T-1)]/((double)(numberofmeasurements*size*size*size*size)));
 	
 		}
 	}
