@@ -13,4 +13,5 @@
 *.synctex.gz
 *.toc
 *.pdf
+*.datens
 .buildconfig
