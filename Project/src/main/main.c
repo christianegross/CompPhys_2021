@@ -82,16 +82,17 @@ void generatesu3(gsl_matrix_complex * matrix, double epsilon, gsl_rng * generato
 	norm=gsl_blas_dznrm2(&columnone.vector);
 	gsl_blas_zdscal(1.0/norm, &columnone.vector);
 	columntwo=gsl_matrix_complex_column(matrix, 2);
-	//crossproduct(&columnzero.vector,&columnone.vector,&columntwo.vector);
+	/*
 	gsl_blas_zdotc (&columnzero.vector, &columntwo.vector, &complexscalarproduct);
 	gsl_blas_zdotc (&columnone.vector, &columntwo.vector, &complexscalarproduct2);
 	gsl_blas_zaxpy (gsl_complex_mul_real(complexscalarproduct, -1.0), &columnzero.vector, &columntwo.vector);
-	gsl_blas_zaxpy (gsl_complex_mul_real(complexscalarproduct2, -1.0), &columnone.vector, &columntwo.vector);
-	norm=gsl_blas_dznrm2(&columntwo.vector);
-	gsl_blas_zdscal(1.0/norm, &columntwo.vector);
+	gsl_blas_zaxpy (gsl_complex_mul_real(complexscalarproduct2, -1.0), &columnone.vector, &columntwo.vector);*/
+	crossproduct(&columnzero.vector,&columnone.vector,&columntwo.vector);
+	/*norm=gsl_blas_dznrm2(&columntwo.vector);
+	gsl_blas_zdscal(1.0/norm, &columntwo.vector);*/
 	//~ printf("%f\t%f\n", GSL_REAL(complexscalarproduct), GSL_REAL(complexscalarproduct2));
-	complexscalarproduct=det(matrix);
-	gsl_matrix_complex_scale(matrix, gsl_complex_polar(1.0/gsl_complex_abs(complexscalarproduct), -gsl_complex_arg(complexscalarproduct)/3));
+	//complexscalarproduct=det(matrix); used for fixing phase
+	//gsl_matrix_complex_scale(matrix, gsl_complex_polar(1.0/gsl_complex_abs(complexscalarproduct), -gsl_complex_arg(complexscalarproduct)/3));
 }
 
 
@@ -229,13 +230,13 @@ double calculatewilsonloop(gsl_matrix_complex ** matrixarray, gsl_matrix_complex
 
 int main(int argc, char **argv){
 	//set up constants, matrices, generator
-	int dim=3; 				//switches between SU2 and SU3
+	int dim=3; //switches between SU2 and SU3
 	double epsilon=0.3;
-	int hotstart=0; 		/**0: cold start, all unity, 1: hot start, random**/
+	int hotstart=1;
 	int size=8;
 	double beta=5.5;
-	const int maxR=4,maxT=4;   /**size wilsonloops**/
-	int numberofthermalizations=200;
+	const int maxR=4,maxT=4;
+	int numberofthermalizations=100;
 
 	int numberofmeasurements=2048; //=pow(2, 13)
 	
@@ -307,16 +308,16 @@ int main(int argc, char **argv){
 	 * **/
 	int counter, acceptance;
 	int neighbour[8]; //for implementing (periodic) boundary conditions
-	double plaquetteexpectation, plaquetteafter, wilsonexpectation[maxR*maxT],wilsonexpectationmedium[maxR*maxT], pcount;
+	double plaquetteexpectation,plaquetteafter, wilsonexpectation[maxR*maxT],wilsonexpectationmedium[maxR*maxT];
 	for(int i=0;i<maxT*maxR;i++){
 		wilsonexpectationmedium[i]=0;
 		wilsonexpectation[i]=0;
 	}
+	int bin=0;
 	for(int runs=0;runs<numberofthermalizations;runs+=1){
 		acceptance=0;
 		plaquetteexpectation=0;
 		plaquetteafter=0;
-		pcount=0;
 		wilsonexpectation[0]=0;
 		wilsonexpectation[1]=0;
 		wilsonexpectation[2]=0;
@@ -391,13 +392,61 @@ int main(int argc, char **argv){
 					}
 				}
 			}
-		}	
+		}
+		/**measure plaquette after one sweep is complete**/
+		/** counter defined as position without direction**/
+		bin=0;
+		for (int x=0;x<size;x+=1){
+			neighbour[6]=(x==size-1)?-(size-1)*pow(size, 3)*4:pow(size,3)*4;
+			neighbour[7]=(x==0)?(size-1)*pow(size, 3)*4:-pow(size,3)*4;
+			for (int y=0;y<size;y+=1){
+				neighbour[4]=(y==size-1)?-(size-1)*pow(size, 2)*4:pow(size,2)*4;
+				neighbour[5]=(y==0)?(size-1)*pow(size, 2)*4:-pow(size,2)*4;
+				for (int z=0;z<size;z+=1){
+					neighbour[2]=(z==size-1)?-(size-1)*size*4:size*4;
+					neighbour[3]=(z==0)?(size-1)*size*4:-size*4;
+					for (int t=0;t<size;t+=1){
+						neighbour[0]=(t==size-1)?-(size-1)*4:4;
+						neighbour[1]=(t==0)?(size-1)*4:-4;
+						counter=x*size*size*size*4+y*size*size*4+z*size*4+t*4;
+						for (int mu=0;mu<4;mu+=1){
+							for (int nu=mu+1;nu<4;nu+=1){
+								bin++;
+								plaquetteafter+=calculateplaquette(matrixarray, counter, neighbour, mu, nu, helparray[0], helparray[1], helparray[2],dim);
+							}
+						}
+					}
+				}
+			}
+		}
 		/**where to measure plaquette? measure directly after one link is switched, and get contributions from links that are changed in the next step, or loop over entire lattice after every sweep and take longer?
 		Or maybe not longer, since matrix links are looked at ten times per sweep? Maybe look during sweep, but only after ten attempts have ben made?**/
 		/**factors for plaquette and acceptance rate: both have to be 1.0 when filled with unity matrices and epsilon=0**/
-		fprintf(stdout, "%d\t%f\t%f\t%f\n"/*tw1=%f\tw2=%f\tw3=%f\tw4=%f\n"*/, runs, (double)acceptance/((double)10*size*size*size*size*4),plaquetteexpectation/((double)10*size*size*size*size*4*3*dim/2),plaquetteafter/(double)pcount/*,*/
-				/**plaquetteafter/((double)size*size*size*size*4*3*0.5),**/ /* wilsonexpectation[0]/((double)size*size*size*size),wilsonexpectation[1]/((double)size*size*size*size),wilsonexpectation[2]/((double)size*size*size*size),wilsonexpectation[3]/((double)size*size*size*size)*/);
+		fprintf(stdout, "%d\tacc=%f\tplaq=%f\t%f\tw1=%f\tw2=%f\tw3=%f\tw4=%f\n", runs, (double)acceptance/((double)10*size*size*size*size*4),plaquetteexpectation/((double)10*size*size*size*size*4*3*dim/2),
+				plaquetteafter/((double)size*size*size*size*4*3./2.), wilsonexpectation[0]/((double)size*size*size*size),wilsonexpectation[1]/((double)size*size*size*size),wilsonexpectation[2]/((double)size*size*size*size),wilsonexpectation[3]/((double)size*size*size*size));
+
+		fprintf(stdout,"%d\t%d\n",bin,size*size*size*size*2*3);
 	}
+
+	//Test SU3:
+	gsl_matrix_complex *su3=gsl_matrix_complex_alloc(3,3);
+	gsl_vector_complex_view columnzero,columnone,columntwo;
+	double norm;
+	gsl_complex dot01, dot02, dot12;
+	for(int i=0;i<50;i++){
+		generatesu3 (su3, i/50., generator);
+		//gsl_matrix_complex_fprintf (stdout, su3, "%e");
+		columnzero=gsl_matrix_complex_column(su3, 0);
+		columnone=gsl_matrix_complex_column(su3, 1);
+		columntwo=gsl_matrix_complex_column(su3, 2);
+		gsl_blas_zdotc (&columnzero.vector, &columnone.vector, &dot01);
+		gsl_blas_zdotc (&columnzero.vector, &columntwo.vector, &dot02);
+		gsl_blas_zdotc (&columnone.vector, &columntwo.vector, &dot12);
+		norm=gsl_blas_dznrm2(&columntwo.vector);
+		printf ("eps: %e\tnorm: %e\tdot01: %e\tdot02: %e\tdot12: %e\n",i/50.,norm,gsl_complex_abs (dot01),gsl_complex_abs (dot02),gsl_complex_abs (dot12));
+		gsl_matrix_complex_set_zero (su3);
+	}
+	gsl_matrix_complex_free (su3);
 
 
 	//~ /**measurements **/
