@@ -230,14 +230,14 @@ double calculatewilsonloop(gsl_matrix_complex ** matrixarray, gsl_matrix_complex
 int main(int argc, char **argv){
 	//set up constants, matrices, generator
 	int dim=3; //switches between SU2 and SU3
-	double epsilon=0.3;
+	double epsilon=1.3;
 	int hotstart=1;
 	int size=8;
-	double beta=5.5;
+	double beta=2.3;
 	const int maxR=4,maxT=4;
 	int numberofthermalizations=100;
 
-	int numberofmeasurements=2048; //=pow(2, 13)
+	int numberofmeasurements=1024; //=pow(2, 13)
 	
 
 	gsl_matrix_complex *newmatrix=gsl_matrix_complex_alloc(dim,dim);
@@ -286,9 +286,9 @@ int main(int argc, char **argv){
 	/**variables for measurements**/
 	int counter, acceptance;
 	int neighbour[8]; //for implementing (periodic) boundary conditions
-	double plaquetteexpectation,plaquetteafter, wilsonexpectation[maxR*maxT],wilsonexpectationmedium[maxR*maxT];
+	double plaquetteexpectation,plaquetteafter, wilsonexpectation[maxR*maxT],wilsonexpectationset[maxR*maxT*numberofmeasurements];
 	for(int i=0;i<maxT*maxR;i++){
-		wilsonexpectationmedium[i]=0;
+		wilsonexpectationset[i]=0;
 		wilsonexpectation[i]=0;
 	}
 	
@@ -405,17 +405,21 @@ int main(int argc, char **argv){
 	const int filenamelength=100;
 	int amountof_ens_infile=512;
 	char filename[filenamelength];
+	/**Test rather ensembles can be loaded**/
 	for(;run<=numberofmeasurements;run+=amountof_ens_infile){
-		snprintf (filename, filenamelength, "data/%.3fensenmble%06d_%06d.dat",beta,run,run+(amountof_ens_infile-1));
-		printf("%s\n",filename);
+		snprintf (filename, filenamelength, "data/%.3fensenmble%06d_%06d.datens",beta,run,run+(amountof_ens_infile-1));
 		if(NULL==fopen (filename, "r")){break;}
 	}
-	ensemble_data=fopen (filename,"w");
-	printf("%d\n", run);
+
+	/**sample remaining ensembles**/
 	for(;run<=numberofmeasurements;run+=1){
 		if((run-1)%amountof_ens_infile==0){
-			snprintf (filename, filenamelength, "data/%.3fensenmble%06d_%06d.dat",beta,run,run+(amountof_ens_infile-1));
-			freopen (filename,"w", ensemble_data);
+			snprintf (filename, filenamelength, "data/%.3fensenmble%06d_%06d.datens",beta,run,run+(amountof_ens_infile-1));
+			if(ensemble_data==NULL){
+				ensemble_data=fopen (filename, "w");
+			}else{
+				freopen (filename,"w", ensemble_data);
+			}
 			fprintf (stdout, "Start writing of %s.\n", filename);
 		}
 		acceptance=0;
@@ -457,17 +461,59 @@ int main(int argc, char **argv){
 		fprintf(stdout, "%d\tacc=%f\n", run, (double)acceptance/((double)10*size*size*size*size*4));
 		for (int i=0;i<size*size*size*size*4;i+=1){
 			gsl_matrix_complex_fprintf (ensemble_data, matrixarray[i], "%e");
-			fprintf(ensemble_data,"\n");
-		}fprintf(ensemble_data,"\n\n");
+		}
 		if((run)%amountof_ens_infile==0){
-			fprintf(ensemble_data,"#######################\n");
 			fprintf (stdout, "Finished writing of %s.\n", filename);
 		}
 	}
+
+
+	/**measure:**/
+	for(run=1;run<=numberofmeasurements;run++){
+		if((run-1)%amountof_ens_infile==0){
+			snprintf (filename, filenamelength, "data/%.3fensenmble%06d_%06d.datens",beta,run,run+(amountof_ens_infile-1));
+			if(ensemble_data==NULL){
+				ensemble_data=fopen (filename, "r");
+			}else{
+				freopen (filename,"r", ensemble_data);
+			}
+		}
+		printf("run=%d,filename=%s\n", run,filename);
+		for (int i=0;i<size*size*size*size*4;i+=1){
+			gsl_matrix_complex_fscanf (ensemble_data, matrixarray[i]);
+		}
+		for(int R=1;R<maxR;R++){
+			for(int T=1;T<maxT;T++){
+				wilsonexpectation[(R-1)*maxT+(T-1)]=0;
+			}
+		}
+		for (int x=0;x<size;x+=1){
+			for (int y=0;y<size;y+=1){
+				for (int z=0;z<size;z+=1){
+					for (int t=0;t<size;t+=1){
+						for(int R=1;R<maxR;R++){
+							for(int T=1;T<maxT;T++){
+								wilsonexpectation[(R-1)*maxT+(T-1)]+=calculatewilsonloop (matrixarray, helparray, x, y, z, t, R, 0, 0, T, size, dim);
+							}
+						}
+					}
+				}
+			}
+		}
+		for(int i=0;i<maxT*maxR;i++){
+			wilsonexpectationset[maxT*maxR*(run-1)+i]=wilsonexpectation[i]/(size*size*size*size);
+		}
+
+	}
 	fprintf(wilson_data,"R\tT\tW(R,T)\n");
+	double mean=0;
 	for(int R=1;R<=maxR;R++){
 		for(int T=1;T<=maxT;T++){
-			fprintf(wilson_data, "%d\t%d\t%f\n",R,T,wilsonexpectation[(R-1)*maxT+(T-1)]/((double)(numberofmeasurements*size*size*size*size)));
+			mean=0;
+			for(run=1;run<=numberofmeasurements;run++){
+				mean+=wilsonexpectationset[maxT*maxR*(run-1)+(R-1)*maxT+(T-1)];
+			}
+			fprintf(wilson_data, "%d\t%d\t%e\n",R,T,mean/((double)(numberofmeasurements)));
 	
 		}
 	}
