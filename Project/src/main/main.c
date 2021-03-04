@@ -544,7 +544,7 @@ int main(int argc, char **argv){
 		}
 		gsl_vector_set(plaquette, run-1, plaquetteexpectation/((double)size*size*size*size*4*3./2.));
 	}
-	fprintf(wilson_data,"R\tT\tW(R,T)\n");
+	fprintf(wilson_data,"R\tT\t<W>\tvar(W)\tbin\n");
 	//~ double mean=0;
 	//~ for(int R=1;R<=maxR;R++){
 		//~ for(int T=1;T<=maxT;T++){
