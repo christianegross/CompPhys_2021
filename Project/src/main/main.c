@@ -237,18 +237,18 @@ double absreal(double number){
 
 int main(int argc, char **argv){
 	//set up constants, matrices, generator
-	int dim=2; //switches between SU2 and SU3
-	double epsilon=0.24;
+
+	int dim=3; //switches between SU2 and SU3
+	double epsilon=1.1;
 	int hotstart=1;
 	int generateensembles=1;
 	int makemeasurements=1;
-	int binary=1;
 	int size=8;
-	double beta=5.5;
+	double beta=2.3;
 	const int maxR=4,maxT=4;
 	int numberofthermalizations=100;
 
-	int numberofmeasurements=2048; //=pow(2, 13)
+	int numberofmeasurements=8192; //=pow(2, 13)
 	
 
 	gsl_matrix_complex *newmatrix=gsl_matrix_complex_alloc(dim,dim); //proposed matrix in MH
@@ -470,11 +470,7 @@ int main(int argc, char **argv){
 		}
 		fprintf(stdout, "%d\tacc=%f\n", run, (double)acceptance/((double)10*size*size*size*size*4));
 		for (int i=0;i<size*size*size*size*4;i+=1){
-			if(binary==1){
-			gsl_matrix_complex_fwrite(ensemble_data, matrixarray[i]);
-			}else{
 			gsl_matrix_complex_fprintf(ensemble_data, matrixarray[i], "%e");
-			}
 		}
 		if((run)%amountof_ens_infile==0){
 			fprintf (stdout, "Finished writing of %s.\n", filename);
@@ -496,13 +492,9 @@ int main(int argc, char **argv){
 				printf("run=%d opened filename=%s\n", run,filename);
 			}
 		}
-		printf("%d\t", run);
+		//printf("run\t");
 		for (int i=0;i<size*size*size*size*4;i+=1){
-			if(binary==1){
-			gsl_matrix_complex_fread(ensemble_data, matrixarray[i]);
-			}else{
 			gsl_matrix_complex_fscanf(ensemble_data, matrixarray[i]);
-			}
 		}
 		for(int R=1;R<=maxR;R++){
 			for(int T=1;T<=maxT;T++){
@@ -525,8 +517,6 @@ int main(int argc, char **argv){
 						for(int R=1;R<=maxR;R++){
 							for(int T=1;T<=maxT;T++){
 								wilsonexpectation[(R-1)*maxT+(T-1)]+=calculatewilsonloop (matrixarray, helparray, x, y, z, t, R, 0, 0, T, size, dim);
-								wilsonexpectation[(R-1)*maxT+(T-1)]+=calculatewilsonloop (matrixarray, helparray, x, y, z, t, 0, R, 0, T, size, dim);
-								wilsonexpectation[(R-1)*maxT+(T-1)]+=calculatewilsonloop (matrixarray, helparray, x, y, z, t, 0, 0, R, T, size, dim);
 							}
 						}
 						counter=x*size*size*size*4+y*size*size*4+z*size*4+t*4;
@@ -540,7 +530,7 @@ int main(int argc, char **argv){
 			}
 		}
 		for(int i=0;i<maxT*maxR;i++){
-			gsl_vector_set(wilsonexpectationset[i], run-1, wilsonexpectation[i]/((double)size*size*size*size*3));
+			gsl_vector_set(wilsonexpectationset[i], run-1, wilsonexpectation[i]/((double)size*size*size*size));
 		}
 		gsl_vector_set(plaquette, run-1, plaquetteexpectation/((double)size*size*size*size*4*3./2.));
 	}
@@ -569,7 +559,7 @@ int main(int argc, char **argv){
 		gsl_vector_fprintf(plaquette_data, &binned_plaquette.vector, "%f");
 		gsl_vector_fprintf(plaquette_autocorrelation, plaquette_correlation_binned, "%f");
 		
-		fprintf(plaquette_analysis, "%.2d\t%e\t%e\n", binsize, mean_plaquette, var_plaquette);
+		fprintf(plaquette_analysis, "%.2d\t%f\t%f\n", binsize, mean_plaquette, var_plaquette);
 		
 		for(int R=1;R<=maxR;R++){
 			for(int T=1;T<=maxT;T++){

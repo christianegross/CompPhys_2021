@@ -99,14 +99,8 @@ plot "../data/su3beta5p5fixed.dat" u 1:3 ls 1 w lines title "beta=5.5", "../data
 set xrange [0:50]
 plot "../data/su3beta5p5fixed.dat" u 1:3 ls 1 w lines title "beta=5.5", "../data/su3beta5p5fixed.dat" u 1:4 w lines ls 2 title "beta=5.5"
 
-wilsonloopfile="../data/wilsonsu2beta5.500.dat"
-potentialfile="../data/potentialsu2beta5.500.dat"
-
-a1=1
-a2=1
-a3=1
-a4=1
-b4=3.5
+wilsonloopfile="../data/wilsonsu3beta2.300.dat"
+potentialfile="../data/potentialsu3beta2.300.dat"
 
 v1(x)=a1*exp(-b1*x)
 
@@ -128,41 +122,27 @@ fit v4(x) wilsonloopfile u (($1==4)&&($5==32)?$2:1/0):3:4 yerrors via a4, b4
 
 set print potentialfile
 print(sprintf("R\ta\tb\n"))
-print(sprintf("1\t%e\t%e\t%e\t%e\n",a1, a1_err, b1, b1_err))
-print(sprintf("2\t%e\t%e\t%e\t%e\n",a2, a2_err, b2, b2_err))
-print(sprintf("3\t%e\t%e\t%e\t%e\n",a3, a3_err, b3, b3_err))
-print(sprintf("4\t%e\t%e\t%e\t%e\n",a4, a4_err, b4, b4_err))
+print(sprintf("1\t%f\t%f\t%f\t%f\n",a1, a1_err, b1, b1_err))
+print(sprintf("2\t%f\t%f\t%f\t%f\n",a2, a2_err, b2, b2_err))
+print(sprintf("3\t%f\t%f\t%f\t%f\n",a3, a3_err, b3, b3_err))
+print(sprintf("4\t%f\t%f\t%f\t%f\n",a4, a4_err, b4, b4_err))
 
-potential(x)=asquaresigma*x-b/x+c
-
-fit potential(x) potentialfile u 1:4:5 yerrors via asquaresigma, b, c
-
-print(sprintf("#result potentialfit\t%e\t%e\t%e\t%e\t%e\t%e\n",asquaresigma, asquaresigma_err, b, b_err, c, c_err))
 set out "wilsonloop.pdf"
-set title "beta=2.0, SU(2)"
+set title "beta=2.3, SU(3)"
 unset xrange 
 unset yrange 
 set xlabel "T"
 set ylabel "W(R, T)"
-plot wilsonloopfile u (($1==1)&&($5==16)?$2:1/0):3:4 w yerrorbars ls 1 title "R=1", v1(x) ls 1 title "",\
-	 wilsonloopfile u (($1==2)&&($5==16)?$2:1/0):3:4 w yerrorbars  ls 2 title "R=2", v2(x) ls 2 title "",\
-	 wilsonloopfile u (($1==3)&&($5==16)?$2:1/0):3:4 w yerrorbars  ls 3 title "R=3", v3(x) ls 3 title "",\
-	 wilsonloopfile u (($1==4)&&($5==16)?$2:1/0):3:4 w yerrorbars  ls 4 title "R=4", v4(x) ls 4 title ""
+plot wilsonloopfile u (($1==1)&&($5==32)?$2:1/0):3:4 w yerrorbars ls 1 title "R=1", v1(x) ls 1 title "",\
+	 wilsonloopfile u (($1==2)&&($5==32)?$2:1/0):3:4 w yerrorbars  ls 2 title "R=2", v2(x) ls 2 title "",\
+	 wilsonloopfile u (($1==3)&&($5==32)?$2:1/0):3:4 w yerrorbars  ls 3 title "R=3", v3(x) ls 3 title "",\
+	 wilsonloopfile u (($1==4)&&($5==32)?$2:1/0):3:4 w yerrorbars  ls 4 title "R=4", v4(x) ls 4 title ""
 set xlabel "R"
 set ylabel "aV(R)"
+set yrange [-15:25]
 set key top left
-plot potentialfile using 1:4:5 w yerrorbars ls 1 title "V(R)", potential(x) title ""
+plot potentialfile using 1:4:5 w yerrorbars ls 1 title "V(R)"
 
-set out "binsize.pdf"
-
-#set yrange [0:10**(-8)]
-plot wilsonloopfile u (($1==1)&&($2==1)?$5:1/0):4 ls 1 title "errorsizes"
-
-set out "autocorrelation.pdf"
-
-autofile="../data/plaquetteautocorsu2beta3.200.dat"
- 
-plot for [n=0:4] autofile every :::n::n u 1 ls (n+1) w lp title sprintf('binlength=%d', 2**(n+1))
 	 
 set ter epslatex size 9 cm, 10 cm color colortext
 unset title
