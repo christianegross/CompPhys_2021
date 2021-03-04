@@ -237,15 +237,15 @@ double absreal(double number){
 
 int main(int argc, char **argv){
 	//set up constants, matrices, generator
-	int dim=2; //switches between SU2 and SU3
-	double epsilon=0.5;
+	int dim=3; //switches between SU2 and SU3
+	double epsilon=0.25;
 	int hotstart=1;
 	int size=8;
-	double beta=2.3;
+	double beta=5.5;
 	const int maxR=4,maxT=4;
 	int numberofthermalizations=100;
 
-	int numberofmeasurements=1024; //=pow(2, 13)
+	int numberofmeasurements=8192; //=pow(2, 13)
 	
 
 	gsl_matrix_complex *newmatrix=gsl_matrix_complex_alloc(dim,dim); //proposed matrix in MH
@@ -510,7 +510,7 @@ int main(int argc, char **argv){
 			gsl_vector_set(wilsonexpectationset[i], run-1, wilsonexpectation[i]/((double)size*size*size*size));
 		}
 	}
-	fprintf(wilson_data,"R\tT\tW(R,T)\n");
+	fprintf(wilson_data,"R\tT\t<W>\tvar(W)\tbin\n");
 	//~ double mean=0;
 	//~ for(int R=1;R<=maxR;R++){
 		//~ for(int T=1;T<=maxT;T++){
