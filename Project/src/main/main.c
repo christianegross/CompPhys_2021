@@ -307,9 +307,13 @@ int main(int argc, char **argv){
 	int counter, acceptance;
 	int neighbour[8]; //for implementing (periodic) boundary conditions
 	double plaquetteexpectation,plaquetteafter, wilsonexpectation[maxR*maxT];
+	double wilsonmean[maxR*maxT], wilsonvar[maxR*maxT];
 	gsl_vector *wilsonexpectationset[maxR*maxT];
+	gsl_vector *binned_wilsonexpectationset_mem[maxR*maxT];
+	gsl_vector_view binned_wilsonexpectationset[maxR*maxT];
 	for(int i=0;i<maxT*maxR;i++){
 		wilsonexpectationset[i]=gsl_vector_alloc(numberofmeasurements);
+		binned_wilsonexpectationset_mem[i]=gsl_vector_alloc(numberofmeasurements);
 		wilsonexpectation[i]=0;
 	}
 	
@@ -507,32 +511,43 @@ int main(int argc, char **argv){
 		}
 	}
 	fprintf(wilson_data,"R\tT\tW(R,T)\n");
-	double mean=0;
-	for(int R=1;R<=maxR;R++){
-		for(int T=1;T<=maxT;T++){
-			mean=0;
-			for(run=1;run<=numberofmeasurements;run++){
-				mean+=gsl_vector_get(wilsonexpectationset[(R-1)*maxT+(T-1)], run-1);
-			}
-			fprintf(wilson_data, "%d\t%d\t%e\n",R,T,mean/((double)(numberofmeasurements)));
+	//~ double mean=0;
+	//~ for(int R=1;R<=maxR;R++){
+		//~ for(int T=1;T<=maxT;T++){
+			//~ mean=0;
+			//~ for(run=1;run<=numberofmeasurements;run++){
+				//~ mean+=gsl_vector_get(wilsonexpectationset[(R-1)*maxT+(T-1)], run-1);
+			//~ }
+			//~ fprintf(wilson_data, "%d\t%d\t%e\n",R,T,mean/((double)(numberofmeasurements)));
 	
-		}
-	}
-		/** analysis by binning and bootstrapping**/
-	//~ fprintf(plaquette_analysis, "bin\t<plaq>\tvar(plaq)\n", binsize, mean_plaquette, var_plaquette);
-	//~ for (int binsize=1;binsize<33;binsize*=2){
-		//~ binned_plaquette=gsl_vector_subvector(binned_plaquette_mem, 0, plaquette->size/binsize);
-		//~ binning(plaquette, &binned_plaquette.vector, binsize);
-		//~ bootstrap(&binned_plaquette.vector, generator, 2, &mean_plaquette, &var_plaquette);
-		//~ autocorrelation(&binned_plaquette.vector, plaquette_correlation_binned, mean_plaquette);
-		
-		//~ fprintf(plaquette_data, "\nbinsize %d\n", binsize);
-		//~ fprintf(plaquette_autocorrelation, "\nbinsize %d\n", binsize);
-		//~ gsl_vector_fprintf(plaquette_data, &binned_plaquette.vector, "%f");
-		//~ gsl_vector_fprintf(plaquette_autocorrelation, plaquette_correlation_binned, "%f");
-		
-		//~ fprintf(plaquette_analysis, "%.2d\t%f\t%f\n", binsize, mean_plaquette, var_plaquette);
+		//~ }
 	//~ }
+		/** analysis by binning and bootstrapping**/
+	fprintf(plaquette_analysis, "bin\t<plaq>\tvar(plaq)\n");
+	for (int binsize=8;binsize<33;binsize*=2){
+		binned_plaquette=gsl_vector_subvector(binned_plaquette_mem, 0, plaquette->size/binsize);
+		binning(plaquette, &binned_plaquette.vector, binsize);
+		bootstrap(&binned_plaquette.vector, generator, 2, &mean_plaquette, &var_plaquette);
+		autocorrelation(&binned_plaquette.vector, plaquette_correlation_binned, mean_plaquette);
+		
+		fprintf(plaquette_data, "\nbinsize %d\n", binsize);
+		fprintf(plaquette_autocorrelation, "\nbinsize %d\n", binsize);
+		gsl_vector_fprintf(plaquette_data, &binned_plaquette.vector, "%f");
+		gsl_vector_fprintf(plaquette_autocorrelation, plaquette_correlation_binned, "%f");
+		
+		fprintf(plaquette_analysis, "%.2d\t%f\t%f\n", binsize, mean_plaquette, var_plaquette);
+		
+		for(int R=1;R<=maxR;R++){
+			for(int T=1;T<=maxT;T++){
+				binned_wilsonexpectationset[(R-1)*maxT+(T-1)]=gsl_vector_subvector(binned_wilsonexpectationset_mem[(R-1)*maxT+(T-1)], 0, wilsonexpectationset[(R-1)*maxT+(T-1)]->size/binsize);
+				binning(wilsonexpectationset[(R-1)*maxT+(T-1)], &binned_wilsonexpectationset[(R-1)*maxT+(T-1)].vector, binsize);
+				bootstrap(&binned_wilsonexpectationset[(R-1)*maxT+(T-1)].vector, generator, 2, &wilsonmean[(R-1)*maxT+(T-1)], &wilsonvar[(R-1)*maxT+(T-1)]);
+				fprintf(wilson_data, "%d\t%d\t%e\t%e\t%d\n",R,T,wilsonmean[(R-1)*maxT+(T-1)],wilsonvar[(R-1)*maxT+(T-1)], binsize);				
+			}
+		}
+		
+		
+	}
 	
 
 
@@ -554,7 +569,11 @@ int main(int argc, char **argv){
 	gsl_vector_free(plaquette);
 	gsl_vector_free(binned_plaquette_mem);
 	//~ gsl_vector_free(plaquette_correlation);
-	gsl_vector_free(plaquette_correlation_binned);
+	gsl_vector_free(plaquette_correlation_binned);	
+	for(int i=0;i<maxT*maxR;i++){
+		gsl_vector_free(wilsonexpectationset[i]);
+		gsl_vector_free(binned_wilsonexpectationset_mem[i]);
+	}
 	fclose(plaquette_data);
 	fclose(plaquette_autocorrelation);
 	fclose(plaquette_analysis);

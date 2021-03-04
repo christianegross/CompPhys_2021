@@ -113,7 +113,7 @@ A general loop around a closed contour $\mathcal{C}$ is also called Wilson loop 
 \begin{tikzpicture}[y=0.5cm, x=0.5cm,
 roundnode/.style={circle, draw=white, thick, minimum size=1pt},
 ]
-\node[roundnode]at(-4.5, 1)(equation){$\langle W(R\times T)\rangle=\frac{1}{N}\Re\Tr$};
+\node[roundnode]at(-4.0, 1)(equation){$W(R\times T)=\frac{1}{N}\Re\Tr$};
 \node[roundnode]at(2.5, -0.8)(R){R};
 \draw[arrow] (2,-0.8)--(0,-0.8);
 \draw[arrow] (3,-0.8)--(5,-0.8);
@@ -165,7 +165,7 @@ The code and data from our simulations can be found in the git-repo \url{https:/
 We use a Metropolis-Hastings algorithm to simulate the lattice, i.e we go through every link of the lattice, transform the link $U_\mu(x)\to U_\mu'(x)=MU_\mu(x)$, where $M$ is a randomly generated SU(N) matrix, and accept the change with the probabilty $\min[1, \exp(-\beta(S-S'))]$. We use the gnu scientific library for the calculations with complex numbers and matrices.
 
 The difference in the action does not depend on the whole lattice, but only on \begin{align*}
-\Delta S(x, \mu)=&S-S'=\frac{1}{N}\Re\Tr\left\lbrace (U_mu(x)-U'_mu(x))\Gamma_\mu(x)\right\rbrace\\
+\Delta S(x, \mu)=&S-S'=\frac{1}{N}\Re\Tr\left\lbrace (U_\mu(x)-U'_\mu(x))\Gamma_\mu(x)\right\rbrace\\
 %
 \Gamma_\mu(x)=&\sum_{\mu\neq\nu}U_\nu(x+a\mu)U_\mu^\dagger(x+a\nu)U_\nu^\dagger(x)\\
 %
@@ -176,7 +176,7 @@ $U_\mu(x)\Gamma_\mu(x)$ contains all plaquettes $U_\mu(x)$ is part of, and $\Gam
 
 %How to generate SU(N) Matrices: describe.
 When doing the Metropolis-updates, we aim for an acceptance rate of about $50\%$, allowing us to progress to new configurations fast. If our acceptance rate were too low, we would get stuck very easily, and if our acceptance rate were too high, we would not see enough difference after one change.
-For tuning the acceptance rate, eweant to be able to specify how much our matrices differ from the unity matrix with the paramater $\epsilon$. To do so, we generate a hermitian matrix $H$   and then take the matrix $U=\mathds{1}+i\epsilon H$ and make it a SU matrix by orthonormalizing its columns. In SU(2), we simply normalize the first column $\begin{pmatrix}z_1&z_2\end{pmatrix}^T$ and then set the second column to be $\begin{pmatrix}-z_2^*&z_1^*\end{pmatrix}^T$. For SU(3) matrices, we use  $\langle x,y\rangle=x^Hy$, use the Gram-Schmidt-Orthonormalization procedure to make the second column orthonormal to the first and then calculate the third column as the complex conjugate of the crossproduct of the first two columns.
+For tuning the acceptance rate, we want to be able to specify how much our matrices differ from the unity matrix with the paramater $\epsilon$. To do so, we generate a hermitian matrix $H$   and then take the matrix $U=\mathds{1}+i\epsilon H$ and make it a SU matrix by orthonormalizing its columns. In SU(2), we simply normalize the first column $\begin{pmatrix}z_1&z_2\end{pmatrix}^T$ and then set the second column to be $\begin{pmatrix}-z_2^*&z_1^*\end{pmatrix}^T$. For SU(3) matrices, we use  $\langle x,y\rangle=x^Hy$, use the Gram-Schmidt-Orthonormalization procedure to make the second column orthonormal to the first and then calculate the third column as the complex conjugate of the crossproduct of the first two columns.
 
 For measuring the observables, we assume periodic boundary conditions in our lattice. The coordinates of the respective neighbours relative to the current position are set in an array, to simpolify calculations of the Plaquette.
 
@@ -184,7 +184,7 @@ Measuring Plaquette: periodic boundary conditions
 Measuring Wilson-Loop: ??
 Measuring Polyakov-loop: ????????????
 
-For analysing our data, we first put them in blocks to reduce the autocorrelation, and then use the bootstrap-method on this data. 
+For determining the mean value and standard deviation of our measured data, we first put them in blocks to reduce the autocorrelation, and then use the bootstrap-method on this data. 
 
 \section{Results}
 
