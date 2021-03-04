@@ -285,10 +285,18 @@ int main(int argc, char **argv){
 	gsl_vector * binned_plaquette_mem=gsl_vector_alloc(numberofmeasurements);
 	gsl_vector_view binned_plaquette;
 	gsl_vector * plaquette_correlation_binned=gsl_vector_alloc(numberofmeasurements/32);
-	FILE * plaquette_data=fopen("data/plaquettedata.dat", "w");
-	FILE * plaquette_autocorrelation=fopen("data/plaquetteautocorrelation.dat", "w");
-	FILE * plaquette_analysis=fopen("data/plaquette.dat", "w");
-	FILE * wilson_data=fopen("data/wilson.dat", "w");
+	char wilsonfilename[100];
+	char plaquettedatafilename[100];
+	char plaquetteautocorfilename[100];
+	char plaquetteanafilename[100];
+	sprintf(wilsonfilename, "data/wilsonsu%1dbeta%.3f.dat", dim, beta);
+	sprintf(plaquettedatafilename,"data/plaquettedatasu%1dbeta%.3f.dat", dim, beta);
+	sprintf(plaquetteautocorfilename,"data/plaquetteautocorsu%1dbeta%.3f.dat", dim, beta);
+	sprintf(plaquetteanafilename,"data/plaquetteanasu%1dbeta%.3f.dat", dim, beta);
+	FILE * plaquette_data=fopen(plaquettedatafilename, "w");
+	FILE * plaquette_autocorrelation=fopen(plaquetteautocorfilename, "w");
+	FILE * plaquette_analysis=fopen(plaquetteanafilename, "w");
+	FILE * wilson_data=fopen(wilsonfilename, "w");
 	FILE * ensemble_data=NULL;
 	/**variables for measurements**/
 	int counter, acceptance;
@@ -416,14 +424,14 @@ int main(int argc, char **argv){
 	char filename[filenamelength];
 	/**Test rather ensembles can be loaded**/
 	for(;run<=numberofmeasurements;run+=amountof_ens_infile){
-		snprintf (filename, filenamelength, "data/%.3fensenmble%06d_%06d.datens",beta,run,run+(amountof_ens_infile-1));
+		snprintf (filename, filenamelength, "data/%.3fsu%1densenmble%06d_%06d.datens",beta,dim,run,run+(amountof_ens_infile-1));
 		if(NULL==fopen (filename, "r")){break;}
 	}
 
 	/**sample remaining ensembles**/
 	for(;run<=numberofmeasurements;run+=1){
 		if((run-1)%amountof_ens_infile==0){
-			snprintf (filename, filenamelength, "data/%.3fensenmble%06d_%06d.datens",beta,run,run+(amountof_ens_infile-1));
+			snprintf (filename, filenamelength, "data/%.3fsu%1densenmble%06d_%06d.datens",beta,dim,run,run+(amountof_ens_infile-1));
 			if(ensemble_data==NULL){
 				ensemble_data=fopen (filename, "w");
 			}else{
@@ -480,7 +488,7 @@ int main(int argc, char **argv){
 	/**measure:**/
 	for(run=1;run<=numberofmeasurements;run++){
 		if((run-1)%amountof_ens_infile==0){
-			snprintf (filename, filenamelength, "data/%.3fensenmble%06d_%06d.datens",beta,run,run+(amountof_ens_infile-1));
+			snprintf (filename, filenamelength, "data/%.3fsu%1densenmble%06d_%06d.datens",beta,dim,run,run+(amountof_ens_infile-1));
 			if(ensemble_data==NULL){
 				ensemble_data=fopen (filename, "r");
 			}else{
