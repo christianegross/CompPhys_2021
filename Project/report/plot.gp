@@ -99,8 +99,8 @@ plot "../data/su3beta5p5fixed.dat" u 1:3 ls 1 w lines title "beta=5.5", "../data
 set xrange [0:50]
 plot "../data/su3beta5p5fixed.dat" u 1:3 ls 1 w lines title "beta=5.5", "../data/su3beta5p5fixed.dat" u 1:4 w lines ls 2 title "beta=5.5"
 
-wilsonloopfile="../data/wilsonsu3beta2.300.dat"
-potentialfile="../data/potentialsu3beta2.300.dat"
+wilsonloopfile="../data/wilsonsu3beta2.000.dat"
+potentialfile="../data/potentialsu3beta2.000.dat"
 
 v1(x)=a1*exp(-b1*x)
 
@@ -128,7 +128,7 @@ print(sprintf("3\t%f\t%f\t%f\t%f\n",a3, a3_err, b3, b3_err))
 print(sprintf("4\t%f\t%f\t%f\t%f\n",a4, a4_err, b4, b4_err))
 
 set out "wilsonloop.pdf"
-set title "beta=2.3, SU(3)"
+set title "beta=2.0, SU(3)"
 unset xrange 
 unset yrange 
 set xlabel "T"

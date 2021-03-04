@@ -239,12 +239,12 @@ int main(int argc, char **argv){
 	//set up constants, matrices, generator
 
 	int dim=3; //switches between SU2 and SU3
-	double epsilon=1.1;
+	double epsilon=2.4;
 	int hotstart=1;
 	int generateensembles=1;
 	int makemeasurements=1;
 	int size=8;
-	double beta=2.3;
+	double beta=2.0;
 	const int maxR=4,maxT=4;
 	int numberofthermalizations=100;
 
