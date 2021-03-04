@@ -93,7 +93,10 @@ void generatesu3(gsl_matrix_complex * matrix, double epsilon, gsl_rng * generato
 	/*norm=gsl_blas_dznrm2(&columntwo.vector);
 	gsl_blas_zdscal(1.0/norm, &columntwo.vector);*/
 	//~ printf("%f\t%f\n", GSL_REAL(complexscalarproduct), GSL_REAL(complexscalarproduct2));
+	//complexscalarproduct=det(matrix); used for fixing phase
+	//gsl_matrix_complex_scale(matrix, gsl_complex_polar(1.0/gsl_complex_abs(complexscalarproduct), -gsl_complex_arg(complexscalarproduct)/3));
 }
+
 
 /** @brief returns the difference in action before and after change of one link
  * @note prototype: returns a random number between -1 and 1 to test MH-setup*/
@@ -110,7 +113,7 @@ inline double deltaS(gsl_matrix_complex *deltacontribution, gsl_matrix_complex* 
 	gsl_matrix_complex_sub(helpone, oldmatrix);
 	gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, gsl_complex_rect(1,0), helpone, deltacontribution, gsl_complex_rect(0,0), helptwo);
 	//possibly wrong numerical prefactor
-	return GSL_REAL(trace(helptwo))/dim;
+	return GSL_REAL(trace(helptwo))/((double)dim);
 }
 
 /**@fn calculateGamma(int * neighbour, int counter, int mu, int size, gsl_matrix_complex *plaquettecontribution, gsl_matrix_complex *deltacontribution, gsl_matrix_complex *helpone, gsl_matrix_complex *helptwo, gsl_matrix_complex **matrixarray)
@@ -240,9 +243,9 @@ int main(int argc, char **argv){
 	int numberofmeasurements=1024; //=pow(2, 13)
 	
 
-	gsl_matrix_complex *newmatrix=gsl_matrix_complex_alloc(dim,dim);
-	gsl_matrix_complex *multiplier=gsl_matrix_complex_alloc(dim,dim);
-	gsl_matrix_complex *plaquettecontribution=gsl_matrix_complex_alloc(dim,dim);
+	gsl_matrix_complex *newmatrix=gsl_matrix_complex_alloc(dim,dim); //proposed matrix in MH
+	gsl_matrix_complex *multiplier=gsl_matrix_complex_alloc(dim,dim);	//used to change matrix in MH
+	gsl_matrix_complex *plaquettecontribution=gsl_matrix_complex_alloc(dim,dim);	
 	gsl_matrix_complex *deltacontribution=gsl_matrix_complex_alloc(dim,dim);
 	int seed=time(NULL);//use fixed seed: result should be exactly reproduced using the same seed
 	gsl_rng *generator;
@@ -273,15 +276,27 @@ int main(int argc, char **argv){
 	 }
 	
 	/** set up vectors and streams for analysis of results **/
+	/**observable: measured in loops
+	 * binned_observable_mem: construct needed to be able to do binning of different sizes
+	 * binned_observable: used to put binned data, used for bootstrapping
+	 * **/
 	double mean_plaquette, var_plaquette;
 	gsl_vector * plaquette=gsl_vector_alloc(numberofmeasurements);
 	gsl_vector * binned_plaquette_mem=gsl_vector_alloc(numberofmeasurements);
 	gsl_vector_view binned_plaquette;
 	gsl_vector * plaquette_correlation_binned=gsl_vector_alloc(numberofmeasurements/32);
-	FILE * plaquette_data=fopen("data/plaquettedata.dat", "w");
-	FILE * plaquette_autocorrelation=fopen("data/plaquetteautocorrelation.dat", "w");
-	FILE * plaquette_analysis=fopen("data/plaquette.dat", "w");
-	FILE * wilson_data=fopen("data/wilson.dat", "w");
+	char wilsonfilename[100];
+	char plaquettedatafilename[100];
+	char plaquetteautocorfilename[100];
+	char plaquetteanafilename[100];
+	sprintf(wilsonfilename, "data/wilsonsu%1dbeta%.3f.dat", dim, beta);
+	sprintf(plaquettedatafilename,"data/plaquettedatasu%1dbeta%.3f.dat", dim, beta);
+	sprintf(plaquetteautocorfilename,"data/plaquetteautocorsu%1dbeta%.3f.dat", dim, beta);
+	sprintf(plaquetteanafilename,"data/plaquetteanasu%1dbeta%.3f.dat", dim, beta);
+	FILE * plaquette_data=fopen(plaquettedatafilename, "w");
+	FILE * plaquette_autocorrelation=fopen(plaquetteautocorfilename, "w");
+	FILE * plaquette_analysis=fopen(plaquetteanafilename, "w");
+	FILE * wilson_data=fopen(wilsonfilename, "w");
 	FILE * ensemble_data=NULL;
 	/**variables for measurements**/
 	int counter, acceptance;
@@ -339,9 +354,11 @@ int main(int argc, char **argv){
 									gsl_matrix_complex_memcpy(matrixarray[counter], newmatrix); 
 								}
 								/**what to use for plaquette: sum over (mu>nu) or 1/2*sum over (mu)? Also include backwards plaquettes?**/
-								gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, gsl_complex_rect(1,0), matrixarray[counter], plaquettecontribution, gsl_complex_rect(0,0), helparray[0]);
+								gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, matrixarray[counter], plaquettecontribution, gsl_complex_rect(0,0), helparray[0]);
 								plaquetteexpectation+=GSL_REAL(trace(helparray[0]));
+								//~ printf("%f\t%e\t%f\t%e\n", GSL_REAL(det(multiplier)), GSL_IMAG(det(multiplier)), gsl_complex_abs(det(multiplier)), gsl_complex_arg(det(multiplier)));
 								
+								//~ gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, matrixarray[counter], matrixarray[counter], gsl_complex_rect(0,0), helparray[10]);
 							}
 						}
 					}
@@ -407,14 +424,14 @@ int main(int argc, char **argv){
 	char filename[filenamelength];
 	/**Test rather ensembles can be loaded**/
 	for(;run<=numberofmeasurements;run+=amountof_ens_infile){
-		snprintf (filename, filenamelength, "data/%.3fensenmble%06d_%06d.datens",beta,run,run+(amountof_ens_infile-1));
+		snprintf (filename, filenamelength, "data/%.3fsu%1densenmble%06d_%06d.datens",beta,dim,run,run+(amountof_ens_infile-1));
 		if(NULL==fopen (filename, "r")){break;}
 	}
 
 	/**sample remaining ensembles**/
 	for(;run<=numberofmeasurements;run+=1){
 		if((run-1)%amountof_ens_infile==0){
-			snprintf (filename, filenamelength, "data/%.3fensenmble%06d_%06d.datens",beta,run,run+(amountof_ens_infile-1));
+			snprintf (filename, filenamelength, "data/%.3fsu%1densenmble%06d_%06d.datens",beta,dim,run,run+(amountof_ens_infile-1));
 			if(ensemble_data==NULL){
 				ensemble_data=fopen (filename, "w");
 			}else{
@@ -471,7 +488,7 @@ int main(int argc, char **argv){
 	/**measure:**/
 	for(run=1;run<=numberofmeasurements;run++){
 		if((run-1)%amountof_ens_infile==0){
-			snprintf (filename, filenamelength, "data/%.3fensenmble%06d_%06d.datens",beta,run,run+(amountof_ens_infile-1));
+			snprintf (filename, filenamelength, "data/%.3fsu%1densenmble%06d_%06d.datens",beta,dim,run,run+(amountof_ens_infile-1));
 			if(ensemble_data==NULL){
 				ensemble_data=fopen (filename, "r");
 			}else{
@@ -503,7 +520,6 @@ int main(int argc, char **argv){
 		for(int i=0;i<maxT*maxR;i++){
 			wilsonexpectationset[maxT*maxR*(run-1)+i]=wilsonexpectation[i]/(size*size*size*size);
 		}
-
 	}
 	fprintf(wilson_data,"R\tT\tW(R,T)\n");
 	double mean=0;

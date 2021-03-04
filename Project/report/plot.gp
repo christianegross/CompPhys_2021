@@ -89,7 +89,29 @@ plot "../data/beta12.dat" u 1:(1-$4) title "1.2",\
 	 "../data/beta28.dat" u 1:(1-$4) title "2.8",\
 	 "../data/beta32.dat" u 1:(1-$4) title "3.2"	 
 
+set out "su3plaquette.pdf"
+set title "hot start, epsilon=0.3"
+set xlabel "steps"
+set ylabel "<P>"
+unset xrange
+set yrange[0.4:1]
+plot "../data/su3beta5p5fixed.dat" u 1:3 ls 1 w lines title "beta=5.5", "../data/su3beta5p5fixed.dat" u 1:4 w lines ls 2 title "beta=5.5"
+set xrange [0:50]
+plot "../data/su3beta5p5fixed.dat" u 1:3 ls 1 w lines title "beta=5.5", "../data/su3beta5p5fixed.dat" u 1:4 w lines ls 2 title "beta=5.5"
+
+wilsonloopfile="../data/"
+
+set out "wilsonloop.pdf"
+#plot wilsonloopfile u ls 1 title "r="
+
 	 
-set ter epslatex size 15 cm, 10 cm color colortext
+set ter epslatex size 9 cm, 10 cm color colortext
 unset title
+unset xrange
+unset yrange
+set output 'comparisoncreutzreport.tex'
+set key title '$\beta=$'
+set yrange [0:1.1]
+plot for [beta=12:32:4] sprintf("../data/beta%d.dat", beta) using 1:(1-$3) linestyle ((beta-8)/4) title sprintf('%.1f', beta/10.0)
+
 set output
