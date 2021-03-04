@@ -99,10 +99,48 @@ plot "../data/su3beta5p5fixed.dat" u 1:3 ls 1 w lines title "beta=5.5", "../data
 set xrange [0:50]
 plot "../data/su3beta5p5fixed.dat" u 1:3 ls 1 w lines title "beta=5.5", "../data/su3beta5p5fixed.dat" u 1:4 w lines ls 2 title "beta=5.5"
 
-wilsonloopfile="../data/"
+wilsonloopfile="../data/wilsonsu2beta2.300.dat"
+potentialfile="../data/potentialsu2beta2.300.dat"
+
+v1(x)=a1*exp(-b1*x)
+
+fit v1(x) wilsonloopfile u (($1==1)&&($5==32)?$2:1/0):3:4 yerrors via a1, b1
+
+v2(x)=a2*exp(-b2*x)
+
+fit v2(x) wilsonloopfile u (($1==2)&&($5==32)?$2:1/0):3:4 yerrors via a2, b2
+
+v3(x)=a3*exp(-b3*x)
+
+fit v3(x) wilsonloopfile u (($1==3)&&($5==32)?$2:1/0):3:4 yerrors via a3, b3
+
+
+v4(x)=a4*exp(-b4*x)
+
+fit v4(x) wilsonloopfile u (($1==4)&&($5==32)?$2:1/0):3:4 yerrors via a4, b4
+
+
+set print potentialfile
+print(sprintf("R\ta\tb\n"))
+print(sprintf("1\t%f\t%f\t%f\t%f\n",a1, a1_err, b1, b1_err))
+print(sprintf("2\t%f\t%f\t%f\t%f\n",a2, a2_err, b2, b2_err))
+print(sprintf("3\t%f\t%f\t%f\t%f\n",a3, a3_err, b3, b3_err))
+print(sprintf("4\t%f\t%f\t%f\t%f\n",a4, a4_err, b4, b4_err))
 
 set out "wilsonloop.pdf"
-#plot wilsonloopfile u ls 1 title "r="
+set title "beta=2.3, SU(2)"
+unset xrange 
+unset yrange 
+set xlabel "T"
+set ylabel "W(R, T)"
+plot wilsonloopfile u (($1==1)&&($5==32)?$2:1/0):3:4 w yerrorbars ls 1 title "R=1", v1(x) ls 1 title "",\
+	 wilsonloopfile u (($1==2)&&($5==32)?$2:1/0):3:4 w yerrorbars  ls 2 title "R=2", v2(x) ls 2 title "",\
+	 wilsonloopfile u (($1==3)&&($5==32)?$2:1/0):3:4 w yerrorbars  ls 3 title "R=3", v3(x) ls 3 title "",\
+	 wilsonloopfile u (($1==4)&&($5==32)?$2:1/0):3:4 w yerrorbars  ls 4 title "R=4", v4(x) ls 4 title ""
+set xlabel "R"
+set ylabel "aV(R)"
+set key top left
+plot potentialfile using 1:4:5 w yerrorbars ls 1 title "V(R)"
 
 	 
 set ter epslatex size 9 cm, 10 cm color colortext

@@ -230,10 +230,15 @@ double calculatewilsonloop(gsl_matrix_complex ** matrixarray, gsl_matrix_complex
  }
 	
 
+double absreal(double number){
+	double var=(number>=0)?number:-number;
+	return var;
+	}
+
 int main(int argc, char **argv){
 	//set up constants, matrices, generator
-	int dim=3; //switches between SU2 and SU3
-	double epsilon=1.3;
+	int dim=2; //switches between SU2 and SU3
+	double epsilon=0.5;
 	int hotstart=1;
 	int size=8;
 	double beta=2.3;
@@ -301,13 +306,17 @@ int main(int argc, char **argv){
 	/**variables for measurements**/
 	int counter, acceptance;
 	int neighbour[8]; //for implementing (periodic) boundary conditions
-	double plaquetteexpectation,plaquetteafter, wilsonexpectation[maxR*maxT],wilsonexpectationset[maxR*maxT*numberofmeasurements];
+	double plaquetteexpectation,plaquetteafter, wilsonexpectation[maxR*maxT];
+	double wilsonmean[maxR*maxT], wilsonvar[maxR*maxT];
+	gsl_vector *wilsonexpectationset[maxR*maxT];
+	gsl_vector *binned_wilsonexpectationset_mem[maxR*maxT];
+	gsl_vector_view binned_wilsonexpectationset[maxR*maxT];
 	for(int i=0;i<maxT*maxR;i++){
-		wilsonexpectationset[i]=0;
+		wilsonexpectationset[i]=gsl_vector_alloc(numberofmeasurements);
+		binned_wilsonexpectationset_mem[i]=gsl_vector_alloc(numberofmeasurements);
 		wilsonexpectation[i]=0;
 	}
 	
-	//test of MH: go through lattice, perform 10 accept/reject steps at every link, measure acceptance rate
 	/**thermalizations**/
 	/** counter defined as position with direction**/
 	/**neighbours: need two neighbours for every direction, one forward and one backward
@@ -356,9 +365,6 @@ int main(int argc, char **argv){
 								/**what to use for plaquette: sum over (mu>nu) or 1/2*sum over (mu)? Also include backwards plaquettes?**/
 								gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, matrixarray[counter], plaquettecontribution, gsl_complex_rect(0,0), helparray[0]);
 								plaquetteexpectation+=GSL_REAL(trace(helparray[0]));
-								//~ printf("%f\t%e\t%f\t%e\n", GSL_REAL(det(multiplier)), GSL_IMAG(det(multiplier)), gsl_complex_abs(det(multiplier)), gsl_complex_arg(det(multiplier)));
-								
-								//~ gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, matrixarray[counter], matrixarray[counter], gsl_complex_rect(0,0), helparray[10]);
 							}
 						}
 					}
@@ -396,25 +402,6 @@ int main(int argc, char **argv){
 				plaquetteafter/((double)size*size*size*size*4*3./2.));
 
 	}
-
-	//Test SU3:
-	/**gsl_matrix_complex *su3=gsl_matrix_complex_alloc(3,3);
-	gsl_vector_complex_view columnzero,columnone,columntwo;
-	double norm;
-	gsl_complex dot01, dot02, dot12;
-	for(int i=0;i<50;i++){
-		generatesu3 (su3, i/50., generator);
-		columnzero=gsl_matrix_complex_column(su3, 0);
-		columnone=gsl_matrix_complex_column(su3, 1);
-		columntwo=gsl_matrix_complex_column(su3, 2);
-		gsl_blas_zdotc (&columnzero.vector, &columnone.vector, &dot01);
-		gsl_blas_zdotc (&columnzero.vector, &columntwo.vector, &dot02);
-		gsl_blas_zdotc (&columnone.vector, &columntwo.vector, &dot12);
-		norm=gsl_blas_dznrm2(&columntwo.vector);
-		printf ("eps: %e\tnorm: %e\tdot01: %e\tdot02: %e\tdot12: %e\n",i/50.,norm,gsl_complex_abs (dot01),gsl_complex_abs (dot02),gsl_complex_abs (dot12));
-		gsl_matrix_complex_set_zero (su3);
-	}
-	gsl_matrix_complex_free (su3);**/
 
 
 	//~ /**measurements **/
@@ -491,16 +478,18 @@ int main(int argc, char **argv){
 			snprintf (filename, filenamelength, "data/%.3fsu%1densenmble%06d_%06d.datens",beta,dim,run,run+(amountof_ens_infile-1));
 			if(ensemble_data==NULL){
 				ensemble_data=fopen (filename, "r");
+				printf("run=%d opened filename=%s\n", run,filename);
 			}else{
 				freopen (filename,"r", ensemble_data);
+				printf("run=%d opened filename=%s\n", run,filename);
 			}
 		}
-		printf("run=%d,filename=%s\n", run,filename);
+		//~ printf("run=%d,filename=%s\n", run,filename);
 		for (int i=0;i<size*size*size*size*4;i+=1){
 			gsl_matrix_complex_fscanf (ensemble_data, matrixarray[i]);
 		}
-		for(int R=1;R<maxR;R++){
-			for(int T=1;T<maxT;T++){
+		for(int R=1;R<=maxR;R++){
+			for(int T=1;T<=maxT;T++){
 				wilsonexpectation[(R-1)*maxT+(T-1)]=0;
 			}
 		}
@@ -508,8 +497,8 @@ int main(int argc, char **argv){
 			for (int y=0;y<size;y+=1){
 				for (int z=0;z<size;z+=1){
 					for (int t=0;t<size;t+=1){
-						for(int R=1;R<maxR;R++){
-							for(int T=1;T<maxT;T++){
+						for(int R=1;R<=maxR;R++){
+							for(int T=1;T<=maxT;T++){
 								wilsonexpectation[(R-1)*maxT+(T-1)]+=calculatewilsonloop (matrixarray, helparray, x, y, z, t, R, 0, 0, T, size, dim);
 							}
 						}
@@ -518,36 +507,47 @@ int main(int argc, char **argv){
 			}
 		}
 		for(int i=0;i<maxT*maxR;i++){
-			wilsonexpectationset[maxT*maxR*(run-1)+i]=wilsonexpectation[i]/(size*size*size*size);
+			gsl_vector_set(wilsonexpectationset[i], run-1, wilsonexpectation[i]/((double)size*size*size*size));
 		}
 	}
 	fprintf(wilson_data,"R\tT\tW(R,T)\n");
-	double mean=0;
-	for(int R=1;R<=maxR;R++){
-		for(int T=1;T<=maxT;T++){
-			mean=0;
-			for(run=1;run<=numberofmeasurements;run++){
-				mean+=wilsonexpectationset[maxT*maxR*(run-1)+(R-1)*maxT+(T-1)];
-			}
-			fprintf(wilson_data, "%d\t%d\t%e\n",R,T,mean/((double)(numberofmeasurements)));
+	//~ double mean=0;
+	//~ for(int R=1;R<=maxR;R++){
+		//~ for(int T=1;T<=maxT;T++){
+			//~ mean=0;
+			//~ for(run=1;run<=numberofmeasurements;run++){
+				//~ mean+=gsl_vector_get(wilsonexpectationset[(R-1)*maxT+(T-1)], run-1);
+			//~ }
+			//~ fprintf(wilson_data, "%d\t%d\t%e\n",R,T,mean/((double)(numberofmeasurements)));
 	
-		}
-	}
-		/** analysis by binning and bootstrapping**/
-	//~ fprintf(plaquette_analysis, "bin\t<plaq>\tvar(plaq)\n", binsize, mean_plaquette, var_plaquette);
-	//~ for (int binsize=1;binsize<33;binsize*=2){
-		//~ binned_plaquette=gsl_vector_subvector(binned_plaquette_mem, 0, plaquette->size/binsize);
-		//~ binning(plaquette, &binned_plaquette.vector, binsize);
-		//~ bootstrap(&binned_plaquette.vector, generator, 2, &mean_plaquette, &var_plaquette);
-		//~ autocorrelation(&binned_plaquette.vector, plaquette_correlation_binned, mean_plaquette);
-		
-		//~ fprintf(plaquette_data, "\nbinsize %d\n", binsize);
-		//~ fprintf(plaquette_autocorrelation, "\nbinsize %d\n", binsize);
-		//~ gsl_vector_fprintf(plaquette_data, &binned_plaquette.vector, "%f");
-		//~ gsl_vector_fprintf(plaquette_autocorrelation, plaquette_correlation_binned, "%f");
-		
-		//~ fprintf(plaquette_analysis, "%.2d\t%f\t%f\n", binsize, mean_plaquette, var_plaquette);
+		//~ }
 	//~ }
+		/** analysis by binning and bootstrapping**/
+	fprintf(plaquette_analysis, "bin\t<plaq>\tvar(plaq)\n");
+	for (int binsize=8;binsize<33;binsize*=2){
+		binned_plaquette=gsl_vector_subvector(binned_plaquette_mem, 0, plaquette->size/binsize);
+		binning(plaquette, &binned_plaquette.vector, binsize);
+		bootstrap(&binned_plaquette.vector, generator, 2, &mean_plaquette, &var_plaquette);
+		autocorrelation(&binned_plaquette.vector, plaquette_correlation_binned, mean_plaquette);
+		
+		fprintf(plaquette_data, "\nbinsize %d\n", binsize);
+		fprintf(plaquette_autocorrelation, "\nbinsize %d\n", binsize);
+		gsl_vector_fprintf(plaquette_data, &binned_plaquette.vector, "%f");
+		gsl_vector_fprintf(plaquette_autocorrelation, plaquette_correlation_binned, "%f");
+		
+		fprintf(plaquette_analysis, "%.2d\t%f\t%f\n", binsize, mean_plaquette, var_plaquette);
+		
+		for(int R=1;R<=maxR;R++){
+			for(int T=1;T<=maxT;T++){
+				binned_wilsonexpectationset[(R-1)*maxT+(T-1)]=gsl_vector_subvector(binned_wilsonexpectationset_mem[(R-1)*maxT+(T-1)], 0, wilsonexpectationset[(R-1)*maxT+(T-1)]->size/binsize);
+				binning(wilsonexpectationset[(R-1)*maxT+(T-1)], &binned_wilsonexpectationset[(R-1)*maxT+(T-1)].vector, binsize);
+				bootstrap(&binned_wilsonexpectationset[(R-1)*maxT+(T-1)].vector, generator, 2, &wilsonmean[(R-1)*maxT+(T-1)], &wilsonvar[(R-1)*maxT+(T-1)]);
+				fprintf(wilson_data, "%d\t%d\t%e\t%e\t%d\n",R,T,wilsonmean[(R-1)*maxT+(T-1)],wilsonvar[(R-1)*maxT+(T-1)], binsize);				
+			}
+		}
+		
+		
+	}
 	
 
 
@@ -560,9 +560,6 @@ int main(int argc, char **argv){
 	gsl_matrix_complex_free(newmatrix);
 	gsl_matrix_complex_free(deltacontribution);
 	gsl_matrix_complex_free(plaquettecontribution);
-	//~ gsl_matrix_complex_free(helpone);
-	//~ gsl_matrix_complex_free(helptwo);
-	//~ gsl_matrix_complex_free(helpthree);
 	for (int i=0;i<size*size*size*size*4;i+=1){
 		gsl_matrix_complex_free(matrixarray[i]);
 	}
@@ -572,7 +569,11 @@ int main(int argc, char **argv){
 	gsl_vector_free(plaquette);
 	gsl_vector_free(binned_plaquette_mem);
 	//~ gsl_vector_free(plaquette_correlation);
-	gsl_vector_free(plaquette_correlation_binned);
+	gsl_vector_free(plaquette_correlation_binned);	
+	for(int i=0;i<maxT*maxR;i++){
+		gsl_vector_free(wilsonexpectationset[i]);
+		gsl_vector_free(binned_wilsonexpectationset_mem[i]);
+	}
 	fclose(plaquette_data);
 	fclose(plaquette_autocorrelation);
 	fclose(plaquette_analysis);
