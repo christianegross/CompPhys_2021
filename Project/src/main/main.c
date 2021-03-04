@@ -239,12 +239,12 @@ int main(int argc, char **argv){
 	//set up constants, matrices, generator
 
 	int dim=3; //switches between SU2 and SU3
-	double epsilon=0.25;
+	double epsilon=1.1;
 	int hotstart=1;
 	int generateensembles=1;
 	int makemeasurements=1;
 	int size=8;
-	double beta=5.5;
+	double beta=2.3;
 	const int maxR=4,maxT=4;
 	int numberofthermalizations=100;
 
@@ -492,7 +492,7 @@ int main(int argc, char **argv){
 				printf("run=%d opened filename=%s\n", run,filename);
 			}
 		}
-		printf("run\t");
+		//printf("run\t");
 		for (int i=0;i<size*size*size*size*4;i+=1){
 			gsl_matrix_complex_fscanf(ensemble_data, matrixarray[i]);
 		}
