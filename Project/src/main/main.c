@@ -237,9 +237,12 @@ double absreal(double number){
 
 int main(int argc, char **argv){
 	//set up constants, matrices, generator
+
 	int dim=3; //switches between SU2 and SU3
 	double epsilon=0.25;
 	int hotstart=1;
+	int generateensembles=1;
+	int makemeasurements=1;
 	int size=8;
 	double beta=5.5;
 	const int maxR=4,maxT=4;
@@ -317,6 +320,12 @@ int main(int argc, char **argv){
 		wilsonexpectation[i]=0;
 	}
 	
+	
+	int run=1;
+	const int filenamelength=100;
+	int amountof_ens_infile=512;
+	char filename[filenamelength];
+	
 	/**thermalizations**/
 	/** counter defined as position with direction**/
 	/**neighbours: need two neighbours for every direction, one forward and one backward
@@ -329,6 +338,7 @@ int main(int argc, char **argv){
 	 * mu			0	1	2	3
 	 * direction	t	z	y	x
 	 * **/
+	if (generateensembles==1){ 
 	for(int runs=0;runs<numberofthermalizations;runs+=1){
 		acceptance=0;
 		plaquetteexpectation=0;
@@ -405,10 +415,6 @@ int main(int argc, char **argv){
 
 
 	//~ /**measurements **/
-	int run=1;
-	const int filenamelength=100;
-	int amountof_ens_infile=512;
-	char filename[filenamelength];
 	/**Test rather ensembles can be loaded**/
 	for(;run<=numberofmeasurements;run+=amountof_ens_infile){
 		snprintf (filename, filenamelength, "data/%.3fsu%1densenmble%06d_%06d.datens",beta,dim,run,run+(amountof_ens_infile-1));
@@ -464,15 +470,17 @@ int main(int argc, char **argv){
 		}
 		fprintf(stdout, "%d\tacc=%f\n", run, (double)acceptance/((double)10*size*size*size*size*4));
 		for (int i=0;i<size*size*size*size*4;i+=1){
-			gsl_matrix_complex_fprintf (ensemble_data, matrixarray[i], "%e");
+			gsl_matrix_complex_fprintf(ensemble_data, matrixarray[i], "%e");
 		}
 		if((run)%amountof_ens_infile==0){
 			fprintf (stdout, "Finished writing of %s.\n", filename);
 		}
 	}
+	}
 
 
 	/**measure:**/
+	if (makemeasurements==1){
 	for(run=1;run<=numberofmeasurements;run++){
 		if((run-1)%amountof_ens_infile==0){
 			snprintf (filename, filenamelength, "data/%.3fsu%1densenmble%06d_%06d.datens",beta,dim,run,run+(amountof_ens_infile-1));
@@ -484,22 +492,37 @@ int main(int argc, char **argv){
 				printf("run=%d opened filename=%s\n", run,filename);
 			}
 		}
-		//~ printf("run=%d,filename=%s\n", run,filename);
+		printf("run\t");
 		for (int i=0;i<size*size*size*size*4;i+=1){
-			gsl_matrix_complex_fscanf (ensemble_data, matrixarray[i]);
+			gsl_matrix_complex_fscanf(ensemble_data, matrixarray[i]);
 		}
 		for(int R=1;R<=maxR;R++){
 			for(int T=1;T<=maxT;T++){
 				wilsonexpectation[(R-1)*maxT+(T-1)]=0;
 			}
 		}
+		plaquetteexpectation=0;
 		for (int x=0;x<size;x+=1){
+			neighbour[6]=(x==size-1)?-(size-1)*pow(size, 3)*4:pow(size,3)*4;
+			neighbour[7]=(x==0)?(size-1)*pow(size, 3)*4:-pow(size,3)*4;
 			for (int y=0;y<size;y+=1){
+				neighbour[4]=(y==size-1)?-(size-1)*pow(size, 2)*4:pow(size,2)*4;
+				neighbour[5]=(y==0)?(size-1)*pow(size, 2)*4:-pow(size,2)*4;
 				for (int z=0;z<size;z+=1){
+					neighbour[2]=(z==size-1)?-(size-1)*size*4:size*4;
+					neighbour[3]=(z==0)?(size-1)*size*4:-size*4;
 					for (int t=0;t<size;t+=1){
+						neighbour[0]=(t==size-1)?-(size-1)*4:4;
+						neighbour[1]=(t==0)?(size-1)*4:-4;
 						for(int R=1;R<=maxR;R++){
 							for(int T=1;T<=maxT;T++){
 								wilsonexpectation[(R-1)*maxT+(T-1)]+=calculatewilsonloop (matrixarray, helparray, x, y, z, t, R, 0, 0, T, size, dim);
+							}
+						}
+						counter=x*size*size*size*4+y*size*size*4+z*size*4+t*4;
+						for (int mu=0;mu<4;mu+=1){
+							for (int nu=mu+1;nu<4;nu+=1){
+								plaquetteexpectation+=calculateplaquette(matrixarray, counter, neighbour, mu, nu, helparray[0], helparray[1], helparray[2],dim);
 							}
 						}
 					}
@@ -509,6 +532,7 @@ int main(int argc, char **argv){
 		for(int i=0;i<maxT*maxR;i++){
 			gsl_vector_set(wilsonexpectationset[i], run-1, wilsonexpectation[i]/((double)size*size*size*size));
 		}
+		gsl_vector_set(plaquette, run-1, plaquetteexpectation/((double)size*size*size*size*4*3./2.));
 	}
 	fprintf(wilson_data,"R\tT\t<W>\tvar(W)\tbin\n");
 	//~ double mean=0;
@@ -524,10 +548,10 @@ int main(int argc, char **argv){
 	//~ }
 		/** analysis by binning and bootstrapping**/
 	fprintf(plaquette_analysis, "bin\t<plaq>\tvar(plaq)\n");
-	for (int binsize=8;binsize<33;binsize*=2){
+	for (int binsize=2;binsize<33;binsize*=2){
 		binned_plaquette=gsl_vector_subvector(binned_plaquette_mem, 0, plaquette->size/binsize);
 		binning(plaquette, &binned_plaquette.vector, binsize);
-		bootstrap(&binned_plaquette.vector, generator, 2, &mean_plaquette, &var_plaquette);
+		bootstrap(&binned_plaquette.vector, generator, 200, &mean_plaquette, &var_plaquette);
 		autocorrelation(&binned_plaquette.vector, plaquette_correlation_binned, mean_plaquette);
 		
 		fprintf(plaquette_data, "\nbinsize %d\n", binsize);
@@ -547,6 +571,7 @@ int main(int argc, char **argv){
 		}
 		
 		
+	}
 	}
 	
 
