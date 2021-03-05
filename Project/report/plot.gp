@@ -15,27 +15,36 @@ set style line 10 lc 5 lt 7 pt 12
 
 PI=3.14159
 
+
+beta=2.0
+dim=3
+
+wilsonloopfile=sprintf("../data/wilsonsu%dbeta%.3f.dat", dim, beta)
+potentialfile=sprintf("../data/potentialsu%dbeta%.3f.dat", dim, beta)
+potentialtotalfile="../data/potentialtotal.dat"
+plaquettetotalfile="../data/plaquettetotal.dat"
+
 set terminal pdfcairo size 4in, 4in
-set out 'test.pdf'
+set out "test.pdf"
 
 set mytics 4
 set mxtics 2
 
 set xrange [0:50]
 
-set out 'comparisoncreutz.pdf'
+set out "comparisoncreutz.pdf"
 
 set title "plaquette, measured during sweep"
-plot for [beta=12:32:4] sprintf("../data/beta%d.dat", beta) using 1:($3) linestyle ((beta-8)/4) title sprintf('%.1f', beta/10.0)
+plot for [beta=12:32:4] sprintf("../data/beta%d.dat", beta) using 1:($3) linestyle ((beta-8)/4) title sprintf("%.1f", beta/10.0)
 
 set title "1-plaquette, measured during sweep"
-plot for [beta=12:32:4] sprintf("../data/beta%d.dat", beta) using 1:(1-$3) linestyle ((beta-8)/4) title sprintf('%.1f', beta/10.0) 
+plot for [beta=12:32:4] sprintf("../data/beta%d.dat", beta) using 1:(1-$3) linestyle ((beta-8)/4) title sprintf("%.1f", beta/10.0) 
 	 
 set title "plaquette, measured after sweep"
-plot for [beta=12:32:4] sprintf("../data/beta%d.dat", beta) using 1:($4) linestyle ((beta-8)/4) title sprintf('%.1f', beta/10.0) 
+plot for [beta=12:32:4] sprintf("../data/beta%d.dat", beta) using 1:($4) linestyle ((beta-8)/4) title sprintf("%.1f", beta/10.0) 
 
 set title "1-plaquette, measured after sweep"
-plot for [beta=12:32:4] sprintf("../data/beta%d.dat", beta) using 1:(1-$4) linestyle ((beta-8)/4) title sprintf('%.1f', beta/10.0)	 
+plot for [beta=12:32:4] sprintf("../data/beta%d.dat", beta) using 1:(1-$4) linestyle ((beta-8)/4) title sprintf("%.1f", beta/10.0)	 
 
 set out "su3plaquette.pdf"
 set title "hot start, epsilon=0.3"
@@ -47,11 +56,6 @@ plot "../data/su3beta5p5fixed.dat" u 1:3 ls 1 w lines title "beta=5.5", "../data
 set xrange [0:50]
 plot "../data/su3beta5p5fixed.dat" u 1:3 ls 1 w lines title "beta=5.5", "../data/su3beta5p5fixed.dat" u 1:4 w lines ls 2 title "beta=5.5"
 
-beta=2.0
-dim=2
-
-wilsonloopfile=sprintf("../data/wilsonsu%dbeta%.3f.dat", dim, beta)
-potentialfile=sprintf("../data/potentialsu%dbeta%3f.dat", dim, beta)
 
 v1(x)=a1*exp(-b1*x)
 v2(x)=a2*exp(-b2*x)
@@ -60,18 +64,18 @@ v4(x)=a4*exp(-b4*x)
 
 #a3=0.9
 #a3_err=0.1
-#b3=1.8
+#b3=5
 #b3_err=0.1
 
 #a4=0.9
-#b4=2.5
+#b4=6
 #a4_err=0.1
 #b4_err=0.1
 
-fit v1(x) wilsonloopfile u (($1==1)&&($5==16)?$2:1/0):3:4 yerrors via a1, b1
-fit v2(x) wilsonloopfile u (($1==2)&&($5==16)?$2:1/0):3:4 yerrors via a2, b2
-fit v3(x) wilsonloopfile u (($1==3)&&($5==16)?$2:1/0):3:4 yerrors via a3, b3
-fit v4(x) wilsonloopfile u (($1==4)&&($5==16)?$2:1/0):3:4 yerrors via a4, b4
+fit v1(x) wilsonloopfile u (($1==1)&&($5==32)?$2:1/0):3:4 yerrors via a1, b1
+fit v2(x) wilsonloopfile u (($1==2)&&($5==32)?$2:1/0):3:4 yerrors via a2, b2
+fit v3(x) wilsonloopfile u (($1==3)&&($5==32)?$2:1/0):3:4 yerrors via a3, b3
+fit v4(x) wilsonloopfile u (($1==4)&&($5==32)?$2:1/0):3:4 yerrors via a4, b4
 
 
 set print potentialfile
@@ -82,13 +86,14 @@ print(sprintf("3\t%f\t%f\t%f\t%f",a3, a3_err, b3, b3_err))
 print(sprintf("4\t%f\t%f\t%f\t%f",a4, a4_err, b4, b4_err))
 
 potential(x)=asquaresigma*x-b/x+c
-
+#b=0.1
 fit potential(x) potentialfile u 1:4:5 yerrors via asquaresigma, b, c
 
-print(sprintf("#result potentialfit\t%e\t%e\t%e\t%e\t%e\t%e\n",asquaresigma, asquaresigma_err, b, b_err, c, c_err))
+print(sprintf("#result potentialfit\tasquaresigma=\t%e +/-\t%e\tb= \t%e+/-\t%e\tc=\t%e +/-\t%e\tbeta=\t%f\tdim=\t%d\t",asquaresigma, asquaresigma_err, b, b_err, c, c_err, beta, dim))
+print(sprintf("#a%d%d=%f\n#b%d%d=%f\n#c%d%d=%f\n", beta*10, dim, asquaresigma, beta*10, dim, b, beta*10, dim, c))
 
 set out sprintf("wilsonloopsu%dbeta%.3f.pdf", dim, beta)
-set title sprintf("beta=%.1f, SU(%d)", dim, beta)
+set title sprintf("beta=%.1f, SU(%d)", beta, dim)
 unset xrange 
 unset yrange 
 set xlabel "T/a"
@@ -102,9 +107,9 @@ plot wilsonloopfile u (($1==1)&&($5==32)?$2:1/0):3:4 w yerrorbars ls 1 title "R=
 set xlabel "R/a"
 set ylabel "aV(R/a)"
 #set yrange [-15:25]
-set xrange [0:5]
+set xrange [0.5:5]
 set key top left
-plot potentialfile using 1:4 ls 1 title "V(R)", potential(x) title "" #:5 w yerrorbars
+plot potentialfile using 1:4:5 w yerrorbars ls 1 title "V(R)", potential(x) title "" #:5 w yerrorbars
 
 	 
 set ter epslatex size 9 cm, 10 cm color colortext
@@ -114,6 +119,63 @@ unset yrange
 set output 'comparisoncreutzreport.tex'
 set key title '$\beta=$'
 set yrange [0:1.1]
-plot for [beta=12:32:4] sprintf("../data/beta%d.dat", beta) using 1:(1-$3) linestyle ((beta-8)/4) title sprintf('%.1f', beta/10.0)
+set xlabel 'steps'
+set ylabel '$\langle P\rangle$'
+plot for [betap=12:32:4] sprintf('../data/beta%d.dat', betap) using 1:(1-$3) linestyle ((betap-8)/4) w linespoints title sprintf('%.1f', betap/10.0)
+#use betap instead of beta so wilsonloops still work
+unset yrange
+set key title ''
 
+	 
+set out 'su3plaquettereport.tex'
+unset xrange
+set yrange[0.4:1]
+plot '../data/su3beta5p5fixed.dat' u 1:3 ls 1 w linespoints title 'beta=5.5'
+unset xrange 
+unset yrange
+
+
+set out sprintf('wilsonloopsu%dbeta%.3freport.tex', dim, beta)
+set xlabel '$T/a$'
+set ylabel '$W(R/a, T/a)$'
+plot wilsonloopfile u (($1==1)&&($5==32)?$2:1/0):3:4 w yerrorbars ls 1 title 'R=1', v1(x) ls 1 title '',\
+	 wilsonloopfile u (($1==2)&&($5==32)?$2:1/0):3:4 w yerrorbars  ls 2 title 'R=2', v2(x) ls 2 title '',\
+	 wilsonloopfile u (($1==3)&&($5==32)?$2:1/0):3:4 w yerrorbars  ls 3 title 'R=3', v3(x) ls 3 title '',\
+	 wilsonloopfile u (($1==4)&&($5==32)?$2:1/0):3:4 w yerrorbars  ls 4 title 'R=4', v4(x) ls 4 title ''
+
+
+set out sprintf('potentialsu%dbeta%.3freport.tex', dim, beta)	 
+set xlabel '$R/a$'
+set ylabel '$aV(R/a)$'
+set xrange [0.5:5]
+set key top left
+plot potentialfile using 1:4:5 w yerrorbars ls 1 title 'V(R)', potential(x) title '' #:5 w yerrorbars
+
+potentialtot(x, a, b, c)=a*x-b/x+c
+
+load "potentialparameters.cfg"
+
+set out 'potentialsu2report.tex'
+plot '../data/potentialsu2beta1.600.dat' using 1:4:5 w yerrorbars ls 1 title '$\beta=$1.6', potentialtot(x, a162, b162, c162) ls 1 title '',\
+	 '../data/potentialsu2beta2.000.dat' using 1:4:5 w yerrorbars ls 2 title '$\beta=$2.0', potentialtot(x, a202, b202, c202) ls 2 title '',\
+	 '../data/potentialsu2beta3.200.dat' using 1:4:5 w yerrorbars ls 3 title '$\beta=$3.2', potentialtot(x, a322, b322, c322) ls 3 title '',\
+	 '../data/potentialsu2beta5.500.dat' using 1:4:5 w yerrorbars ls 4 title '$\beta=$5.5', potentialtot(x, a552, b552, c552) ls 4 title ''
+
+set out 'potentialsu3report.tex'
+plot '../data/potentialsu3beta2.000.dat' using 1:4:($5/100.0) w yerrorbars ls 1 title '$\beta=$2.0', potentialtot(x, a203, b203, c203) ls 1 title '',\
+	 '../data/potentialsu3beta2.300.dat' using 1:4:($5/100.0) w yerrorbars ls 2 title '$\beta=$2.3', potentialtot(x, a233, b233, c233) ls 2 title '',\
+	 '../data/potentialsu3beta5.500.dat' using 1:4:($5/100.0) w yerrorbars ls 4 title '$\beta=$5.5', potentialtot(x, a553, b553, c553) ls 4 title ''
+unset xrange
+
+set out 'stringtensionreport.tex'
+set xlabel '$\beta$'
+set ylabel '$a^2\sigma$'
+plot potentialtotalfile u (($13==2)?$11:1/0):2:3 ls 1 title 'SU(2)',\
+	 potentialtotalfile u (($13==3)?$11:1/0):2:3 ls 2 title 'SU(3)'
+
+set out 'plaquettereport.tex'
+set ylabel '$\langle P\rangle$'
+plot plaquettetotalfile using (($1==2&&$3==32)?$2:1/0):4:5 w yerrorbars ls 1 title 'SU(2)',\
+	 plaquettetotalfile using (($1==3&&$3==32)?$2:1/0):4:5 w yerrorbars ls 2 title 'SU(3)'
+	 
 set output
