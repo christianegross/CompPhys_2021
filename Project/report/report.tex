@@ -1,3 +1,4 @@
+%!TeX spellcheck = en_GB
 % ****** Start of file templateForReport.tex ******
 
 % TeX'ing this file requires that you have all prerequisites
@@ -153,7 +154,9 @@ roundnode/.style={circle, draw=white, thick, minimum size=1pt},
 
 We want to determine the potential between two infinitely heavy, static quarks. We know
 $\langle W(R\times T)\rangle\sim \mathrm{e}^{aV(R)T}$%\Leftrightarrow \frac{W(r,t+a)}{W(r,t)}\sim aV(r)$
-and thus calculating the values of the Wilson-loops for different $T$ and $R$ allows us to extract the potential.
+and thus calculating the values of the Wilson-loops for different $T$ and $R$ allows us to extract the potential. 
+
+The potential is expected to have the form $V(R)=\sigma R-\frac{b}{R}+c$, where $-\frac{b}{R}+c$ correspond to a coulomb-like potential interacting with the charge of the particles and the additional linear part $\sigma R$ causes the confinement, with the string tension $\sigma$ between the particles.
 
 
 \section{Methods}
@@ -178,13 +181,19 @@ $U_\mu(x)\Gamma_\mu(x)$ contains all plaquettes $U_\mu(x)$ is part of, and $\Gam
 When doing the Metropolis-updates, we aim for an acceptance rate of about $50\%$, allowing us to progress to new configurations fast. If our acceptance rate were too low, we would get stuck very easily, and if our acceptance rate were too high, we would not see enough difference after one change.
 For tuning the acceptance rate, we want to be able to specify how much our matrices differ from the unity matrix with the paramater $\epsilon$. To do so, we generate a hermitian matrix $H$   and then take the matrix $U=\mathds{1}+i\epsilon H$ and make it a SU matrix by orthonormalizing its columns. In SU(2), we simply normalize the first column $\begin{pmatrix}z_1&z_2\end{pmatrix}^T$ and then set the second column to be $\begin{pmatrix}-z_2^*&z_1^*\end{pmatrix}^T$. For SU(3) matrices, we use  $\langle x,y\rangle=x^Hy$, use the Gram-Schmidt-Orthonormalization procedure to make the second column orthonormal to the first and then calculate the third column as the complex conjugate of the crossproduct of the first two columns.
 
-For measuring the observables, we assume periodic boundary conditions in our lattice. The coordinates of the respective neighbours relative to the current position are set in an array, to simpolify calculations of the Plaquette.
+For measuring the observables, we assume periodic boundary conditions in our lattice. The coordinates of the respective neighbours relative to the current position are set in an array, to simplify calculations of the Plaquette.
 
-Measuring Plaquette: periodic boundary conditions
-Measuring Wilson-Loop: ??
-Measuring Polyakov-loop: ????????????
+%Measuring Plaquette: periodic boundary conditions
+%Measuring Wilson-Loop: ??
+%Measuring Polyakov-loop: ????????????
 
-For determining the mean value and standard deviation of our measured data, we first put them in blocks to reduce the autocorrelation, and then use the bootstrap-method on this data. 
+We measure the Wilson-loop for every poinmt in the lattice by going to the point $(X,Y,Z,T)$ relative to the lattice point, going along the forward-facing links in the directions in the order $x-y-z-t$ and then going along the backwards-facing links in the same order of directions. For calculating the expected value, we sum over the entire lattice. This gives us the Wilson-loop with $R=\sqrt{X^2+Y^2+Z^2}$, so $W(R, T)$.
+
+For determining the mean value and standard deviation of our measured data, we first put them in blocks to reduce the autocorrelation, and then use the bootstrap-method on this data.
+
+Definition Bootstrap/Blocking? 
+
+After we have determind the expectation value of the Wilson-loops for several different $R$ and $T$, we use the nonlinear least-squares Marquardt-Levenberg algorithm built into gnuplot to fit the data of $W(R=\text{const.}, T)$ to $c_R\exp(-dT)$. Then we can use the determined $d$ as $aV(R)$, and fit the potential to $aV\left(\frac{R}{a}\right)=a^2\sigma \frac{R}{a}-b\left(\frac{R}{a}\right)^{-1}+c$.
 
 \section{Results}
 
@@ -194,23 +203,28 @@ pictures
 %\input{comparisoncreutzreport.tex}
 %\end{figure} 
 
--average value of plaquette against number of steps for SU(2)->comparison to Creutz
+-average value of plaquette against number of steps for SU(2)->comparison to \citet{creutzsu2}, one picture
 
--autocorrelation
+-autocorrelation, maybe one picture
 
--W(r,t) for different t
+-W(r,t) for different t, one picture
 
-how to extract V(r) from W(r).
+how to extract V(r) from W(r). fit values: maybe in appendix?
 
-fit to potential
+fit to potential, for one temperature each for SU(2) and SU(3)
 
 \section{Discussion}
 
-Differences between SU(2) and SU(3)?
+Differences between SU(2) and SU(3)? 
+String tensions, also discuss differnet couplings/beta?->mnore figures, tables needed.
+
+Areas for improvement: In Wilson-loops: also non-integer R, then also differnet orders of directions?
+Link smearing
+bigger lattices: a lot more computation time needed.
 
 \section{Summary}
 
-Reproduce confinement?
+Reproduce confinement? Yes
 
 %complicated way of specifying file, but does not need absolute path and simply writing refs did not work
 \bibliography{../report/refs}
