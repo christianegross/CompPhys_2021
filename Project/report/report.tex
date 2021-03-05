@@ -75,7 +75,7 @@
              %  but any date may be explicitly specified
 
 \begin{abstract}
-	We measure the confinement that arises when simulating a Lattice with the Yang-Mills action, by approximating the lattice links with SU(2) matrices
+	We measure the confinement that arises when simulating a Lattice with the Yang-Mills action, by approximating the lattice links with SU(N) matrices. It is assumed that the confinement arises from using non abelian gauge fields.
 %  An article usually includes an abstract, a concise summary of the work
 %  covered at length in the main body of the article.
 %  \begin{description}
@@ -180,7 +180,7 @@ $U_\mu(x)\Gamma_\mu(x)$ contains all plaquettes $U_\mu(x)$ is part of, and $\Gam
 
 %How to generate SU(N) Matrices: describe.
 When doing the Metropolis-updates, we aim for an acceptance rate of about $50\%$, allowing us to progress to new configurations fast. If our acceptance rate were too low, we would get stuck very easily, and if our acceptance rate were too high, we would not see enough difference after one change.
-For tuning the acceptance rate, we want to be able to specify how much our matrices $M$ differ from the unity matrix with the parameter $\epsilon$. To do so, we generate a hermitian matrix $H$   and then take the matrix $U=\mathbb{1}+i\epsilon H$ and make it a SU matrix by orthonormalizing its columns. In SU(2), we simply normalize the first column $\begin{pmatrix}z_1&z_2\end{pmatrix}^T$ and then set the second column to be $\begin{pmatrix}-z_2^*&z_1^*\end{pmatrix}^T$. For SU(3) matrices, we use  $\langle x,y\rangle=x^Hy$, use the Gram-Schmidt-Orthonormalization procedure to make the second column orthonormal to the first and then calculate the third column as the complex conjugate of the crossproduct of the first two columns.
+For tuning the acceptance rate, we want to be able to specify how much our matrices $M$ differ from the unity matrix with the parameter $\epsilon$. To do so, we generate a hermitian matrix $H$   and then take the matrix $U=\mathbb{1}+i\epsilon H$ and make it a SU matrix by orthonormalizing its columns. In SU(2), we simply normalize the first column $\begin{pmatrix}z_1&z_2\end{pmatrix}^T$ and then set the second column to be $\begin{pmatrix}-z_2^*&z_1^*\end{pmatrix}^T$. For SU(3) matrices, we use the Gram-Schmidt-Orthonormalization procedure, where $\langle x,y\rangle=x^Hy$, to make the second column orthonormal to the first and then calculate the third column as the complex conjugate of the crossproduct of the first two columns.
 
 For measuring the observables, we assume periodic boundary conditions in our lattice. The coordinates of the respective neighbours relative to the current position are set in an array, to simplify calculations of the Plaquette.
 
