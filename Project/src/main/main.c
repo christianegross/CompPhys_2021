@@ -517,6 +517,8 @@ int main(int argc, char **argv){
 						for(int R=1;R<=maxR;R++){
 							for(int T=1;T<=maxT;T++){
 								wilsonexpectation[(R-1)*maxT+(T-1)]+=calculatewilsonloop (matrixarray, helparray, x, y, z, t, R, 0, 0, T, size, dim);
+								wilsonexpectation[(R-1)*maxT+(T-1)]+=calculatewilsonloop (matrixarray, helparray, x, y, z, t, 0, R, 0, T, size, dim);
+								wilsonexpectation[(R-1)*maxT+(T-1)]+=calculatewilsonloop (matrixarray, helparray, x, y, z, t, 0, 0, R, T, size, dim);
 							}
 						}
 						counter=x*size*size*size*4+y*size*size*4+z*size*4+t*4;
@@ -530,7 +532,7 @@ int main(int argc, char **argv){
 			}
 		}
 		for(int i=0;i<maxT*maxR;i++){
-			gsl_vector_set(wilsonexpectationset[i], run-1, wilsonexpectation[i]/((double)size*size*size*size));
+			gsl_vector_set(wilsonexpectationset[i], run-1, wilsonexpectation[i]/((double)size*size*size*size*3));
 		}
 		gsl_vector_set(plaquette, run-1, plaquetteexpectation/((double)size*size*size*size*4*3./2.));
 	}
