@@ -100,8 +100,7 @@ void settounity(gsl_matrix_complex *matrix){
 }
 
 /**
- * @brief
- * @note
+ * @brief calculates result=conjugate(a x b)
  */
 void crossproduct(gsl_vector_complex* a,gsl_vector_complex* b,gsl_vector_complex* result){
 	gsl_vector_complex_set (result, 0, gsl_complex_conjugate(gsl_complex_sub(gsl_complex_mul (gsl_vector_complex_get(a,1),  (gsl_vector_complex_get(b,2))),gsl_complex_mul (gsl_vector_complex_get(a,2),  (gsl_vector_complex_get(b,1))))));
@@ -176,6 +175,9 @@ void bootstrap(gsl_vector *measurements, gsl_rng *generator, int R, double *mean
 	gsl_block_free(replicalist);
 	}
 
+/**
+ * @brief calculates the autocorrelation of measurements
+ */
 void autocorrelation(gsl_vector *measurements, gsl_vector *results, double mean){
 	/**
 	 * make block, calculate gamma with tau=0, write (0,1) to results
