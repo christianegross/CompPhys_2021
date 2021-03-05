@@ -43,6 +43,9 @@ void generatesu2(gsl_matrix_complex * matrix, double epsilon, gsl_rng * generato
 	gsl_matrix_complex_set(matrix, 0,1,gsl_complex_mul_real(gsl_complex_conjugate(gsl_matrix_complex_get(matrix, 1,0)), -1.0));	
 }
 
+/**
+ * @brief returns a SU(3) matrix in matrix
+ */
 void generatesu3(gsl_matrix_complex * matrix, double epsilon, gsl_rng * generator){
 	//error handling
 	if(matrix->size1!=3||matrix->size2!=3){fprintf(stderr, "argument has to be 3x3 matrix!\n");return;}
@@ -240,12 +243,12 @@ int main(int argc, char **argv){
 
 	int dim=3; //switches between SU2 and SU3
 	double epsilon=2.4;
-	int hotstart=1;
-	int generateensembles=1;
-	int makemeasurements=1;
-	int size=8;
+	int hotstart=1;//switches between hot(1) and cold(0) start
+	int generateensembles=1;//turns thermalization and generation on
+	int makemeasurements=1;//turns measurements on
+	int size=8;// size of each dimension of the lattice
 	double beta=2.0;
-	const int maxR=4,maxT=4;
+	const int maxR=4,maxT=4;//maximum Value of R and T
 	int numberofthermalizations=100;
 
 	int numberofmeasurements=8192; //=pow(2, 13)
@@ -479,7 +482,7 @@ int main(int argc, char **argv){
 	}
 
 
-	/**measure:**/
+	/**measure wilsonloop and plaquette**/
 	if (makemeasurements==1){
 	for(run=1;run<=numberofmeasurements;run++){
 		if((run-1)%amountof_ens_infile==0){
