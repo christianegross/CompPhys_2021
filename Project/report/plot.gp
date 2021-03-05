@@ -16,7 +16,7 @@ set style line 10 lc 5 lt 7 pt 12
 PI=3.14159
 
 
-beta=2.0
+beta=5.5
 dim=3
 
 wilsonloopfile=sprintf("../data/wilsonsu%dbeta%.3f.dat", dim, beta)
@@ -35,16 +35,16 @@ set xrange [0:50]
 set out "comparisoncreutz.pdf"
 
 set title "plaquette, measured during sweep"
-plot for [beta=12:32:4] sprintf("../data/beta%d.dat", beta) using 1:($3) linestyle ((beta-8)/4) title sprintf("%.1f", beta/10.0)
+plot for [betap=12:32:4] sprintf("../data/beta%d.dat", betap) using 1:($3) linestyle ((betap-8)/4) title sprintf("%.1f", betap/10.0)
 
 set title "1-plaquette, measured during sweep"
-plot for [beta=12:32:4] sprintf("../data/beta%d.dat", beta) using 1:(1-$3) linestyle ((beta-8)/4) title sprintf("%.1f", beta/10.0) 
+plot for [betap=12:32:4] sprintf("../data/beta%d.dat", betap) using 1:(1-$3) linestyle ((betap-8)/4) title sprintf("%.1f", betap/10.0) 
 	 
 set title "plaquette, measured after sweep"
-plot for [beta=12:32:4] sprintf("../data/beta%d.dat", beta) using 1:($4) linestyle ((beta-8)/4) title sprintf("%.1f", beta/10.0) 
+plot for [betap=12:32:4] sprintf("../data/beta%d.dat", betap) using 1:($4) linestyle ((betap-8)/4) title sprintf("%.1f", betap/10.0) 
 
 set title "1-plaquette, measured after sweep"
-plot for [beta=12:32:4] sprintf("../data/beta%d.dat", beta) using 1:(1-$4) linestyle ((beta-8)/4) title sprintf("%.1f", beta/10.0)	 
+plot for [betap=12:32:4] sprintf("../data/beta%d.dat", betap) using 1:(1-$4) linestyle ((betap-8)/4) title sprintf("%.1f", betap/10.0)	 
 
 set out "su3plaquette.pdf"
 set title "hot start, epsilon=0.3"
@@ -91,6 +91,8 @@ fit potential(x) potentialfile u 1:4:5 yerrors via asquaresigma, b, c
 
 print(sprintf("#result potentialfit\tasquaresigma=\t%e +/-\t%e\tb= \t%e+/-\t%e\tc=\t%e +/-\t%e\tbeta=\t%f\tdim=\t%d\t",asquaresigma, asquaresigma_err, b, b_err, c, c_err, beta, dim))
 print(sprintf("#a%d%d=%f\n#b%d%d=%f\n#c%d%d=%f\n", beta*10, dim, asquaresigma, beta*10, dim, b, beta*10, dim, c))
+unset print
+
 
 set out sprintf("wilsonloopsu%dbeta%.3f.pdf", dim, beta)
 set title sprintf("beta=%.1f, SU(%d)", beta, dim)
@@ -112,30 +114,31 @@ set key top left
 plot potentialfile using 1:4:5 w yerrorbars ls 1 title "V(R)", potential(x) title "" #:5 w yerrorbars
 
 	 
-set ter epslatex size 9 cm, 10 cm color colortext
+set ter epslatex size 9 cm, 8 cm color colortext
 unset title
 unset xrange
 unset yrange
 set output 'comparisoncreutzreport.tex'
-set key title '$\beta=$'
-set yrange [0:1.1]
+set key horizontal title '$\beta=$'
+set yrange [0.1:1.1]
 set xlabel 'steps'
 set ylabel '$\langle P\rangle$'
 plot for [betap=12:32:4] sprintf('../data/beta%d.dat', betap) using 1:(1-$3) linestyle ((betap-8)/4) w linespoints title sprintf('%.1f', betap/10.0)
 #use betap instead of beta so wilsonloops still work
 unset yrange
-set key title ''
+set key vertical top right title ''
 
 	 
 set out 'su3plaquettereport.tex'
 unset xrange
-set yrange[0.4:1]
-plot '../data/su3beta5p5fixed.dat' u 1:3 ls 1 w linespoints title 'beta=5.5'
+set yrange[0.4:0.9]
+plot '../data/su3beta5p5fixed.dat' u 1:3 ls 1 w linespoints title '$\beta=5.5$'
 unset xrange 
 unset yrange
 
 
-set out sprintf('wilsonloopsu%dbeta%.3freport.tex', dim, beta)
+set out sprintf('wilsonloopsu%dbeta%2dreport.tex', dim, beta*10)
+print(sprintf('wilsonloopsu%dbeta%2dreport.tex', dim, beta*10))
 set xlabel '$T/a$'
 set ylabel '$W(R/a, T/a)$'
 plot wilsonloopfile u (($1==1)&&($5==32)?$2:1/0):3:4 w yerrorbars ls 1 title 'R=1', v1(x) ls 1 title '',\
@@ -144,7 +147,7 @@ plot wilsonloopfile u (($1==1)&&($5==32)?$2:1/0):3:4 w yerrorbars ls 1 title 'R=
 	 wilsonloopfile u (($1==4)&&($5==32)?$2:1/0):3:4 w yerrorbars  ls 4 title 'R=4', v4(x) ls 4 title ''
 
 
-set out sprintf('potentialsu%dbeta%.3freport.tex', dim, beta)	 
+set out sprintf('potentialsu%dbeta%2dreport.tex', dim, beta*10)	 
 set xlabel '$R/a$'
 set ylabel '$aV(R/a)$'
 set xrange [0.5:5]
