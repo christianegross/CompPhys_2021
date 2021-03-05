@@ -18,38 +18,6 @@ PI=3.14159
 set terminal pdfcairo size 4in, 4in
 set out 'test.pdf'
 
-set yrange[0:1]
-
-plot '../data/plaquettethermhotstartepsilon0p4beta2p3size4.dat' u 0:2 ls 1 title 'during',\
-	 '../data/plaquettethermhotstartepsilon0p4beta2p3size4.dat' u 0:3 ls 2 title 'after',\
-
-set xrange [0:100]
-
-set title 'acceptance rate early'
-plot '../data/plaquettethermhotstartepsilon0point2beta2point3.dat' u 0:1 ls 1 title 'ar hot',\
-	 '../data/plaquettethermcoldstartepsilon0point2beta2point3.dat' u 0:1 ls 4 title 'ar cold'
-
-set title 'plaquette early'
-plot '../data/plaquettethermhotstartepsilon0point2beta2point3.dat' u 0:2 w lines ls 2 title 'pd hot',\
-	 '../data/plaquettethermhotstartepsilon0point2beta2point3.dat' u 0:3 w lines ls 3 title 'pa hot',\
-	 '../data/plaquettethermcoldstartepsilon0point2beta2point3.dat' u 0:2 w lines ls 5 title 'pd cold',\
-	 '../data/plaquettethermcoldstartepsilon0point2beta2point3.dat' u 0:3 w lines ls 6 title 'pa cold'
-
-set xrange [900:1000]
-
-set title 'acceptance rate late'
-plot '../data/plaquettethermhotstartepsilon0point2beta2point3.dat' u 0:1 ls 1 title 'ar hot',\
-	 '../data/plaquettethermcoldstartepsilon0point2beta2point3.dat' u 0:1 ls 4 title 'ar cold'
-
-set title 'plaquette late'
-plot '../data/plaquettethermhotstartepsilon0point2beta2point3.dat' u 0:2 ls 2 title 'pd hot',\
-	 '../data/plaquettethermhotstartepsilon0point2beta2point3.dat' u 0:3 ls 3 title 'pa hot',\
-	 '../data/plaquettethermcoldstartepsilon0point2beta2point3.dat' u 0:2 ls 5 title 'pd cold',\
-	 '../data/plaquettethermcoldstartepsilon0point2beta2point3.dat' u 0:3 ls 6 title 'pa cold'
-
-
-unset xrange
-
 set mytics 4
 set mxtics 2
 
@@ -58,36 +26,16 @@ set xrange [0:50]
 set out 'comparisoncreutz.pdf'
 
 set title "plaquette, measured during sweep"
-plot "../data/beta12.dat" u 1:3 title "1.2",\
-	 "../data/beta16.dat" u 1:3 title "1.6",\
-	 "../data/beta20.dat" u 1:3 title "2.0",\
-	 "../data/beta24.dat" u 1:3 title "2.4",\
-	 "../data/beta28.dat" u 1:3 title "2.8",\
-	 "../data/beta32.dat" u 1:3 title "3.2"	 
+plot for [beta=12:32:4] sprintf("../data/beta%d.dat", beta) using 1:($3) linestyle ((beta-8)/4) title sprintf('%.1f', beta/10.0)
 
 set title "1-plaquette, measured during sweep"
-plot "../data/beta12.dat" u 1:(1-$3) title "1.2",\
-	 "../data/beta16.dat" u 1:(1-$3) title "1.6",\
-	 "../data/beta20.dat" u 1:(1-$3) title "2.0",\
-	 "../data/beta24.dat" u 1:(1-$3) title "2.4",\
-	 "../data/beta28.dat" u 1:(1-$3) title "2.8",\
-	 "../data/beta32.dat" u 1:(1-$3) title "3.2"	 
+plot for [beta=12:32:4] sprintf("../data/beta%d.dat", beta) using 1:(1-$3) linestyle ((beta-8)/4) title sprintf('%.1f', beta/10.0) 
 	 
 set title "plaquette, measured after sweep"
-plot "../data/beta12.dat" u 1:4 title "1.2",\
-	 "../data/beta16.dat" u 1:4 title "1.6",\
-	 "../data/beta20.dat" u 1:4 title "2.0",\
-	 "../data/beta24.dat" u 1:4 title "2.4",\
-	 "../data/beta28.dat" u 1:4 title "2.8",\
-	 "../data/beta32.dat" u 1:4 title "3.2"	 
+plot for [beta=12:32:4] sprintf("../data/beta%d.dat", beta) using 1:($4) linestyle ((beta-8)/4) title sprintf('%.1f', beta/10.0) 
 
 set title "1-plaquette, measured after sweep"
-plot "../data/beta12.dat" u 1:(1-$4) title "1.2",\
-	 "../data/beta16.dat" u 1:(1-$4) title "1.6",\
-	 "../data/beta20.dat" u 1:(1-$4) title "2.0",\
-	 "../data/beta24.dat" u 1:(1-$4) title "2.4",\
-	 "../data/beta28.dat" u 1:(1-$4) title "2.8",\
-	 "../data/beta32.dat" u 1:(1-$4) title "3.2"	 
+plot for [beta=12:32:4] sprintf("../data/beta%d.dat", beta) using 1:(1-$4) linestyle ((beta-8)/4) title sprintf('%.1f', beta/10.0)	 
 
 set out "su3plaquette.pdf"
 set title "hot start, epsilon=0.3"
@@ -99,49 +47,64 @@ plot "../data/su3beta5p5fixed.dat" u 1:3 ls 1 w lines title "beta=5.5", "../data
 set xrange [0:50]
 plot "../data/su3beta5p5fixed.dat" u 1:3 ls 1 w lines title "beta=5.5", "../data/su3beta5p5fixed.dat" u 1:4 w lines ls 2 title "beta=5.5"
 
-wilsonloopfile="../data/wilsonsu3beta2.000.dat"
-potentialfile="../data/potentialsu3beta2.000.dat"
+beta=2.0
+dim=2
+
+wilsonloopfile=sprintf("../data/wilsonsu%dbeta%.3f.dat", dim, beta)
+potentialfile=sprintf("../data/potentialsu%dbeta%3f.dat", dim, beta)
 
 v1(x)=a1*exp(-b1*x)
-
-fit v1(x) wilsonloopfile u (($1==1)&&($5==32)?$2:1/0):3:4 yerrors via a1, b1
-
 v2(x)=a2*exp(-b2*x)
-
-fit v2(x) wilsonloopfile u (($1==2)&&($5==32)?$2:1/0):3:4 yerrors via a2, b2
-
 v3(x)=a3*exp(-b3*x)
-
-fit v3(x) wilsonloopfile u (($1==3)&&($5==32)?$2:1/0):3:4 yerrors via a3, b3
-
-
 v4(x)=a4*exp(-b4*x)
 
-fit v4(x) wilsonloopfile u (($1==4)&&($5==32)?$2:1/0):3:4 yerrors via a4, b4
+#a3=0.9
+#a3_err=0.1
+#b3=1.8
+#b3_err=0.1
+
+#a4=0.9
+#b4=2.5
+#a4_err=0.1
+#b4_err=0.1
+
+fit v1(x) wilsonloopfile u (($1==1)&&($5==16)?$2:1/0):3:4 yerrors via a1, b1
+fit v2(x) wilsonloopfile u (($1==2)&&($5==16)?$2:1/0):3:4 yerrors via a2, b2
+fit v3(x) wilsonloopfile u (($1==3)&&($5==16)?$2:1/0):3:4 yerrors via a3, b3
+fit v4(x) wilsonloopfile u (($1==4)&&($5==16)?$2:1/0):3:4 yerrors via a4, b4
 
 
 set print potentialfile
-print(sprintf("R\ta\tb\n"))
-print(sprintf("1\t%f\t%f\t%f\t%f\n",a1, a1_err, b1, b1_err))
-print(sprintf("2\t%f\t%f\t%f\t%f\n",a2, a2_err, b2, b2_err))
-print(sprintf("3\t%f\t%f\t%f\t%f\n",a3, a3_err, b3, b3_err))
-print(sprintf("4\t%f\t%f\t%f\t%f\n",a4, a4_err, b4, b4_err))
+print(sprintf("R\ta\ta_err\tb\tb_err"))
+print(sprintf("1\t%f\t%f\t%f\t%f",a1, a1_err, b1, b1_err))
+print(sprintf("2\t%f\t%f\t%f\t%f",a2, a2_err, b2, b2_err))
+print(sprintf("3\t%f\t%f\t%f\t%f",a3, a3_err, b3, b3_err))
+print(sprintf("4\t%f\t%f\t%f\t%f",a4, a4_err, b4, b4_err))
 
-set out "wilsonloop.pdf"
-set title "beta=2.0, SU(3)"
+potential(x)=asquaresigma*x-b/x+c
+
+fit potential(x) potentialfile u 1:4:5 yerrors via asquaresigma, b, c
+
+print(sprintf("#result potentialfit\t%e\t%e\t%e\t%e\t%e\t%e\n",asquaresigma, asquaresigma_err, b, b_err, c, c_err))
+
+set out sprintf("wilsonloopsu%dbeta%.3f.pdf", dim, beta)
+set title sprintf("beta=%.1f, SU(%d)", dim, beta)
 unset xrange 
 unset yrange 
-set xlabel "T"
-set ylabel "W(R, T)"
+set xlabel "T/a"
+set ylabel "W(R/a, T/a)"
 plot wilsonloopfile u (($1==1)&&($5==32)?$2:1/0):3:4 w yerrorbars ls 1 title "R=1", v1(x) ls 1 title "",\
 	 wilsonloopfile u (($1==2)&&($5==32)?$2:1/0):3:4 w yerrorbars  ls 2 title "R=2", v2(x) ls 2 title "",\
 	 wilsonloopfile u (($1==3)&&($5==32)?$2:1/0):3:4 w yerrorbars  ls 3 title "R=3", v3(x) ls 3 title "",\
 	 wilsonloopfile u (($1==4)&&($5==32)?$2:1/0):3:4 w yerrorbars  ls 4 title "R=4", v4(x) ls 4 title ""
-set xlabel "R"
-set ylabel "aV(R)"
-set yrange [-15:25]
+	 
+	 
+set xlabel "R/a"
+set ylabel "aV(R/a)"
+#set yrange [-15:25]
+set xrange [0:5]
 set key top left
-plot potentialfile using 1:4:5 w yerrorbars ls 1 title "V(R)"
+plot potentialfile using 1:4 ls 1 title "V(R)", potential(x) title "" #:5 w yerrorbars
 
 	 
 set ter epslatex size 9 cm, 10 cm color colortext
