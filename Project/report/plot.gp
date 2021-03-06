@@ -16,7 +16,7 @@ set style line 10 lc 5 lt 7 pt 12
 PI=3.14159
 
 
-beta=5.5
+beta=4.5
 dim=3
 
 wilsonloopfile=sprintf("../data/wilsonsu%dbeta%.3f.dat", dim, beta)

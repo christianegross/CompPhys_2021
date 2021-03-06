@@ -242,14 +242,14 @@ int main(int argc, char **argv){
 	//set up constants, matrices, generator
 
 	int dim=3; //switches between SU2 and SU3
-	double epsilon=2.4;
+	double epsilon=0.38;
 	int hotstart=1;//switches between hot(1) and cold(0) start
 	int generateensembles=1;//turns thermalization and generation on
 	int makemeasurements=1;//turns measurements on
 	int size=8;// size of each dimension of the lattice
-	double beta=2.0;
+	double beta=4.5;
 	const int maxR=4,maxT=4;//maximum Value of R and T
-	int numberofthermalizations=100;
+	int numberofthermalizations=200;
 
 	int numberofmeasurements=8192; //=pow(2, 13)
 	
@@ -564,7 +564,7 @@ int main(int argc, char **argv){
 		gsl_vector_fprintf(plaquette_data, &binned_plaquette.vector, "%f");
 		gsl_vector_fprintf(plaquette_autocorrelation, plaquette_correlation_binned, "%f");
 		
-		fprintf(plaquette_analysis, "%.2d\t%f\t%f\n", binsize, mean_plaquette, var_plaquette);
+		fprintf(plaquette_analysis, "%.2d\t%e\t%e\n", binsize, mean_plaquette, var_plaquette);
 		
 		for(int R=1;R<=maxR;R++){
 			for(int T=1;T<=maxT;T++){
