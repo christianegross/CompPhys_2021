@@ -51,14 +51,14 @@
 
 \usepackage{dsfont} % mathds for unity matrix
 \usepackage{bbold} % mathbb for unity matrix
-
+\usepackage{physics}% integral measure
 \usepackage{xcolor}
 \usepackage{tikz}%Bilder
 \usepackage{pgfpages}
 \usetikzlibrary{positioning, arrows}
 \usepackage{smartdiagram}%Kreisdiagramm/Flussdiagramm
 
-\DeclareMathOperator{\Tr}{Tr}
+%\DeclareMathOperator{\Tr}{Tr}
 \renewcommand{\Re}{\operatorname{Re}}
 
 \begin{document}
@@ -96,9 +96,12 @@
 
 \section{Theoretical basis}
 
-Most of the theoretical basis given here is adapted from \citet{lepagelqcd}. We want to discretise three spatial and one temporal dimension, so we need a four-dimensional lattice. The distance between any adjacent lattice points is $a$, and any point is characterized by four coordinates, $x=(x,y,z,t)$. The links between the lattice sites are characterized by an additional direction $\mu$, and we only consider the forward facing links $U_\mu(x)$ going from $x$ to $x+a\mu$. All links are represented as $SU(N)$-matrices, we simulate $N=2$ and $N=3$.backward-facing links from $x+a\mu$ to $x$ are represented by $U_\mu^\dagger(x)$.
+Most of the theoretical basis given here is adapted from \citet{lepagelqcd}. We want to discretise three spatial and one temporal dimension, so we need a four-dimensional lattice. The distance between any adjacent lattice points is $a$, and any point is characterized by four coordinates, $x=(x,y,z,t)$. The links between the lattice sites are characterized by an additional direction $\hat{\mu}$, and we only consider the forward facing links $U_\mu(x)$ going from $x$ to $x+a\hat{\mu}$. All links are represented as $SU(N)$-matrices, we simulate $N=2$ and $N=3$. Backward-facing links from $x+a\hat{\mu}$ to $x$ are represented by $U_\mu^\dagger(x)$.
 
-The simplest loop that can be formed with the links of the lattice is the plaquette \[P_{\mu\nu}(x)=\frac{1}{N}\Re\Tr\left(U_\mu(x)U_\nu(x+a\mu)U_\mu^\dagger(x+a\nu)U^\dagger_\nu(x)\right)\] a simple square. The discretized action is defined as being proportional to the ordered sum over all plaquettes, \[S=\frac{2N}{g^2}\sum_{x}\sum_{\mu>\nu}\left(1-P_{\mu\nu}(x)\right)+\mathcal{O}(a^2)\]
+The simplest loop that can be formed with the links of the lattice is the plaquette \[P_{\mu\nu}(x)=\frac{1}{N}\Re\Tr\left(U_\mu(x)U_\nu(x+a\mu)U_\mu^\dagger(x+a\nu)U^\dagger_\nu(x)\right)\] a simple square. These link variables $U_\mu$ are connected to the continuum in the following way. The Yang Mills action in the continuum reads as \[S=\int\dd{^4x}\dfrac{1}{2}\sum\limits_{\mu,\nu}\tr F_{\mu\nu}²(x)\] where the field tensor\[F_{\mu\nu}=\partial_\mu A_\nu-\partial_\nu A_\mu+\i g [A_\mu,A_\nu]\] is a traceless N$\times$N hermitian matrix. The standard discretization connects the gauge fields $A_\mu$ to the link variables $U_\mu$, \[U_\mu(x)=\mathcal{P}\exp(-\i\int\limits_{x}^{x+a\hat{\mu}}g A\cdot\dd{y})\]
+Here the $\mathcal{P}$-Operator orders the integrand along the path from $x$ to $x+a\hat{\mu}$.
+
+The discretized version of the Yang Mills action is defined as being proportional to the ordered sum over all plaquettes, \[S=\frac{2N}{g^2}\sum_{x}\sum_{\mu>\nu}\left(1-P_{\mu\nu}(x)\right)+\mathcal{O}(a^2)\]
 and $\beta=\frac{2N}{g^2}$ is the coupling strength. 
 
 %Some citation \citet{gsldoc_complex}
@@ -166,7 +169,7 @@ The potential is expected to have the form $V(R)=\sigma R-\frac{b}{R}+c$, where 
 
 The code and data from our simulations can be found in the git-repo \url{https://github.com/christianegross/CompPhys_2021} in the folder \texttt{Project}.
 
-We use a Metropolis-Hastings algorithm to simulate the lattice, i.e we go through every link of the lattice, transform the link $U_\mu(x)\to U_\mu'(x)=MU_\mu(x)$, where $M$ is a randomly generated SU(N) matrix, and accept the change with the probability $\min[1, \exp(-\beta(S-S'))]$. We use the gnu scientific library for the calculations with complex numbers and matrices.
+We use a Metropolis-Hastings algorithm to simulate the lattice, i.e. we go through every link of the lattice, transform the link $U_\mu(x)\to U_\mu'(x)=MU_\mu(x)$, where $M$ is a randomly generated SU(N) matrix, and accept the change with the probability $\min[1, \exp(-\beta(S-S'))]$. We use the gnu scientific library for the calculations with complex numbers and matrices.
 
 The difference in the action does not depend on the whole lattice, but only on \begin{align*}
 \Delta S(x, \mu)=&S-S'=\frac{1}{N}\Re\Tr\left\lbrace (U_\mu(x)-U'_\mu(x))\Gamma_\mu(x)\right\rbrace\\
@@ -180,19 +183,16 @@ $U_\mu(x)\Gamma_\mu(x)$ contains all plaquettes $U_\mu(x)$ is part of, and $\Gam
 
 %How to generate SU(N) Matrices: describe.
 When doing the Metropolis-updates, we aim for an acceptance rate of about $50\%$, allowing us to progress to new configurations fast. If our acceptance rate were too low, we would get stuck very easily, and if our acceptance rate were too high, we would not see enough difference after one change.
-For tuning the acceptance rate, we want to be able to specify how much our matrices $M$ differ from the unity matrix with the parameter $\epsilon$. To do so, we generate a hermitian matrix $H$   and then take the matrix $U=\mathbb{1}+i\epsilon H$ and make it a SU matrix by orthonormalizing its columns. In SU(2), we simply normalize the first column $\begin{pmatrix}z_1&z_2\end{pmatrix}^T$ and then set the second column to be $\begin{pmatrix}-z_2^*&z_1^*\end{pmatrix}^T$. For SU(3) matrices, we use the Gram-Schmidt-Orthonormalization procedure, where $\langle x,y\rangle=x^Hy$, to make the second column orthonormal to the first and then calculate the third column as the complex conjugate of the crossproduct of the first two columns.
+For tuning the acceptance rate, we want to be able to specify how much our matrices $M$ differ from the unity matrix with the parameter $\epsilon$. To do so, we generate a hermitian matrix $H$   and then take the matrix $U=\mathbb{1}+i\epsilon H$ and make it a SU matrix by orthonormalizing its columns. In SU(2), we simply normalize the first column $\begin{pmatrix}z_1&z_2\end{pmatrix}^T$ and then set the second column to be $\begin{pmatrix}-z_2^*&z_1^*\end{pmatrix}^T$. For SU(3) matrices, we use the Gram-Schmidt-Orthonormalization procedure, where $\langle x,y\rangle=x^Hy$, to make the second column orthonormal to the first and then calculate the third column as the complex conjugate of the crossproduct of the first two columns. The complex conjugate needs to be taken, to guarantee orthogonality to the first and second column.
 
 For measuring the observables, we assume periodic boundary conditions in our lattice. The coordinates of the respective neighbours relative to the current position are set in an array, to simplify calculations of the Plaquette.
 
-%Measuring Plaquette: periodic boundary conditions
-%Measuring Wilson-Loop: ??
-%Measuring Polyakov-loop: ????????????
+We measure the Wilson-loop for every point in the lattice by going to the point $(X,Y,Z,T)$ relative to the lattice point, going along the forward-facing links in the directions in the order $x-y-z-t$ and then going along the backwards-facing links in the same order of directions. For calculating the expected value, we sum over the entire lattice. This gives us the Wilson-loop with $R=\sqrt{X^2+Y^2+Z^2}$, so $W(R, T)$. 
 
-We measure the Wilson-loop for every point in the lattice by going to the point $(X,Y,Z,T)$ relative to the lattice point, going along the forward-facing links in the directions in the order $x-y-z-t$ and then going along the backwards-facing links in the same order of directions. For calculating the expected value, we sum over the entire lattice. This gives us the Wilson-loop with $R=\sqrt{X^2+Y^2+Z^2}$, so $W(R, T)$.
+For the demonstration purpose we take $R$ only along a single spatial direction and average over the $3$ possible directions, which yields measurements for integer values of $R$. It has to be considered, that the maximum value for $R$ can not exceed $l/2$, where $l$ is the length of a single spatial direction of the lattice. Because the periodic boundary conditions deny the measurement of $R>l/2$ .
+The Code is furthermore able to process diagonal paths and therefor non integer values in $R$. 
 
-For determining the mean value and standard deviation of our measured data, we first put them in blocks to reduce the autocorrelation, and then use the bootstrap-method on this data.
-
-Definition Bootstrap/Blocking? 
+For determining the mean value and standard deviation of our measured data, we first put them in blocks to reduce the autocorrelation, and then use the bootstrap-method on this data, to get a better estimate of our errors.
 
 After we have determined the expectation value of the Wilson-loops for several different $R$ and $T$, we use the nonlinear least-squares Marquardt-Levenberg algorithm built into gnuplot\citet{gnuplotdoc} to fit the data of $W(R=\text{const.}, T)$ to $c_R\exp(-dT)$. Then we can use the determined $d$ as $aV(R/a)$, and fit the potential to $aV\left(\frac{R}{a}\right)=a^2\sigma \frac{R}{a}-b\left(\frac{R}{a}\right)^{-1}+ac$.
 
