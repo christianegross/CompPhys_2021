@@ -98,7 +98,7 @@
 
 Most of the theoretical basis given here is adapted from \citet{lepagelqcd}. We want to discretise three spatial and one temporal dimension, so we need a four-dimensional lattice. The distance between any adjacent lattice points is $a$, and any point is characterized by four coordinates, $x=(x,y,z,t)$. The links between the lattice sites are characterized by an additional direction $\hat{\mu}$, and we only consider the forward facing links $U_\mu(x)$ going from $x$ to $x+a\hat{\mu}$. All links are represented as $SU(N)$-matrices, we simulate $N=2$ and $N=3$. Backward-facing links from $x+a\hat{\mu}$ to $x$ are represented by $U_\mu^\dagger(x)$.
 
-The simplest loop that can be formed with the links of the lattice is the plaquette \[P_{\mu\nu}(x)=\frac{1}{N}\Re\Tr\left(U_\mu(x)U_\nu(x+a\mu)U_\mu^\dagger(x+a\nu)U^\dagger_\nu(x)\right)\] a simple square. These link variables $U_\mu$ are connected to the continuum in the following way. The Yang Mills action in the continuum reads as \[S=\int\dd{^4x}\dfrac{1}{2}\sum\limits_{\mu,\nu}\tr F_{\mu\nu}²(x)\] where the field tensor\[F_{\mu\nu}=\partial_\mu A_\nu-\partial_\nu A_\mu+\i g [A_\mu,A_\nu]\] is a traceless N$\times$N hermitian matrix. The standard discretization connects the gauge fields $A_\mu$ to the link variables $U_\mu$, \[U_\mu(x)=\mathcal{P}\exp(-\i\int\limits_{x}^{x+a\hat{\mu}}g A\cdot\dd{y})\]
+The simplest loop that can be formed with the links of the lattice is the plaquette \[P_{\mu\nu}(x)=\frac{1}{N}\Re\tr\left(U_\mu(x)U_\nu(x+a\mu)U_\mu^\dagger(x+a\nu)U^\dagger_\nu(x)\right)\] a simple square. These link variables $U_\mu$ are connected to the continuum in the following way. The Yang Mills action in the continuum reads as \[S=\int\dd{^4x}\dfrac{1}{2}\sum\limits_{\mu,\nu}\tr F_{\mu\nu}²(x)\] where the field tensor\[F_{\mu\nu}=\partial_\mu A_\nu-\partial_\nu A_\mu+\i g [A_\mu,A_\nu]\] is a traceless N$\times$N hermitian matrix. The standard discretization connects the gauge fields $A_\mu$ to the link variables $U_\mu$, \[U_\mu(x)=\mathcal{P}\exp(-\i\int\limits_{x}^{x+a\hat{\mu}}g A\cdot\dd{y})\]
 Here the $\mathcal{P}$-Operator orders the integrand along the path from $x$ to $x+a\hat{\mu}$.
 
 The discretized version of the Yang Mills action is defined as being proportional to the ordered sum over all plaquettes, \[S=\frac{2N}{g^2}\sum_{x}\sum_{\mu>\nu}\left(1-P_{\mu\nu}(x)\right)+\mathcal{O}(a^2)\]
@@ -118,7 +118,7 @@ A general loop around a closed contour $\mathcal{C}$ is also called Wilson loop 
 \begin{tikzpicture}[y=0.5cm, x=0.5cm,
 roundnode/.style={circle, draw=white, thick, minimum size=1pt},
 ]
-\node[roundnode]at(-4.0, 1)(equation){$W(R\times T)=\frac{1}{N}\Re\Tr$};
+\node[roundnode]at(-4.0, 1)(equation){$W(R\times T)=\frac{1}{N}\Re\tr$};
 \node[roundnode]at(2.5, -0.8)(R){R};
 \draw[arrow] (2,-0.8)--(0,-0.8);
 \draw[arrow] (3,-0.8)--(5,-0.8);
@@ -172,7 +172,7 @@ The code and data from our simulations can be found in the git-repo \url{https:/
 We use a Metropolis-Hastings algorithm to simulate the lattice, i.e. we go through every link of the lattice, transform the link $U_\mu(x)\to U_\mu'(x)=MU_\mu(x)$, where $M$ is a randomly generated SU(N) matrix, and accept the change with the probability $\min[1, \exp(-\beta(S-S'))]$. We use the gnu scientific library for the calculations with complex numbers and matrices.
 
 The difference in the action does not depend on the whole lattice, but only on \begin{align*}
-\Delta S(x, \mu)=&S-S'=\frac{1}{N}\Re\Tr\left\lbrace (U_\mu(x)-U'_\mu(x))\Gamma_\mu(x)\right\rbrace\\
+\Delta S(x, \mu)=&S-S'=\frac{1}{N}\Re\tr\left\lbrace (U_\mu(x)-U'_\mu(x))\Gamma_\mu(x)\right\rbrace\\
 %
 \Gamma_\mu(x)=&\sum_{\mu\neq\nu}U_\nu(x+a\mu)U_\mu^\dagger(x+a\nu)U_\nu^\dagger(x)\\
 %
@@ -217,7 +217,7 @@ All measurements were done on an $8^4$ lattice.
 	\label{fig:plaquettethermsu3}
 \end{figure} 
 
-The average value for the plaquette during thermalisation is plotted in fig.~\ref{fig:comparisoncreutz} for SU(2)-matrices and in fig.~\ref{fig:plaquettethermsu3} for SU(3). In order to be able to compare our results to the different definition of the plaquette of \citet{creutzsu2}, we have plotted $1-\langle P\rangle$. Per step, we did 10 Metropolis-updates of each link in the lattice, and the plaquette was calculated directly after one update. The contribution for each link $U_\mu(x)$ was calculated as $\sum_{\mu>\nu}P_{\mu\nu}(x)$.
+The average value for the plaquette during thermalisation is plotted in fig.~\ref{fig:comparisoncreutz} for SU(2)-matrices, from a cold start, i.\,e.\, the entire lattice starting with unity matrices, and in fig.~\ref{fig:plaquettethermsu3} for SU(3) and a hot start. In order to be able to compare our results to the different definition of the plaquette of \citet{creutzsu2}, we have plotted $1-\langle P\rangle$. Per step, we did 10 Metropolis-updates of each link in the lattice, and the plaquette was calculated directly after one update. The contribution for each link $U_\mu(x)$ was calculated as $\sum_{\mu>\nu}P_{\mu\nu}(x)$.
 
 %-autocorrelation, maybe one picture
 
@@ -231,7 +231,7 @@ The average value for the plaquette during thermalisation is plotted in fig.~\re
 	\label{fig:plaquettetotal}
 \end{figure}
 
-After the thermalisation, we did our measurements on the lattice. All measurements were done after 100 thermalisation steps, with the number of measurements between $1024$ and $8192$ per $\beta$. The analysis was done with a binsize of $32$ and $200$ bootstrapsamples. 
+After the thermalisation, we did our measurements on the lattice. All measurements were done after 100 thermalisation steps, with the number of measurements between $2048$ and $8192$ per $\beta$. The analysis was done with a binsize of $32$ and $200$ bootstrapsamples. 
 
 The average plaquette for different $\beta$ and SU(2) and SU(3) is shown in fig.~\ref{fig:plaquettetotal}. Here we measured the plaquette by calculating $\sum_{\mu>\nu}P_{\mu\nu}(x)$ for each lattice site $x$, and have also plotted the expectations for strong and weak coupling in SU(2) as given by \citet{creutzsu2}.
 
@@ -242,7 +242,7 @@ The average plaquette for different $\beta$ and SU(2) and SU(3) is shown in fig.
 	\label{fig:wilsonloopbeta5.5su3}
 \end{figure} 
 
-We measured the Wilson-loops for $R=(1,2,3,4)$ and $T=(1,2,3,4)$ for all points in the lattice, and the measurement for $W(R, T)$ was an average of $W(R,0,0,T)+W(0,R,0,T)+W(0,0,R,T)$ in the entire lattice. For each $\beta$, we fitted falling exponential curves to the datasets for constant $R$ and varying $T$. One such dataset with fits is shown in fig.~\ref{fig:wilsonloopbeta5.5su3}. For all fits we use the nonlinear least-squares Marquardt-Levenberg algorithm built into gnuplot (\citet{gnuplotdoc}).
+We measured the Wilson-loops for $R=(1,2,3,4)$ and $T=(1,2,3,4)$ for all points in the lattice. For each $\beta$, we fitted falling exponential curves to the datasets for constant $R$ and varying $T$. One such dataset with fits is shown in fig.~\ref{fig:wilsonloopbeta5.5su3}. For all fits we used the nonlinear least-squares Marquardt-Levenberg algorithm built into gnuplot (\citet{gnuplotdoc}).
 
 %how to extract V(r) from W(r). fit values: maybe in appendix?
 

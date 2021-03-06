@@ -16,8 +16,8 @@ set style line 10 lc 5 lt 7 pt 12
 PI=3.14159
 
 
-beta=5.5
-dim=3
+beta=4.2
+dim=2
 
 wilsonloopfile=sprintf("../data/wilsonsu%dbeta%.3f.dat", dim, beta)
 potentialfile=sprintf("../data/potentialsu%dbeta%.3f.dat", dim, beta)
@@ -164,7 +164,8 @@ set yrange [0:4]
 plot '../data/potentialsu2beta1.600.dat' using 1:4:5 w yerrorbars ls 1 title '$\beta=$1.6', potentialtot(x, a162, b162, c162) ls 1 title '',\
 	 '../data/potentialsu2beta2.000.dat' using 1:4:5 w yerrorbars ls 2 title '$\beta=$2.0', potentialtot(x, a202, b202, c202) ls 2 title '',\
 	 '../data/potentialsu2beta3.200.dat' using 1:4:5 w yerrorbars ls 3 title '$\beta=$3.2', potentialtot(x, a322, b322, c322) ls 3 title '',\
-	 '../data/potentialsu2beta5.500.dat' using 1:4:5 w yerrorbars ls 4 title '$\beta=$5.5', potentialtot(x, a552, b552, c552) ls 4 title ''
+	 '../data/potentialsu2beta4.200.dat' using 1:4:5 w yerrorbars ls 4 title '$\beta=$4.2', potentialtot(x, a422, b422, c422) ls 4 title '',\
+	 '../data/potentialsu2beta5.500.dat' using 1:4:5 w yerrorbars ls 5 title '$\beta=$5.5', potentialtot(x, a552, b552, c552) ls 5 title ''
 unset yrange
 
 set out 'potentialsu3report.tex'
