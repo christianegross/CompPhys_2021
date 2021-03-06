@@ -100,10 +100,10 @@ unset xrange
 unset yrange 
 set xlabel "T/a"
 set ylabel "W(R/a, T/a)"
-plot wilsonloopfile u (($1==1)&&($5==32)?$2:1/0):3:4 w yerrorbars ls 1 title "R=1", v1(x) ls 1 title "",\
-	 wilsonloopfile u (($1==2)&&($5==32)?$2:1/0):3:4 w yerrorbars  ls 2 title "R=2", v2(x) ls 2 title "",\
-	 wilsonloopfile u (($1==3)&&($5==32)?$2:1/0):3:4 w yerrorbars  ls 3 title "R=3", v3(x) ls 3 title "",\
-	 wilsonloopfile u (($1==4)&&($5==32)?$2:1/0):3:4 w yerrorbars  ls 4 title "R=4", v4(x) ls 4 title ""
+plot wilsonloopfile u (($1==1)&&($5==32)?$2:1/0):3:4 w yerrorbars ls 1 title "R=1a", v1(x) ls 1 title "",\
+	 wilsonloopfile u (($1==2)&&($5==32)?$2:1/0):3:4 w yerrorbars  ls 2 title "R=2a", v2(x) ls 2 title "",\
+	 wilsonloopfile u (($1==3)&&($5==32)?$2:1/0):3:4 w yerrorbars  ls 3 title "R=3a", v3(x) ls 3 title "",\
+	 wilsonloopfile u (($1==4)&&($5==32)?$2:1/0):3:4 w yerrorbars  ls 4 title "R=4a", v4(x) ls 4 title ""
 	 
 	 
 set xlabel "R/a"
@@ -122,7 +122,7 @@ set output 'comparisoncreutzreport.tex'
 set key horizontal title '$\beta=$'
 set yrange [0.1:1.1]
 set xlabel 'steps'
-set ylabel '$\langle P\rangle$'
+set ylabel '1-$\langle P\rangle$'
 plot for [betap=12:32:4] sprintf('../data/beta%d.dat', betap) using 1:(1-$3) linestyle ((betap-8)/4) w linespoints title sprintf('%.1f', betap/10.0)
 #use betap instead of beta so wilsonloops still work
 unset yrange
@@ -130,8 +130,9 @@ set key vertical top right title ''
 
 	 
 set out 'su3plaquettereport.tex'
-unset xrange
+set xrange [0:500]
 set yrange[0.4:0.9]
+set ylabel '$\langle P\rangle$'
 plot '../data/su3beta5p5fixed.dat' u 1:3 ls 1 w linespoints title '$\beta=5.5$'
 unset xrange 
 unset yrange
@@ -141,10 +142,10 @@ set out sprintf('wilsonloopsu%dbeta%2dreport.tex', dim, beta*10)
 print(sprintf('wilsonloopsu%dbeta%2dreport.tex', dim, beta*10))
 set xlabel '$T/a$'
 set ylabel '$W(R/a, T/a)$'
-plot wilsonloopfile u (($1==1)&&($5==32)?$2:1/0):3:4 w yerrorbars ls 1 title 'R=1', v1(x) ls 1 title '',\
-	 wilsonloopfile u (($1==2)&&($5==32)?$2:1/0):3:4 w yerrorbars  ls 2 title 'R=2', v2(x) ls 2 title '',\
-	 wilsonloopfile u (($1==3)&&($5==32)?$2:1/0):3:4 w yerrorbars  ls 3 title 'R=3', v3(x) ls 3 title '',\
-	 wilsonloopfile u (($1==4)&&($5==32)?$2:1/0):3:4 w yerrorbars  ls 4 title 'R=4', v4(x) ls 4 title ''
+plot wilsonloopfile u (($1==1)&&($5==32)?$2:1/0):3:4 w yerrorbars ls 1 title '$R=1a$', v1(x) ls 1 title '',\
+	 wilsonloopfile u (($1==2)&&($5==32)?$2:1/0):3:4 w yerrorbars  ls 2 title '$R=2a$', v2(x) ls 2 title '',\
+	 wilsonloopfile u (($1==3)&&($5==32)?$2:1/0):3:4 w yerrorbars  ls 3 title '$R=3a$', v3(x) ls 3 title '',\
+	 wilsonloopfile u (($1==4)&&($5==32)?$2:1/0):3:4 w yerrorbars  ls 4 title '$R=4a$', v4(x) ls 4 title ''
 
 
 set out sprintf('potentialsu%dbeta%2dreport.tex', dim, beta*10)	 
@@ -159,10 +160,12 @@ potentialtot(x, a, b, c)=a*x-b/x+c
 load "potentialparameters.cfg"
 
 set out 'potentialsu2report.tex'
+set yrange [0:4]
 plot '../data/potentialsu2beta1.600.dat' using 1:4:5 w yerrorbars ls 1 title '$\beta=$1.6', potentialtot(x, a162, b162, c162) ls 1 title '',\
 	 '../data/potentialsu2beta2.000.dat' using 1:4:5 w yerrorbars ls 2 title '$\beta=$2.0', potentialtot(x, a202, b202, c202) ls 2 title '',\
 	 '../data/potentialsu2beta3.200.dat' using 1:4:5 w yerrorbars ls 3 title '$\beta=$3.2', potentialtot(x, a322, b322, c322) ls 3 title '',\
 	 '../data/potentialsu2beta5.500.dat' using 1:4:5 w yerrorbars ls 4 title '$\beta=$5.5', potentialtot(x, a552, b552, c552) ls 4 title ''
+unset yrange
 
 set out 'potentialsu3report.tex'
 plot '../data/potentialsu3beta2.000.dat' using 1:4:($5/100.0) w yerrorbars ls 1 title '$\beta=$2.0', potentialtot(x, a203, b203, c203) ls 1 title '',\
@@ -173,12 +176,24 @@ unset xrange
 set out 'stringtensionreport.tex'
 set xlabel '$\beta$'
 set ylabel '$a^2\sigma$'
-plot potentialtotalfile u (($13==2)?$11:1/0):2:3 ls 1 title 'SU(2)',\
-	 potentialtotalfile u (($13==3)?$11:1/0):2:3 ls 2 title 'SU(3)'
+set yrange [0:2]
+set xrange [1.5:6]
+plot potentialtotalfile u (($13==2)?$11:1/0):2:3 w yerrorbars ls 1 title 'SU(2)',\
+	 potentialtotalfile u (($13==3)?$11:1/0):2:3 w yerrorbars ls 2 title 'SU(3)'
+unset yrange
+unset xrange
 
 set out 'plaquettereport.tex'
 set ylabel '$\langle P\rangle$'
+set xrange [1.5:6]
+set yrange[0:1]
+set key bottom right 
+
+strong(x)=x/4
+weak(x)=1-3/(4*x)
+
 plot plaquettetotalfile using (($1==2&&$3==32)?$2:1/0):4:5 w yerrorbars ls 1 title 'SU(2)',\
-	 plaquettetotalfile using (($1==3&&$3==32)?$2:1/0):4:5 w yerrorbars ls 2 title 'SU(3)'
-	 
+	 plaquettetotalfile using (($1==3&&$3==32)?$2:1/0):4:5 w yerrorbars ls 2 title 'SU(3)',\
+	 strong(x) ls 3 dt 1 title 'strong coupling SU(2)',\
+	 weak(x) ls 4 dt 2 title	 'weak coupling SU(2)'	 
 set output

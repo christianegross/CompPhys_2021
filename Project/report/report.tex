@@ -194,81 +194,108 @@ The Code is furthermore able to process diagonal paths and therefor non integer 
 
 For determining the mean value and standard deviation of our measured data, we first put them in blocks to reduce the autocorrelation, and then use the bootstrap-method on this data, to get a better estimate of our errors.
 
-After we have determined the expectation value of the Wilson-loops for several different $R$ and $T$, we use the nonlinear least-squares Marquardt-Levenberg algorithm built into gnuplot\citet{gnuplotdoc} to fit the data of $W(R=\text{const.}, T)$ to $c_R\exp(-dT)$. Then we can use the determined $d$ as $aV(R/a)$, and fit the potential to $aV\left(\frac{R}{a}\right)=a^2\sigma \frac{R}{a}-b\left(\frac{R}{a}\right)^{-1}+ac$.
+After we have determined the expectation value of the Wilson-loops for several different $R$ and $T$, we fit the data of $W(R=\text{const.}, T)$ to $c_R\exp(-dT)$. Then we can use the determined $d$ as $aV(R/a)$, and fit the potential to $aV\left(\frac{R}{a}\right)=a^2\sigma \frac{R}{a}-b\left(\frac{R}{a}\right)^{-1}+ac$.
 
 \section{Results}
+
+All measurements were done on an $8^4$ lattice.
 
 %pictures
  \begin{figure}
  	\centering
 \input{comparisoncreutzreport.tex}
-\label{fig:comparisoncreutz}
 \caption[Behaviour of the plaquette for SU(2)]{Behaviour of the average plaquette during thermalisation for SU(2)}
+\label{fig:comparisoncreutz}
 \end{figure} 
 
--average value of plaquette against number of steps for SU(2)->comparison to \citet{creutzsu2}, one picture
+%-average value of plaquette against number of steps for SU(2)->comparison to \citet{creutzsu2}, one picture
 
 \begin{figure}
 	\centering
 	\input{su3plaquettereport.tex}
-	\label{fig:plaquettethermsu3}
 	\caption[Behaviour of the plaquette for SU(3)]{Behaviour of the average plaquette during thermalisation for SU(3), $\beta=5.5$}
+	\label{fig:plaquettethermsu3}
 \end{figure} 
 
--autocorrelation, maybe one picture
+The average value for the plaquette during thermalisation is plotted in fig.~\ref{fig:comparisoncreutz} for SU(2)-matrices and in fig.~\ref{fig:plaquettethermsu3} for SU(3). In order to be able to compare our results to the different definition of the plaquette of \citet{creutzsu2}, we have plotted $1-\langle P\rangle$. Per step, we did 10 Metropolis-updates of each link in the lattice, and the plaquette was calculated directly after one update. The contribution for each link $U_\mu(x)$ was calculated as $\sum_{\mu>\nu}P_{\mu\nu}(x)$.
 
--W(r,t) for different t, one picture
+%-autocorrelation, maybe one picture
+
+%-W(r,t) for different t, one picture
+
+
+\begin{figure}
+	\centering
+	\input{plaquettereport.tex}
+	\caption[Mean values of the plaquette]{Mean values of the plaquette for SU(2) and SU(3) for different $\beta$. The relative error is $10^{-5}$ or smaller.}
+	\label{fig:plaquettetotal}
+\end{figure}
+
+After the thermalisation, we did our measurements on the lattice. All measurements were done after 100 thermalisation steps, with the number of measurements between $1024$ and $8192$ per $\beta$. The analysis was done with a binsize of $32$ and $200$ bootstrapsamples. 
+
+The average plaquette for different $\beta$ and SU(2) and SU(3) is shown in fig.~\ref{fig:plaquettetotal}. Here we measured the plaquette by calculating $\sum_{\mu>\nu}P_{\mu\nu}(x)$ for each lattice site $x$, and have also plotted the expectations for strong and weak coupling in SU(2) as given by \citet{creutzsu2}.
 
 \begin{figure}
 	\centering
 	\input{wilsonloopsu3beta55report.tex}
-	\label{fig:wilsonloopbeta5.5su3}
 	\caption[Different Wilson loops for SU(3), $\beta=5.5$]{Wilson loops for several $R$ and $T$ including fits to a falling exponential function for SU(3), $\beta=5.5$}
+	\label{fig:wilsonloopbeta5.5su3}
 \end{figure} 
 
-how to extract V(r) from W(r). fit values: maybe in appendix?
+We measured the Wilson-loops for $R=(1,2,3,4)$ and $T=(1,2,3,4)$ for all points in the lattice, and the measurement for $W(R, T)$ was an average of $W(R,0,0,T)+W(0,R,0,T)+W(0,0,R,T)$ in the entire lattice. For each $\beta$, we fitted falling exponential curves to the datasets for constant $R$ and varying $T$. One such dataset with fits is shown in fig.~\ref{fig:wilsonloopbeta5.5su3}. For all fits we use the nonlinear least-squares Marquardt-Levenberg algorithm built into gnuplot (\citet{gnuplotdoc}).
+
+%how to extract V(r) from W(r). fit values: maybe in appendix?
 
 
 \begin{figure}
 	\centering
 	\input{potentialsu2report.tex}
-	\label{fig:fittedpotentialssu2}
 	\caption[Potentials obtained using SU(2)]{Potential values obtained from fitting to the Wilson loops and fit to potential for SU(2)}
+	\label{fig:fittedpotentialssu2}
 \end{figure} 
 
 
 \begin{figure}
 	\centering
 	\input{potentialsu3report.tex}
-	\label{fig:fittedpotentialssu3}
 	\caption[Potentials obtained using SU(3)]{Potential values obtained from fitting to the Wilson loops and fit to potential for SU(3), the error bars are $1/100$ the size of the obtained error.}
+	\label{fig:fittedpotentialssu3}
 \end{figure} 
 
-\begin{figure}
-	\centering
-	\input{plaquettereport.tex}
-	\label{fig:plaquettetotal}
-	\caption[Mean values of the plaquette]{Mean values of the plaquette for SU(2) and SU(3) for different $\beta$. The relative error is $10^{-5}$ or smaller.}
-\end{figure}
+We use the parameters obtained from the Wilson-loops as values for the potential $aV(R/a)$. To these points, we fit $aV\left(\frac{R}{a}\right)=a^2\sigma \frac{R}{a}-b\left(\frac{R}{a}\right)^{-1}+ac$. The resulting potentials for SU(2) are shown in fig.~\ref{fig:fittedpotentialssu2}, those for SU(3) in fig.~\ref{fig:fittedpotentialssu3}.
+
 
 \begin{figure}
 	\centering
 	\input{stringtensionreport.tex}
-	\label{fig:stringtension}
 	\caption[String tension obtained from potential]{String tension obtained as the linear slope of the potentials}
+	\label{fig:stringtension}
 \end{figure}
 
+The linear parts of the potentials correspond to the string tensions, which are shown in fig.~\ref{fig:stringtension}.
 
-fit to potential, for one temperature each for SU(2) and SU(3)
+%fit to potential, for one temperature each for SU(2) and SU(3)
 
 \section{Discussion}
 
-Differences between SU(2) and SU(3)? 
-String tensions, also discuss different couplings/beta?->more figures, tables needed.
+Thermalisation of plaquette in SU(2) reproduces \citet{creutzsu2} nicely, average value for $\beta=5.5$ in SU(3) fits well to expectation from \citet{lepagelqcd}.
 
-Areas for improvement: In Wilson-loops: also non-integer R, then also different orders of directions?
-Link smearing
-bigger lattices: a lot more computation time needed.
+Average plaquette rises with $\beta$, i\.e\. with smaller coupling, however more slowly for SU(3). SU(2): Fits to predicted strong coupling for $\beta=1.6$ and $2.0$, $\beta=3.2$ seems to be a mixture, and $\beta=5.5$ fits to weak coupling.
+
+Most Wilson-loops have ncie exponential curves, however some problems with negative values for large $R$. 
+
+Nice potential except for $\beta=2.0$ for SU(3), Coulob-part quite small, so often not visible in plot.
+
+String tension falls with weaker coupling.
+
+Get $a$ from $a^2\sigma$ with values from \cite{Cardoso_2011}.
+%
+%Differences between SU(2) and SU(3)? 
+%String tensions, also discuss different couplings/beta?->more figures, tables needed.
+%
+%Areas for improvement: In Wilson-loops: also non-integer R, then also different orders of directions?
+%Link smearing
+%bigger lattices: a lot more computation time needed.
 
 \section{Summary}
 
