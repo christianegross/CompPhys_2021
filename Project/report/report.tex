@@ -91,6 +91,11 @@
 %\tableofcontents
 
 \section{Introduction}
+%
+%What are we doing? Extracting the potential between static quarks interacting under Yang-Mills theory. 
+%Why is that important? The potential shows us whether to expect confinement, explaining why free quarks are not/cannot be observed.
+%Why SU(n)? SU(3) simulates the strong interaction, however SU(2) is easier and faster to calculate.
+%Why are we interested in this lattice/this action? Basis for the spectra of glueballs, a millenium problem.
 
 %We want to calculate the potential between two infinitely heavy quarks. To do this, we first simulate an empty lattice and then use the fact that static quarks do not vary their location when the time is varied.
 
@@ -278,7 +283,9 @@ The linear parts of the potentials correspond to the string tensions, which are 
 
 \section{Discussion}
 
-Thermalisation of plaquette in SU(2) reproduces \citet{creutzsu2} nicely, average value for $\beta=5.5$ in SU(3) fits well to expectation from \citet{lepagelqcd}.
+Comparison of fig.~\ref{fig:comparisoncreutz} with \citet{creutzsu2} shows our values are stabilizing at the same values, so we have implemented the action correctly for SU(2) and can proceed with the rest of our measurements. The same is true for fig.~\ref{fig:plaquettethermsu3}, the plaquette approaches a value of $0.5$, the same as predicted by \citet{lepagelqcd}. 
+
+%Thermalisation of plaquette in SU(2) reproduces \citet{creutzsu2} nicely, average value for $\beta=5.5$ in SU(3) fits well to expectation from \citet{lepagelqcd}.
 
 Average plaquette rises with $\beta$, i\.e\. with smaller coupling, however more slowly for SU(3). SU(2): Fits to predicted strong coupling for $\beta=1.6$ and $2.0$, $\beta=3.2$ seems to be a mixture, and $\beta=5.5$ fits to weak coupling.
 
