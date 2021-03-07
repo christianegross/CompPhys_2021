@@ -1,4 +1,4 @@
-%!TeX spellcheck = en_UK
+%!TeX spellcheck = en_GB
 % ****** Start of file templateForReport.tex ******
 
 % TeX'ing this file requires that you have all prerequisites
@@ -76,7 +76,7 @@
              %  but any date may be explicitly specified
 
 \begin{abstract}
-	We measure the confinement that arises when simulating a Lattice with the Yang-Mills action, by approximating the lattice links with SU(N) matrices. It is assumed that the confinement arises from using non abelian gauge fields.
+	We measure the confinement that arises when simulating a Lattice with the Yang-Mills action, by approximating the lattice links with SU(N) matrices. It is known that the confinement arises from using non abelian gauge fields. The confinement is characterized by the linear rise of the potential between two quarks.
 %  An article usually includes an abstract, a concise summary of the work
 %  covered at length in the main body of the article.
 %  \begin{description}
@@ -92,6 +92,12 @@
 %\tableofcontents
 
 \section{Introduction}
+
+Quarks as fundamental particles have been postulated since the 1960s, however no free quarks have ever been observed, only colourless bound quark states have been observed. QCD attempts to describe this confinement, however no analytical proof of this description has been found. Analytically solving this would be one of the steps to solving the connected millenium problem of the Yang-Mills spectrum. Numerically, confinement has been shown, and this report aims to reproduce these findings for the easiest case of static quarks, which do not change location.
+This corresponds to infinitely heavy quarks. 
+
+We discretize the spacetime as a lattice, and use observables calculated with this lattice to extract the potential for various distances.
+
 %
 %What are we doing? Extracting the potential between static quarks interacting under Yang-Mills theory. 
 %Why is that important? The potential shows us whether to expect confinement, explaining why free quarks are not/cannot be observed.
@@ -110,7 +116,7 @@ Here the $\mathcal{P}$-Operator orders the integrand along the path from $x$ to 
 The discretized version of the Yang Mills action is defined as being proportional to the ordered sum over all plaquettes, \[S=\frac{2N}{g^2}\sum_{x}\sum_{\mu>\nu}\left(1-P_{\mu\nu}(x)\right)+\mathcal{O}(a^2)\]
 and $\beta=\frac{2N}{g^2}$ is the coupling strength. We are intested in observables of the form $\langle O\rangle=\frac{1}{Z}\int \dd \vec{o} O(\vec{o}) \exp(-\beta S(\vec{o}))$, with $ Z=\int \dd \vec{o} O(\vec{o}) \exp(-\beta S(\vec{o}))$ and $\vec{o}$ a possible lattice configuration. Generating our ensembles so they are $\sim \frac{1}{Z} \exp(-\beta S(\vec{o}))$ allows the expectation value to be calcilated as a simple mean.
 
-\citet{creutzsu2} says the expectation value for the plaquette goes like $\langle P \rangle=\beta/4$ for strong coupling, i.\,e.\, $\beta\to 0$ and like $\langle P \rangle =1-\frac{3}{4\beta}$ for weak coupling, i.\,e.\, $\beta\to \infty$.
+\citet{creutzsu2} says the expectation value for the plaquette for SU(2) goes like $\langle P \rangle=\beta/4$ for strong coupling, i.\,e.\, $\beta\to 0$ and like $\langle P \rangle =1-\frac{3}{4\beta}$ for weak coupling, i.\,e.\, $\beta\to \infty$.
 
 %Some citation \citet{gsldoc_complex}
 
@@ -177,7 +183,7 @@ The potential is expected to have the form $V(R)=\sigma R-\frac{b}{R}+c$, where 
 
 The code and data from our simulations can be found in the git-repo \url{https://github.com/christianegross/CompPhys_2021} in the folder \texttt{Project}.
 
-We use a Metropolis-Hastings algorithm to simulate the lattice, i.e. we go through every link of the lattice, transform the link $U_\mu(x)\to U_\mu'(x)=MU_\mu(x)$, where $M$ is a randomly generated SU(N) matrix, and accept the change with the probability $\min[1, \exp(-\beta(S-S'))]$. We use the gnu scientific library for the calculations with complex numbers and matrices.
+We use a Metropolis-Hastings algorithm to simulate the lattice, i.e. we go through every link of the lattice, transform the link $U_\mu(x)\to U_\mu'(x)=MU_\mu(x)$, where $M$ is a randomly generated SU(N) matrix, and accept the change with the probability $\min[1, \exp(-\beta(S-S'))]$. We use the gnu scientific library (\citet{gsldoc_total}) for the calculations with complex numbers and matrices.
 
 The difference in the action does not depend on the whole lattice, but only on \begin{align*}
 \Delta S(x, \mu)=&S-S'=\frac{1}{N}\Re\tr\left\lbrace (U_\mu(x)-U'_\mu(x))\Gamma_\mu(x)\right\rbrace\\
@@ -272,7 +278,7 @@ We measured the Wilson-loops for $R=(1,2,3,4)$ and $T=(1,2,3,4)$ for all points 
 	\label{fig:fittedpotentialssu3}
 \end{figure} 
 
-We use the parameters obtained from the Wilson-loops as values for the potential $aV(R/a)$. To these points, we fit $aV\left(\frac{R}{a}\right)=a^2\sigma \frac{R}{a}-b\left(\frac{R}{a}\right)^{-1}+ac$. The resulting potentials for SU(2) are shown in fig.~\ref{fig:fittedpotentialssu2}, those for SU(3) in fig.~\ref{fig:fittedpotentialssu3}.
+We use the parameters obtained from the Wilson-loops as values for the potential $aV(R/a)$. To these points, we fit $aV\left(\frac{R}{a}\right)=a^2\sigma \frac{R}{a}-b\left(\frac{R}{a}\right)^{-1}+ac$. The resulting potentials for SU(2) are shown in fig.~\ref{fig:fittedpotentialssu2}, those for SU(3) in fig.~\ref{fig:fittedpotentialssu3}. We do not show systematic errors arising from the discretization.
 
 
 \begin{figure}
@@ -283,34 +289,6 @@ We use the parameters obtained from the Wilson-loops as values for the potential
 \end{figure}
 
 The linear parts of the potentials correspond to the string tensions, which are shown in fig.~\ref{fig:stringtension}.
-
-The distances corresponding to the string tensions are listed in table~\ref{tab:scalesetting}.
-
-\begin{table}
-	\centering
-	\begin{tabular}{|r|l|r|l|}
-		\hline
-		&$\beta$&$a/\si{\femto\meter}$&$\pm\Delta a/\si{\femto\meter}$\\
-		\hline
-SU(2)	&$1.6$	&$0.428$	&$0.003$\\
-		&$2.0$	&$0.314$	&$0.022$\\
-		&$2.6$	&$0.083$	&$0.158$\\
-		&$3.2$	&$0.121$	&$0.005$\\
-		&$4.2$	&$0.040$	&$0.185$\\
-		&$5.5$	&$0.092$	&$0.001$\\
-		\hline
-SU(3) 	&$2.3$	&$0.562$	&$0.006$\\
-		&$3.0$	&$0.449$	&$0.668$\\
-		&$3.5$	&$0.451$	&$0.000$\\
-		&$4.0$	&$0.514$	&$0.035$\\
-		&$4.5$	&$0.471$	&$0.002$\\
-		&$5.5$	&$0.302$	&$0.014$\\
-		\hline
-\end{tabular}
-\caption{lattice distances determined from string tension}
-\label{tab:scalesetting}
-\end{table}
-
 %fit to potential, for one temperature each for SU(2) and SU(3)
 
 \section{Discussion}
@@ -321,21 +299,62 @@ Comparison of fig.~\ref{fig:comparisoncreutz} with \citet{creutzsu2} shows our v
 
 As can be seen in fig.~\ref{fig:plaquettetotal}, the average
  plaquette rises with $\beta$, i.\,e.\, with smaller coupling. 
-For SU(2) the predicted Fit to reproduce strong coupling holds for $\beta=1.6, 2.0$ and $\beta=2.5$.$\beta=3.2$ seems to be the crossing point towards weak coupling, and for larger values of $\beta$, i.\,e.\, $\beta=5.5$ the Fit for weak coupling gets closer to the measured values of the plaquette.
+For SU(2) the predicted function to reproduce strong coupling holds for $\beta=1.6, 2.0$ and $\beta=2.5$.$\beta=3.2$ seems to be the crossing point towards weak coupling, and for larger values of $\beta$, i.\,e.\, $\beta=5.5$ the function for weak coupling gets closer to the measured values of the plaquette.
 
-The exponential decay of the Wilson Loop with distance in time can be nicely seen in fig.~\ref{fig:wilsonloopbeta5.5su3}. For some parameter combinations there were problems fitting an exponential curve because of negative values for the Wilson loop, which arise from statistical fluctuations.
+The exponential decay of the Wilson Loop with distance in time can be nicely seen in fig.~\ref{fig:wilsonloopbeta5.5su3}. For some parameter combinations there were problems fitting an exponential curve because of negative values for the Wilson loop, which arise from statistical fluctuations. This shows us we can expect confinement in quarks.
 
 %Most Wilson-loops have ncie exponential curves, however some problems with negative values for large $R$. 
 
-Overall the fitted values for the potential reproduce the expected form nicely. This can be seen in fig.~\ref{fig:fittedpotentialssu2} and fig.~\ref{fig:fittedpotentialssu3} However for larger values of $R/a$ the errors increase, because of the before mentioned fluctuations.
+Overall the fitted values for the potential reproduce the expected form nicely. This can be seen in fig.~\ref{fig:fittedpotentialssu2} and fig.~\ref{fig:fittedpotentialssu3} However for larger values of $R/a$ the errors increase, because of the before mentioned fluctuations. In all cases we observe a contribution from the Coulomb-like part of the potential, but due to the range of $\beta$ we are plotting, it is often not visible. In some cases, probably again due to fluctuations, we are observing a Coulomb-part with the wrong sign. 
 
 %Nice potential except for $\beta=2.0$ for SU(3), Coulob-part quite small, so often not visible in plot.
 
-As expected by \citet{creutzsu2} the string tension almost follows an exponential decay as a function of $\beta$.
+As expected by \citet{creutzsu2} the string tension for SU(2) almost follows an exponential decay as a function of $\beta$.
 
 %String tension falls with weaker coupling.
 
-Get $a$ from $a^2\sigma$ with values from \cite{Cardoso_2011}.
+
+The distances corresponding to the string tensions are listed in table~\ref{tab:scalesetting}.
+
+\begin{table}[htbp]
+	\centering
+	\begin{tabular}{|r|l|r|l|}
+		\hline
+		&$\beta$&$a/\si{\femto\meter}$&$\pm\Delta a/\si{\femto\meter}$\\
+		\hline
+		SU(2)	&$1.6$	&$0.428$	&$0.003$\\
+		&$2.0$	&$0.314$	&$0.022$\\
+		&$2.6$	&$0.083$	&$0.158$\\
+		&$3.2$	&$0.121$	&$0.005$\\
+		&$4.2$	&$0.040$	&$0.185$\\
+		&$5.5$	&$0.092$	&$0.001$\\
+		\hline
+		SU(3) 	&$2.3$	&$0.562$	&$0.006$\\
+		&$3.0$	&$0.449$	&$0.668$\\
+		&$3.5$	&$0.451$	&$5\cdot 10^{-4}$\\
+		&$4.0$	&$0.514$	&$0.035$\\
+		&$4.5$	&$0.471$	&$0.002$\\
+		&$5.5$	&$0.302$	&$0.014$\\
+		\hline
+	\end{tabular}
+	\caption{lattice distances determined from string tension}
+	\label{tab:scalesetting}
+\end{table}
+
+We would expect a monotonous behaviour for the values of the string tension $a^2\sigma$ as function of $\beta$, however there are some fluctuations in the data which lead to a more erratic behaviour. This could be solved by calculating more values for the Wilson loops, including non-integer numbers, but time constraints prevented this. The very large error for $a^2\sigma$ for SU(3) and $\beta=3.0$ could be related to a change from strong to weak coupling, similar to the behaviour in SU(2). The calculated lattice spacings are in the order of $\si{\femto\meter}$, which is the order we wanted to simulate.
+
+Qualitatively, the simulations with SU(2) and SU(3) behave similarly, however the mean value of the plaquette is larger for SU(2), the slope of the potential and the calculated lattice spacing is larger for SU(3) when looking at the same beta. Physically, these correspond to completely different interactions.
+
+There are several improvements that could be done with more time:
+\begin{itemize}
+	\item We could calculate the Wilson loops for non-integer distances, like $(1,1,0)$
+	\item We could simulate an improved action, e.\,g.\, the tadpole improvement or some higher order of loops in the action, as suggested by \citet{lepagelqcd}
+	\item \citet{lepagelqcd} also suggests smearing the links, which leads to faster convergence for values of the potential
+	\item Larger lattice sizes $l$ would also improve the result, however the computation time scales roughly as $l^4$
+\end{itemize}
+
+
+%Get $a$ from $a^2\sigma$ with values from \cite{Cardoso_2011}.
 %
 %Differences between SU(2) and SU(3)? 
 %String tensions, also discuss different couplings/beta?->more figures, tables needed.
@@ -346,7 +365,11 @@ Get $a$ from $a^2\sigma$ with values from \cite{Cardoso_2011}.
 
 \section{Summary}
 
-Reproduce confinement? Yes
+We have simulated a four-dimensional lattice of size $8^4$, and have used a Metropolis-Hastings-algorithm to calculate several observables. The results for the plaquette and the Wilson-loops agree with those from the literature, for SU(2) as well as for SU(3). The measurements of the Wilson-loops yield a potential which predicts confinement, and the lattice spacings extracted from the potential slope are in the order of $\si{\femto\meter}$, which is physically reasonable. This shows that nowadays, a simple approximation of confinement can be calculated with any home computer. 
+
+
+
+%Reproduce confinement? Yes
 
 %complicated way of specifying file, but does not need absolute path and simply writing refs did not work
 \bibliography{../report/refs}
