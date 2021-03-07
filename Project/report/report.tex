@@ -57,6 +57,7 @@
 \usepackage{pgfpages}
 \usetikzlibrary{positioning, arrows}
 \usepackage{smartdiagram}%Kreisdiagramm/Flussdiagramm
+\usepackage{siunitx}   % Intelligentes Setzen von Zahlen und Einheiten
 
 %\DeclareMathOperator{\Tr}{Tr}
 \renewcommand{\Re}{\operatorname{Re}}
@@ -107,7 +108,9 @@ The simplest loop that can be formed with the links of the lattice is the plaque
 Here the $\mathcal{P}$-Operator orders the integrand along the path from $x$ to $x+a\hat{\mu}$.
 
 The discretized version of the Yang Mills action is defined as being proportional to the ordered sum over all plaquettes, \[S=\frac{2N}{g^2}\sum_{x}\sum_{\mu>\nu}\left(1-P_{\mu\nu}(x)\right)+\mathcal{O}(a^2)\]
-and $\beta=\frac{2N}{g^2}$ is the coupling strength. 
+and $\beta=\frac{2N}{g^2}$ is the coupling strength. We are intested in observables of the form $\langle O\rangle=\frac{1}{Z}\int \dd \vec{o} O(\vec{o}) \exp(-\beta S(\vec{o}))$, with $ Z=\int \dd \vec{o} O(\vec{o}) \exp(-\beta S(\vec{o}))$ and $\vec{o}$ a possible lattice configuration. Generating our ensembles so they are $\sim \frac{1}{Z} \exp(-\beta S(\vec{o}))$ allows the expectation value to be calcilated as a simple mean.
+
+\citet{creutzsu2} says the expectation value for the plaquette goes like $\langle P \rangle=\beta/4$ for strong coupling, i.\,e.\, $\beta\to 0$ and like $\langle P \rangle =1-\frac{3}{4\beta}$ for weak coupling, i.\,e.\, $\beta\to \infty$.
 
 %Some citation \citet{gsldoc_complex}
 
@@ -201,6 +204,8 @@ For determining the mean value and standard deviation of our measured data, we f
 
 After we have determined the expectation value of the Wilson-loops for several different $R$ and $T$, we fit the data of $W(R=\text{const.}, T)$ to $c_R\exp(-dT)$. Then we can use the determined $d$ as $aV(R/a)$, and fit the potential to $aV\left(\frac{R}{a}\right)=a^2\sigma \frac{R}{a}-b\left(\frac{R}{a}\right)^{-1}+ac$.
 
+The phenomenological value of the string tension $\sigma$ is known, \citet{Cardoso_2011} give it as $\sqrt{\sigma}=440\si{\mega\electronvolt}$, and thus we can estimate the lattice distande as $a/\si{\femto\meter}=\sqrt{\frac{a^2\sigma}{\sigma}}\hbar c$.
+
 \section{Results}
 
 All measurements were done on an $8^4$ lattice.
@@ -278,6 +283,33 @@ We use the parameters obtained from the Wilson-loops as values for the potential
 \end{figure}
 
 The linear parts of the potentials correspond to the string tensions, which are shown in fig.~\ref{fig:stringtension}.
+
+The distances corresponding to the string tensions are listed in table~\ref{tab:scalesetting}.
+
+\begin{table}
+	\centering
+	\begin{tabular}{|r|l|r|l|}
+		\hline
+		&$\beta$&$a/\si{\femto\meter}$&$\pm\Delta a/\si{\femto\meter}$\\
+		\hline
+SU(2)	&$1.6$	&$0.428$	&$0.003$\\
+		&$2.0$	&$0.314$	&$0.022$\\
+		&$2.6$	&$0.083$	&$0.158$\\
+		&$3.2$	&$0.121$	&$0.005$\\
+		&$4.2$	&$0.040$	&$0.185$\\
+		&$5.5$	&$0.092$	&$0.001$\\
+		\hline
+SU(3) 	&$2.3$	&$0.562$	&$0.006$\\
+		&$3.0$	&$0.449$	&$0.668$\\
+		&$3.5$	&$0.451$	&$0.000$\\
+		&$4.0$	&$0.514$	&$0.035$\\
+		&$4.5$	&$0.471$	&$0.002$\\
+		&$5.5$	&$0.302$	&$0.014$\\
+		\hline
+\end{tabular}
+\caption{lattice distances determined from string tension}
+\label{tab:scalesetting}
+\end{table}
 
 %fit to potential, for one temperature each for SU(2) and SU(3)
 
