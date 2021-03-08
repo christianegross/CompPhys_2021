@@ -16,10 +16,10 @@ set style line 10 lc 5 lt 7 pt 12
 PI=3.14159
 
 
-#set files used for plotting
-beta=4.5
+beta=2.0
 dim=3
 
+#set files used for plotting
 wilsonloopfile=sprintf("../data/wilsonsu%dbeta%.3f.dat", dim, beta)
 potentialfile=sprintf("../data/potentialsu%dbeta%.3f.dat", dim, beta)
 potentialtotalfile="../data/potentialtotal.dat"
@@ -183,13 +183,13 @@ plot '../data/potentialsu2beta1.600.dat' using 1:4:5 w yerrorbars ls 1 title '$\
 unset yrange
 
 set out 'potentialsu3report.tex'
-plot '../data/potentialsu3beta2.300.dat' using 1:4:($5/1000.0) w yerrorbars ls 2 title '$\beta=$2.3', potentialtot(x, a233, b233, c233) ls 2 title '',\
-	 '../data/potentialsu3beta3.000.dat' using 1:4:($5) w yerrorbars ls 4 title '$\beta=$3.0', potentialtot(x, a303, b303, c303) ls 4 title '',\
+plot '../data/potentialsu3beta3.000.dat' using 1:4:($5) w yerrorbars ls 4 title '$\beta=$3.0', potentialtot(x, a303, b303, c303) ls 4 title '',\
 	 '../data/potentialsu3beta3.500.dat' using 1:4:($5) w yerrorbars ls 5 title '$\beta=$3.5', potentialtot(x, a353, b353, c353) ls 5 title '',\
 	 '../data/potentialsu3beta4.000.dat' using 1:4:($5) w yerrorbars ls 6 title '$\beta=$4.0', potentialtot(x, a403, b403, c403) ls 6 title '',\
 	 '../data/potentialsu3beta4.500.dat' using 1:4:($5) w yerrorbars ls 7 title '$\beta=$4.5', potentialtot(x, a453, b453, c453) ls 7 title '',\
 	 '../data/potentialsu3beta5.500.dat' using 1:4:($5) w yerrorbars ls 3 title '$\beta=$5.5', potentialtot(x, a553, b553, c553) ls 3 title ''
 	 #'../data/potentialsu3beta2.000.dat' using 1:4:($5) w yerrorbars ls 1 title '$\beta=$2.0', potentialtot(x, a203, b203, c203) ls 1 title '',\
+	 #'../data/potentialsu3beta2.300.dat' using 1:4:($5/1000.0) w yerrorbars ls 2 title '$\beta=$2.3', potentialtot(x, a233, b233, c233) ls 2 title '',\
 	 
 unset xrange
 

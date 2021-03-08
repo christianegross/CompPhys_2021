@@ -93,7 +93,7 @@
 
 \section{Introduction}
 
-Quarks as fundamental particles have been postulated since the 1960s, however no free quarks have ever been observed, only colourless bound quark states have been observed. QCD attempts to describe this confinement, but no analytical proof of this description has been found. Analytically solving this would be one of the steps to solving the connected millenium problem of the Yang-Mills spectrum. Numerically, confinement has been shown, and this report aims to reproduce these findings for the easiest case of static quarks, which do not change location.
+Quarks as fundamental particles have been postulated since the 1960s, however no free quarks have ever been observed, only colourless bound quark states have been observed. QCD attempts to describe this confinement, but no analytical proof of this description has been given. Analytically solving this would be one of the steps to solving the connected millenium problem of the Yang-Mills spectrum. Numerically, confinement has been shown, and this report aims to reproduce these findings for the easiest case of static quarks, which do not change location.
 This corresponds to infinitely heavy quarks. More background is given by e.\,g.\, \citet{lepagelqcd} and \citet{povhparticles}.
 
 We discretize the spacetime as a lattice, and use observables calculated with this lattice to extract the potential for various distances.
@@ -110,11 +110,11 @@ We discretize the spacetime as a lattice, and use observables calculated with th
 
 Most of the theoretical basis given here is adapted from \citet{lepagelqcd}. We want to discretise three spatial and one temporal dimension, so we need a four-dimensional lattice. The distance between any adjacent lattice points is $a$, and any point is characterized by four coordinates, $x=(x,y,z,t)$. The links between the lattice sites are characterized by an additional direction $\hat{\mu}$, and we only consider the forward facing links $U_\mu(x)$ going from $x$ to $x+a\hat{\mu}$. All links are represented as $SU(N)$-matrices, we simulate $N=2$ and $N=3$. Backward-facing links from $x+a\hat{\mu}$ to $x$ are represented by $U_\mu^\dagger(x)$.
 
-The simplest loop that can be formed with the links of the lattice is the plaquette \[P_{\mu\nu}(x)=\frac{1}{N}\Re\tr\left(U_\mu(x)U_\nu(x+a\mu)U_\mu^\dagger(x+a\nu)U^\dagger_\nu(x)\right)\] a simple square. These link variables $U_\mu$ are connected to the continuum in the following way: The Yang Mills action in the continuum reads as \[S=\int\dd{^4x}\dfrac{1}{2}\sum\limits_{\mu,\nu}\tr F_{\mu\nu}²(x)\] where the field tensor\[F_{\mu\nu}=\partial_\mu A_\nu-\partial_\nu A_\mu+\i g [A_\mu,A_\nu]\] is a traceless N$\times$N hermitian matrix with $g$ the coupling strength. The standard discretization connects the gauge fields $A_\mu$ to the link variables $U_\mu$, \[U_\mu(x)=\mathcal{P}\exp(-\i\int\limits_{x}^{x+a\hat{\mu}}g A\cdot\dd{y})\]
+The simplest loop that can be formed with the links of the lattice is the plaquette \[P_{\mu\nu}(x)=\frac{1}{N}\Re\tr\left(U_\mu(x)U_\nu(x+a\hat{\mu})U_\mu^\dagger(x+a\hat{\nu})U^\dagger_\nu(x)\right)\] a simple square. These link variables $U_\mu$ are connected to the continuum in the following way: The Yang Mills action in the continuum reads as \[S=\int\dd{^4x}\dfrac{1}{2}\sum\limits_{\mu,\nu}\tr F_{\mu\nu}²(x)\] where the field tensor\[F_{\mu\nu}=\partial_\mu A_\nu-\partial_\nu A_\mu+\i g [A_\mu,A_\nu]\] is a traceless N$\times$N hermitian matrix with $g$ the coupling strength. The standard discretization connects the gauge fields $A_\mu$ to the link variables $U_\mu$, \[U_\mu(x)=\mathcal{P}\exp(-\i\int\limits_{x}^{x+a\hat{\mu}}g A\cdot\dd{y})\]
 Here the $\mathcal{P}$-Operator orders the integrand along the path from $x$ to $x+a\hat{\mu}$.
 
 The discretized version of the Yang Mills action is defined as being proportional to the ordered sum over all plaquettes, \[S=\frac{2N}{g^2}\sum_{x}\sum_{\mu>\nu}\left(1-P_{\mu\nu}(x)\right)+\mathcal{O}(a^2)\]
-and $\beta=\frac{2N}{g^2}$. We are intested in observables of the form $\langle O\rangle=\frac{1}{Z}\int \dd \vec{o} O(\vec{o}) \exp(-\beta S(\vec{o}))$, with $ Z=\int \dd \vec{o} O(\vec{o}) \exp(-\beta S(\vec{o}))$ and $\vec{o}$ a possible lattice configuration. Generating our ensembles so they are $\sim \frac{1}{Z} \exp(-\beta S(\vec{o}))$ allows the expectation value to be calcilated as a simple mean.
+and $\beta:=\frac{2N}{g^2}$. We are interested in observables of the form $\langle O\rangle=\frac{1}{Z}\int \dd \vec{o} O(\vec{o}) \exp(-\beta S(\vec{o}))$, with $ Z=\int \dd \vec{o} O(\vec{o}) \exp(-\beta S(\vec{o}))$ and $\vec{o}$ a possible lattice configuration. Generating our ensembles so they are $\sim \frac{1}{Z} \exp(-\beta S(\vec{o}))$ allows the expectation value to be calculated as a simple mean.
 
 \citet{creutzsu2} says the expectation value for the plaquette for SU(2) goes like $\langle P \rangle=\beta/4$ for strong coupling, i.\,e.\, $\beta\to 0$ and like $\langle P \rangle =1-\frac{3}{4\beta}$ for weak coupling, i.\,e.\, $\beta\to \infty$.
 
@@ -183,7 +183,7 @@ The potential is expected to have the form $V(R)=\sigma R-\frac{b}{R}+c$, where 
 
 The code and data from our simulations can be found in the git-repo \url{https://github.com/christianegross/CompPhys_2021} in the folder \texttt{Project}.
 
-We use a Metropolis-Hastings algorithm to simulate the lattice, i.\,e.\, we go through every link of the lattice, transform the link $U_\mu(x)\to U_\mu'(x)=MU_\mu(x)$, where $M$ is a randomly generated SU(N) matrix, and accept the change with the probability $\min[1, \exp(-\beta(S-S'))]$. We use the gnu scientific library (\citet{gsldoc_total}) for the calculations with complex numbers and matrices.
+We use a Metropolis-Hastings algorithm to simulate the lattice, i.\,e.\, we go through every link of the lattice, transform the link $U_\mu(x)\to U_\mu'(x)=MU_\mu(x)$, where $M$ is a randomly generated SU(N) matrix, and accept the change with the probability $\min[1, \exp(-\beta(S'-S))]$. We use the gnu scientific library (\citet{gsldoc_total}) for the calculations with complex numbers and matrices.
 
 The difference in the action does not depend on the whole lattice, but only on \begin{align*}
 \Delta S(x, \mu)=&S-S'=\frac{1}{N}\Re\tr\left\lbrace (U_\mu(x)-U'_\mu(x))\Gamma_\mu(x)\right\rbrace\\
@@ -197,7 +197,7 @@ $U_\mu(x)\Gamma_\mu(x)$ contains all plaquettes $U_\mu(x)$ is part of, and $\Gam
 
 %How to generate SU(N) Matrices: describe.
 When doing the Metropolis-updates, we aim for an acceptance rate of about $50\%$, allowing us to progress to new configurations fast. If our acceptance rate were too low, we would get stuck very easily, and if our acceptance rate were too high, we would not see enough difference after one change.
-For tuning the acceptance rate, we want to be able to specify how much our matrices $M$ differ from the unity matrix with the parameter $\epsilon$. To do so, we generate a hermitian matrix $H$   and then take the matrix $U=\mathbb{1}+i\epsilon H$ and make it a SU matrix by orthonormalizing its columns. In SU(2), we simply normalize the first column $\begin{pmatrix}z_1&z_2\end{pmatrix}^T$ by scaling with $1/(|z_1|^2+|z_2|^2)$ and then set the second column to be $\begin{pmatrix}-z_2^*&z_1^*\end{pmatrix}^T$. For SU(3) matrices, we use the Gram-Schmidt-Orthonormalization procedure, where $\langle x,y\rangle=x^Hy$, to make the second column orthonormal to the first and then calculate the third column as the complex conjugate of the crossproduct of the first two columns. The complex conjugate needs to be taken, to guarantee orthogonality to the first and second column.
+For tuning the acceptance rate, we want to be able to specify how much our matrices $M$ differ from the unity matrix with the parameter $\epsilon$. To do so, we generate a hermitian matrix $H$   and then take the matrix $M=\mathbb{1}+i\epsilon H$ and make it a SU matrix by orthonormalizing its columns. In SU(2), we simply normalize the first column $\begin{pmatrix}z_1&z_2\end{pmatrix}^T$ by scaling with $1/(|z_1|^2+|z_2|^2)$ and then set the second column to be $\begin{pmatrix}-z_2^*&z_1^*\end{pmatrix}^T$. For SU(3) matrices, we use the Gram-Schmidt-Orthonormalization procedure, where $\langle x,y\rangle=x^Hy$, to make the second column orthonormal to the first and then calculate the third column as the complex conjugate of the crossproduct of the first two columns. The complex conjugate needs to be taken, to guarantee orthogonality to the first and second column.
 
 For measuring the observables, we assume periodic boundary conditions in our lattice. The coordinates of the respective neighbours relative to the current position are set in an array, to simplify calculations of the Plaquette.
 
@@ -210,7 +210,7 @@ For determining the mean value and standard deviation of our measured data, we f
 
 After we have determined the expectation value of the Wilson loops for several different $R$ and $T$, we fit the data of $W(R=\text{const.}, T)$ to $c_R\exp(-dT)$. Then we can use the determined $d$ as $aV(R/a)$, and fit the potential to $aV\left(\frac{R}{a}\right)=a^2\sigma \frac{R}{a}-b\left(\frac{R}{a}\right)^{-1}+ac$.
 
-The phenomenological value of the string tension $\sigma$ is known, \citet{Cardoso_2011} give it as $\sqrt{\sigma}=440\si{\mega\electronvolt}$, and thus we can estimate the lattice distande as $a/\si{\femto\meter}=\sqrt{\frac{a^2\sigma}{\sigma}}\hbar c$.
+The phenomenological value of the string tension $\sigma$ is known, \citet{Cardoso_2011} give it as $\sqrt{\sigma}=440\si{\mega\electronvolt}$, and thus we can estimate the lattice distande as $a=\sqrt{\frac{a^2\sigma}{\sigma}}\hbar c$.
 
 \section{Results}
 
@@ -278,7 +278,7 @@ We measured the Wilson-loops for $R=(1,2,3,4)$ and $T=(1,2,3,4)$ for all points 
 	\label{fig:fittedpotentialssu3}
 \end{figure} 
 
-We use the parameters obtained from the Wilson-loops as values for the potential $aV(R/a)$. To these points, we fit $aV\left(\frac{R}{a}\right)=a^2\sigma \frac{R}{a}-b\left(\frac{R}{a}\right)^{-1}+ac$. The resulting potentials for SU(2) are shown in fig.~\ref{fig:fittedpotentialssu2}, those for SU(3) in fig.~\ref{fig:fittedpotentialssu3}. We neglect systematic errors arising from the discretization.
+We use the parameters obtained from the Wilson-loops as values for the potential $aV(R/a)$. To these points, we fit $aV\left(\frac{R}{a}\right)=a^2\sigma \frac{R}{a}-b\left(\frac{R}{a}\right)^{-1}+ac$. The resulting potentials for SU(2) are shown in fig.~\ref{fig:fittedpotentialssu2}, those for SU(3) in fig.~\ref{fig:fittedpotentialssu3}. We neglect systematic errors arising from the discretization. The resulting potentials for SU(3) for $\beta=2.0$ and $\beta=2.3$ are not plotted or considered further because the fit returns a negative slope.
 
 
 \begin{figure}
@@ -320,19 +320,17 @@ As expected by \citet{creutzsu2} the string tension for SU(2) almost follows an 
 		\hline
 		&$\beta$&$a/\si{\femto\meter}$&$\pm\Delta a/\si{\femto\meter}$\\
 		\hline
-		SU(2)	&$1.6$	&$0.428$	&$0.003$\\
-		&$2.0$	&$0.314$	&$0.022$\\
-		&$2.6$	&$0.083$	&$0.158$\\
-		&$3.2$	&$0.121$	&$0.005$\\
-		&$4.2$	&$0.040$	&$0.185$\\
-		&$5.5$	&$0.092$	&$0.001$\\
-		\hline
-		SU(3) 	&$2.3$	&$0.562$	&$0.006$\\
-		&$3.0$	&$0.449$	&$0.668$\\
-		&$3.5$	&$0.451$	&$5\cdot 10^{-4}$\\
-		&$4.0$	&$0.514$	&$0.035$\\
-		&$4.5$	&$0.471$	&$0.002$\\
-		&$5.5$	&$0.302$	&$0.014$\\
+SU(2)	&$1.6$	&$0.430$		&$0.011$\\
+		&$2.0$	&$0.343$		&$0.013$\\
+		&$2.6$	&$0.132$		&$0.002$\\
+		&$3.2$	&$0.103$		&$0.022$\\
+		&$4.2$	&$0.082$		&$0.002$\\
+		&$5.5$	&$0.064$		&$0.002$\\\hline
+SU(3)	&$3.0$	&$0.490$		&$0.186$\\
+		&$3.5$	&$0.493$		&$0.001$\\
+		&$4.0$	&$0.521$		&$0.026$\\
+		&$4.5$	&$0.464$		&$0.006$\\
+		&$5.5$	&$0.315$		&$0.004$\\
 		\hline
 	\end{tabular}
 	\caption{lattice distances determined from string tension}
@@ -367,7 +365,7 @@ There are several improvements that could be done with more time:
 
 \section{Summary}
 
-We have simulated a four-dimensional lattice of size $8^4$, and have used a Metropolis-Hastings-algorithm to calculate several observables. The results for the plaquette and the Wilson-loops agree with those from the literature, for SU(2) as well as for SU(3). The measurements of the Wilson-loops yield a potential which predicts confinement, and the lattice spacings extracted from the potential slope are in the order of $\si{\femto\meter}$, which is physically reasonable. This shows that nowadays, a simple approximation of confinement can be calculated with any home computer. 
+We have simulated a four-dimensional lattice of size $8^4$, and have used a Metropolis-Hastings-algorithm to calculate several observables. The results for the plaquette and the Wilson loops agree with those from the literature, for SU(2) as well as for SU(3). The measurements of the Wilson loops yield a potential which predicts confinement, and the lattice spacings extracted from the potential slope are in the order of $\si{\femto\meter}$, which is physically reasonable. This shows that nowadays, a simple approximation of confinement can be calculated with any home computer. 
 
 
 

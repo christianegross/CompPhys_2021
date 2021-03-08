@@ -1,7 +1,7 @@
 %!PS-Adobe-2.0 EPSF-2.0
 %%Title: potentialsu3beta35report.tex
-%%Creator: gnuplot 5.2 patchlevel 8
-%%CreationDate: Sat Mar  6 18:26:49 2021
+%%Creator: gnuplot 5.0 patchlevel 3
+%%CreationDate: Mon Mar  8 17:22:49 2021
 %%DocumentFonts: 
 %%BoundingBox: 50 50 305 276
 %%EndComments
@@ -48,7 +48,7 @@ gnudict begin
   } if
 } def
 %
-% Gnuplot Prolog Version 5.2 (Dec 2017)
+% Gnuplot Prolog Version 5.1 (Oct 2015)
 %
 %/SuppressPDFMark true def
 %
@@ -305,7 +305,7 @@ gnudict begin
   ColR ColG ColB setrgbcolor} def
 /BoxColFill {gsave Rec PolyFill} def
 /PolyFill {gsave Density fill grestore grestore} def
-/h {rlineto rlineto rlineto closepath gsave fill grestore stroke} bind def
+/h {rlineto rlineto rlineto gsave closepath fill grestore} bind def
 %
 % PostScript Level 1 Pattern Fill routine for rectangles
 % Usage: x y w h s a XX PatternFill
@@ -438,39 +438,42 @@ systemdict /pdfmark known not {
 SDict begin [
   /Title (potentialsu3beta35report.tex)
   /Subject (gnuplot plot)
-  /Creator (gnuplot 5.2 patchlevel 8)
+  /Creator (gnuplot 5.0 patchlevel 3)
+  /Author (christiane)
 %  /Producer (gnuplot)
 %  /Keywords ()
-  /CreationDate (Sat Mar  6 18:26:49 2021)
+  /CreationDate (Mon Mar  8 17:22:49 2021)
   /DOCINFO pdfmark
 end
 } ifelse
 %
-% Support for boxed text - Ethan A Merritt Sep 2016
+% Support for boxed text - Ethan A Merritt May 2005
 %
 /InitTextBox { userdict /TBy2 3 -1 roll put userdict /TBx2 3 -1 roll put
            userdict /TBy1 3 -1 roll put userdict /TBx1 3 -1 roll put
 	   /Boxing true def } def
-/ExtendTextBox { dup type /stringtype eq
-    { Boxing { gsave dup false charpath pathbbox
+/ExtendTextBox { Boxing
+    { gsave dup false charpath pathbbox
       dup TBy2 gt {userdict /TBy2 3 -1 roll put} {pop} ifelse
       dup TBx2 gt {userdict /TBx2 3 -1 roll put} {pop} ifelse
       dup TBy1 lt {userdict /TBy1 3 -1 roll put} {pop} ifelse
       dup TBx1 lt {userdict /TBx1 3 -1 roll put} {pop} ifelse
-      grestore } if }
-    {} ifelse} def
+      grestore } if } def
 /PopTextBox { newpath TBx1 TBxmargin sub TBy1 TBymargin sub M
                TBx1 TBxmargin sub TBy2 TBymargin add L
 	       TBx2 TBxmargin add TBy2 TBymargin add L
 	       TBx2 TBxmargin add TBy1 TBymargin sub L closepath } def
 /DrawTextBox { PopTextBox stroke /Boxing false def} def
-/FillTextBox { gsave PopTextBox fill grestore /Boxing false def} def
+/FillTextBox { gsave PopTextBox 1 1 1 setrgbcolor fill grestore /Boxing false def} def
 0 0 0 0 InitTextBox
 /TBxmargin 20 def
 /TBymargin 20 def
 /Boxing false def
 /textshow { ExtendTextBox Gshow } def
 %
+% redundant definitions for compatibility with prologue.ps older than 5.0.2
+/LTB {BL [] LCb DL} def
+/LTb {PL [] LCb DL} def
 end
 %%EndProlog
 %%Page: 1 1
@@ -491,223 +494,222 @@ LCb setrgbcolor
 -63 0 V
 stroke
 LTb
-682 833 M
+682 831 M
 31 0 V
 3992 0 R
 -31 0 V
-682 962 M
+682 959 M
 31 0 V
 3992 0 R
 -31 0 V
-682 1091 M
+682 1086 M
 31 0 V
 3992 0 R
 -31 0 V
-682 1220 M
+682 1213 M
 63 0 V
 3960 0 R
 -63 0 V
 stroke
-682 1348 M
+682 1341 M
 31 0 V
 3992 0 R
 -31 0 V
-682 1477 M
+682 1468 M
 31 0 V
 3992 0 R
 -31 0 V
-682 1606 M
+682 1595 M
 31 0 V
 3992 0 R
 -31 0 V
-682 1735 M
+682 1723 M
 63 0 V
 3960 0 R
 -63 0 V
 stroke
-682 1864 M
+682 1850 M
 31 0 V
 3992 0 R
 -31 0 V
-682 1993 M
+682 1977 M
 31 0 V
 3992 0 R
 -31 0 V
-682 2122 M
+682 2105 M
 31 0 V
 3992 0 R
 -31 0 V
-682 2251 M
+682 2232 M
 63 0 V
 3960 0 R
 -63 0 V
 stroke
-682 2380 M
+682 2359 M
 31 0 V
 3992 0 R
 -31 0 V
-682 2509 M
+682 2487 M
 31 0 V
 3992 0 R
 -31 0 V
-682 2637 M
+682 2614 M
 31 0 V
 3992 0 R
 -31 0 V
-682 2766 M
+682 2741 M
 63 0 V
 3960 0 R
 -63 0 V
 stroke
-682 2895 M
+682 2868 M
 31 0 V
 3992 0 R
 -31 0 V
-682 3024 M
+682 2996 M
 31 0 V
 3992 0 R
 -31 0 V
-682 3153 M
+682 3123 M
 31 0 V
 3992 0 R
 -31 0 V
-682 3282 M
+682 3250 M
 63 0 V
 3960 0 R
 -63 0 V
 stroke
-682 3411 M
+682 3378 M
 31 0 V
 3992 0 R
 -31 0 V
-682 3540 M
+682 3505 M
 31 0 V
 3992 0 R
 -31 0 V
-682 3669 M
+682 3632 M
 31 0 V
 3992 0 R
 -31 0 V
-682 3797 M
+682 3760 M
 63 0 V
 3960 0 R
 -63 0 V
 stroke
-682 3926 M
+682 3887 M
 31 0 V
 3992 0 R
 -31 0 V
-682 4055 M
+682 4014 M
 31 0 V
 3992 0 R
 -31 0 V
-682 4184 M
+682 4142 M
 31 0 V
 3992 0 R
 -31 0 V
-682 4313 M
+682 4269 M
 63 0 V
 3960 0 R
 -63 0 V
 stroke
 682 704 M
 0 63 V
-0 3546 R
+0 3502 R
 0 -63 V
 stroke
 906 704 M
 0 31 V
-0 3578 R
+0 3534 R
 0 -31 V
 1129 704 M
 0 63 V
-0 3546 R
+0 3502 R
 0 -63 V
 stroke
 1353 704 M
 0 31 V
-0 3578 R
+0 3534 R
 0 -31 V
 1576 704 M
 0 63 V
-0 3546 R
+0 3502 R
 0 -63 V
 stroke
 1800 704 M
 0 31 V
-0 3578 R
+0 3534 R
 0 -31 V
 2023 704 M
 0 63 V
-0 3546 R
+0 3502 R
 0 -63 V
 stroke
 2247 704 M
 0 31 V
-0 3578 R
+0 3534 R
 0 -31 V
 2470 704 M
 0 63 V
-0 3546 R
+0 3502 R
 0 -63 V
 stroke
 2694 704 M
 0 31 V
-0 3578 R
+0 3534 R
 0 -31 V
 2917 704 M
 0 63 V
-0 3546 R
+0 3502 R
 0 -63 V
 stroke
 3141 704 M
 0 31 V
-0 3578 R
+0 3534 R
 0 -31 V
 3364 704 M
 0 63 V
-0 3546 R
+0 3502 R
 0 -63 V
 stroke
 3588 704 M
 0 31 V
-0 3578 R
+0 3534 R
 0 -31 V
 3811 704 M
 0 63 V
-0 3546 R
+0 3502 R
 0 -63 V
 stroke
 4035 704 M
 0 31 V
-0 3578 R
+0 3534 R
 0 -31 V
 4258 704 M
 0 63 V
-0 3546 R
+0 3502 R
 0 -63 V
 stroke
 4482 704 M
 0 31 V
-0 3578 R
+0 3534 R
 0 -31 V
 4705 704 M
 0 63 V
-0 3546 R
+0 3502 R
 0 -63 V
 stroke
 1.000 UL
 LTb
-682 4313 N
+682 4269 N
 682 704 L
 4023 0 V
-0 3609 V
+0 3565 V
 -4023 0 V
 Z stroke
 1.000 UP
 1.000 UL
 LTb
-% Begin plot #1
 1.000 UP
 1.000 UL
 LTb
@@ -717,161 +719,155 @@ LCb setrgbcolor
 1.000 UL
 LTb
 LC6 setrgbcolor
-1474 4140 M
+1474 4096 M
 591 0 V
 -591 31 R
 0 -62 V
 591 62 R
 0 -62 V
-1129 1426 M
+1129 1417 M
 -31 0 R
 62 0 V
 -62 0 R
 62 0 V
-863 716 R
-0 1 V
--31 -1 R
-62 0 V
--62 1 R
-62 0 V
-863 584 R
+863 704 R
 0 5 V
 -31 -5 R
 62 0 V
 -62 5 R
 62 0 V
-863 352 R
-0 352 V
--31 -352 R
+863 588 R
+0 110 V
+-31 -110 R
 62 0 V
--62 352 R
+-62 110 R
 62 0 V
-1129 1426 CircleF
-2023 2142 CircleF
-2917 2729 CircleF
-3811 3260 CircleF
-1769 4140 CircleF
-LTw
-% End plot #1
-% Begin plot #2
+863 -185 R
+0 1548 V
+3780 2639 M
+62 0 V
+-62 1548 R
+62 0 V
+1129 1417 CircleF
+2023 2124 CircleF
+2917 2769 CircleF
+3811 3413 CircleF
+1769 4096 CircleF
 1.000 UL
 LTb
 LCb setrgbcolor
 [] 0 setdash
-0.00 0.62 0.45 C
-682 779 M
-41 88 V
-40 78 V
-41 70 V
-41 65 V
-40 59 V
-41 55 V
-40 51 V
-41 49 V
-41 46 V
-40 44 V
-41 42 V
-41 41 V
-40 39 V
-41 38 V
+0.00 0.62 0.45 C 682 927 M
+41 59 V
+40 53 V
+41 50 V
+41 47 V
+40 45 V
+41 43 V
+40 41 V
+41 39 V
+41 39 V
+40 37 V
 41 37 V
-40 36 V
+41 36 V
+40 35 V
 41 35 V
+41 34 V
 40 34 V
 41 33 V
-41 33 V
 40 33 V
-41 31 V
+41 33 V
 41 32 V
+40 32 V
+41 32 V
+41 31 V
+40 31 V
+41 32 V
+41 31 V
+40 30 V
+41 31 V
+40 31 V
+41 30 V
+41 30 V
 40 31 V
 41 30 V
 41 30 V
 40 30 V
+41 29 V
+41 30 V
+40 30 V
+41 29 V
+40 30 V
+41 29 V
 41 30 V
 40 29 V
+41 30 V
+41 29 V
+40 29 V
+41 29 V
+41 29 V
+40 30 V
+41 29 V
+40 29 V
+41 29 V
+41 29 V
+40 29 V
+41 29 V
+41 28 V
+40 29 V
+41 29 V
+41 29 V
+40 29 V
+41 28 V
+40 29 V
+41 29 V
+41 29 V
+40 28 V
+41 29 V
+41 29 V
+40 28 V
+41 29 V
+41 28 V
+40 29 V
+41 29 V
+40 28 V
+41 29 V
+41 28 V
+40 29 V
+41 28 V
+41 29 V
+40 28 V
+41 29 V
+41 28 V
+40 29 V
+41 28 V
+40 28 V
 41 29 V
 41 28 V
 40 29 V
 41 28 V
 41 28 V
-40 28 V
+40 29 V
 41 28 V
-41 27 V
+41 28 V
+40 29 V
+41 28 V
+40 29 V
+41 28 V
+41 28 V
 40 28 V
-41 27 V
-40 27 V
-41 27 V
-41 27 V
-40 27 V
-41 26 V
-41 27 V
-40 26 V
-41 26 V
-41 27 V
-40 26 V
-41 26 V
-40 26 V
-41 26 V
-41 26 V
-40 25 V
-41 26 V
-41 26 V
-40 26 V
-41 25 V
-41 26 V
-40 25 V
-41 25 V
-40 26 V
-41 25 V
-41 25 V
-40 26 V
-41 25 V
-41 25 V
-40 25 V
-41 25 V
-41 25 V
-40 25 V
-41 25 V
-40 25 V
-41 25 V
-41 25 V
-40 25 V
-41 25 V
-41 25 V
-40 25 V
-41 25 V
-41 24 V
-40 25 V
-41 25 V
-40 24 V
-41 25 V
-41 25 V
-40 24 V
-41 25 V
-41 25 V
-40 24 V
-41 25 V
-41 24 V
-40 25 V
-41 25 V
-40 24 V
-41 25 V
-41 24 V
-40 25 V
-41 24 V
+41 29 V
 stroke
-LTw
-% End plot #2
 2.000 UL
 LTb
 LCb setrgbcolor
 [] 0 setdash
 1.000 UL
 LTb
-682 4313 N
+682 4269 N
 682 704 L
 4023 0 V
-0 3609 V
+0 3565 V
 -4023 0 V
 Z stroke
 1.000 UP
