@@ -223,10 +223,10 @@ int main(int argc, char **argv){
 	int dim=3; 							//switches between SU2 and SU3
 	double epsilon=0.38;
 	int hotstart=1;						//switches between hot(1) and cold(0) start
-	int generateensembles=1;			//turns thermalization and generation on
+	int generateensembles=0;			//turns thermalization and generation on
 	int makemeasurements=1;				//turns measurements on
 	int size=8;							// size of each dimension of the lattice
-	double beta=4.5;
+	double beta=5.5;
 	const int maxR=4,maxT=4;			//maximum Value of R and T
 	int numberofthermalizations=200;
 

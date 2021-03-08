@@ -1,7 +1,7 @@
 %!PS-Adobe-2.0 EPSF-2.0
 %%Title: wilsonloopsu3beta40report.tex
-%%Creator: gnuplot 5.2 patchlevel 8
-%%CreationDate: Sat Mar  6 18:27:31 2021
+%%Creator: gnuplot 5.0 patchlevel 3
+%%CreationDate: Mon Mar  8 17:22:40 2021
 %%DocumentFonts: 
 %%BoundingBox: 50 50 305 276
 %%EndComments
@@ -48,7 +48,7 @@ gnudict begin
   } if
 } def
 %
-% Gnuplot Prolog Version 5.2 (Dec 2017)
+% Gnuplot Prolog Version 5.1 (Oct 2015)
 %
 %/SuppressPDFMark true def
 %
@@ -305,7 +305,7 @@ gnudict begin
   ColR ColG ColB setrgbcolor} def
 /BoxColFill {gsave Rec PolyFill} def
 /PolyFill {gsave Density fill grestore grestore} def
-/h {rlineto rlineto rlineto closepath gsave fill grestore stroke} bind def
+/h {rlineto rlineto rlineto gsave closepath fill grestore} bind def
 %
 % PostScript Level 1 Pattern Fill routine for rectangles
 % Usage: x y w h s a XX PatternFill
@@ -438,39 +438,42 @@ systemdict /pdfmark known not {
 SDict begin [
   /Title (wilsonloopsu3beta40report.tex)
   /Subject (gnuplot plot)
-  /Creator (gnuplot 5.2 patchlevel 8)
+  /Creator (gnuplot 5.0 patchlevel 3)
+  /Author (christiane)
 %  /Producer (gnuplot)
 %  /Keywords ()
-  /CreationDate (Sat Mar  6 18:27:31 2021)
+  /CreationDate (Mon Mar  8 17:22:40 2021)
   /DOCINFO pdfmark
 end
 } ifelse
 %
-% Support for boxed text - Ethan A Merritt Sep 2016
+% Support for boxed text - Ethan A Merritt May 2005
 %
 /InitTextBox { userdict /TBy2 3 -1 roll put userdict /TBx2 3 -1 roll put
            userdict /TBy1 3 -1 roll put userdict /TBx1 3 -1 roll put
 	   /Boxing true def } def
-/ExtendTextBox { dup type /stringtype eq
-    { Boxing { gsave dup false charpath pathbbox
+/ExtendTextBox { Boxing
+    { gsave dup false charpath pathbbox
       dup TBy2 gt {userdict /TBy2 3 -1 roll put} {pop} ifelse
       dup TBx2 gt {userdict /TBx2 3 -1 roll put} {pop} ifelse
       dup TBy1 lt {userdict /TBy1 3 -1 roll put} {pop} ifelse
       dup TBx1 lt {userdict /TBx1 3 -1 roll put} {pop} ifelse
-      grestore } if }
-    {} ifelse} def
+      grestore } if } def
 /PopTextBox { newpath TBx1 TBxmargin sub TBy1 TBymargin sub M
                TBx1 TBxmargin sub TBy2 TBymargin add L
 	       TBx2 TBxmargin add TBy2 TBymargin add L
 	       TBx2 TBxmargin add TBy1 TBymargin sub L closepath } def
 /DrawTextBox { PopTextBox stroke /Boxing false def} def
-/FillTextBox { gsave PopTextBox fill grestore /Boxing false def} def
+/FillTextBox { gsave PopTextBox 1 1 1 setrgbcolor fill grestore /Boxing false def} def
 0 0 0 0 InitTextBox
 /TBxmargin 20 def
 /TBymargin 20 def
 /Boxing false def
 /textshow { ExtendTextBox Gshow } def
 %
+% redundant definitions for compatibility with prologue.ps older than 5.0.2
+/LTB {BL [] LCb DL} def
+/LTb {PL [] LCb DL} def
 end
 %%EndProlog
 %%Page: 1 1
@@ -491,196 +494,195 @@ LCb setrgbcolor
 -63 0 V
 stroke
 LTb
-1210 833 M
+1210 831 M
 31 0 V
 3464 0 R
 -31 0 V
-1210 962 M
+1210 959 M
 31 0 V
 3464 0 R
 -31 0 V
-1210 1091 M
+1210 1086 M
 31 0 V
 3464 0 R
 -31 0 V
-1210 1220 M
+1210 1213 M
 63 0 V
 3432 0 R
 -63 0 V
 stroke
-1210 1348 M
+1210 1341 M
 31 0 V
 3464 0 R
 -31 0 V
-1210 1477 M
+1210 1468 M
 31 0 V
 3464 0 R
 -31 0 V
-1210 1606 M
+1210 1595 M
 31 0 V
 3464 0 R
 -31 0 V
-1210 1735 M
+1210 1723 M
 63 0 V
 3432 0 R
 -63 0 V
 stroke
-1210 1864 M
+1210 1850 M
 31 0 V
 3464 0 R
 -31 0 V
-1210 1993 M
+1210 1977 M
 31 0 V
 3464 0 R
 -31 0 V
-1210 2122 M
+1210 2105 M
 31 0 V
 3464 0 R
 -31 0 V
-1210 2251 M
+1210 2232 M
 63 0 V
 3432 0 R
 -63 0 V
 stroke
-1210 2380 M
+1210 2359 M
 31 0 V
 3464 0 R
 -31 0 V
-1210 2509 M
+1210 2487 M
 31 0 V
 3464 0 R
 -31 0 V
-1210 2637 M
+1210 2614 M
 31 0 V
 3464 0 R
 -31 0 V
-1210 2766 M
+1210 2741 M
 63 0 V
 3432 0 R
 -63 0 V
 stroke
-1210 2895 M
+1210 2868 M
 31 0 V
 3464 0 R
 -31 0 V
-1210 3024 M
+1210 2996 M
 31 0 V
 3464 0 R
 -31 0 V
-1210 3153 M
+1210 3123 M
 31 0 V
 3464 0 R
 -31 0 V
-1210 3282 M
+1210 3250 M
 63 0 V
 3432 0 R
 -63 0 V
 stroke
-1210 3411 M
+1210 3378 M
 31 0 V
 3464 0 R
 -31 0 V
-1210 3540 M
+1210 3505 M
 31 0 V
 3464 0 R
 -31 0 V
-1210 3669 M
+1210 3632 M
 31 0 V
 3464 0 R
 -31 0 V
-1210 3797 M
+1210 3760 M
 63 0 V
 3432 0 R
 -63 0 V
 stroke
-1210 3926 M
+1210 3887 M
 31 0 V
 3464 0 R
 -31 0 V
-1210 4055 M
+1210 4014 M
 31 0 V
 3464 0 R
 -31 0 V
-1210 4184 M
+1210 4142 M
 31 0 V
 3464 0 R
 -31 0 V
-1210 4313 M
+1210 4269 M
 63 0 V
 3432 0 R
 -63 0 V
 stroke
 1210 704 M
 0 63 V
-0 3546 R
+0 3502 R
 0 -63 V
 stroke
 1501 704 M
 0 31 V
-0 3578 R
+0 3534 R
 0 -31 V
 1793 704 M
 0 63 V
-0 3546 R
+0 3502 R
 0 -63 V
 stroke
 2084 704 M
 0 31 V
-0 3578 R
+0 3534 R
 0 -31 V
 2375 704 M
 0 63 V
-0 3546 R
+0 3502 R
 0 -63 V
 stroke
 2666 704 M
 0 31 V
-0 3578 R
+0 3534 R
 0 -31 V
 2958 704 M
 0 63 V
-0 3546 R
+0 3502 R
 0 -63 V
 stroke
 3249 704 M
 0 31 V
-0 3578 R
+0 3534 R
 0 -31 V
 3540 704 M
 0 63 V
-0 3546 R
+0 3502 R
 0 -63 V
 stroke
 3831 704 M
 0 31 V
-0 3578 R
+0 3534 R
 0 -31 V
 4123 704 M
 0 63 V
-0 3546 R
+0 3502 R
 0 -63 V
 stroke
 4414 704 M
 0 31 V
-0 3578 R
+0 3534 R
 0 -31 V
 4705 704 M
 0 63 V
-0 3546 R
+0 3502 R
 0 -63 V
 stroke
 1.000 UL
 LTb
-1210 4313 N
-0 -3609 V
+1210 4269 N
+0 -3565 V
 3495 0 V
-0 3609 V
+0 3565 V
 -3495 0 V
 Z stroke
 1.000 UP
 1.000 UL
 LTb
-% Begin plot #1
 1.000 UP
 1.000 UL
 LTb
@@ -690,122 +692,119 @@ LCb setrgbcolor
 1.000 UL
 LTb
 LC6 setrgbcolor
-3850 4140 M
+3850 4096 M
 591 0 V
 -591 31 R
 0 -62 V
 591 62 R
 0 -62 V
-1210 4215 M
+1210 4172 M
 31 0 V
 -31 0 R
 31 0 V
-2375 2092 M
+2375 2075 M
 -31 0 R
 62 0 V
 -62 0 R
 62 0 V
-3540 1474 M
+3540 1464 M
 -31 0 R
 62 0 V
 -62 0 R
 62 0 V
-4705 1294 M
+4705 1286 M
 -31 0 R
 31 0 V
 -31 0 R
 31 0 V
-1210 4215 CircleF
-2375 2092 CircleF
-3540 1474 CircleF
-4705 1294 CircleF
-4145 4140 CircleF
-LTw
-% End plot #1
-% Begin plot #2
+1210 4172 CircleF
+2375 2075 CircleF
+3540 1464 CircleF
+4705 1286 CircleF
+4145 4096 CircleF
 1.000 UL
 LTb
 LCb setrgbcolor
 [] 0 setdash
 LC6 setrgbcolor
-1210 4215 M
-35 -110 V
-36 -106 V
-35 -102 V
-35 -98 V
-36 -95 V
-35 -91 V
-35 -88 V
+1210 4172 M
+35 -109 V
+36 -104 V
+35 -101 V
+35 -97 V
+36 -94 V
+35 -90 V
+35 -86 V
 35 -84 V
-36 -82 V
+36 -80 V
 35 -78 V
-35 -76 V
-36 -73 V
-35 -70 V
+35 -75 V
+36 -72 V
+35 -69 V
 35 -67 V
-36 -66 V
+36 -64 V
 35 -62 V
-35 -61 V
-35 -58 V
+35 -60 V
+35 -57 V
 36 -56 V
-35 -54 V
-35 -52 V
+35 -53 V
+35 -51 V
 36 -50 V
-35 -48 V
 35 -47 V
+35 -46 V
 36 -45 V
-35 -43 V
+35 -42 V
 35 -41 V
-35 -41 V
+35 -40 V
 36 -38 V
 35 -37 V
-35 -36 V
-36 -35 V
+35 -35 V
+36 -34 V
 35 -33 V
 35 -32 V
-36 -31 V
+36 -30 V
 35 -29 V
 35 -29 V
-36 -28 V
+36 -27 V
 35 -26 V
-35 -26 V
-35 -24 V
-36 -24 V
+35 -25 V
+35 -25 V
+36 -23 V
 35 -23 V
 35 -22 V
 36 -21 V
-35 -21 V
+35 -20 V
 35 -19 V
 36 -19 V
-35 -19 V
+35 -18 V
 35 -17 V
 35 -17 V
 36 -16 V
 35 -16 V
 35 -15 V
-36 -15 V
+36 -14 V
 35 -14 V
-35 -14 V
+35 -13 V
 36 -13 V
+35 -13 V
 35 -12 V
-35 -12 V
-35 -12 V
+35 -11 V
 36 -11 V
 35 -11 V
 35 -10 V
 36 -10 V
 35 -10 V
-35 -10 V
-36 -8 V
 35 -9 V
-35 -8 V
 36 -9 V
+35 -8 V
+35 -9 V
+36 -8 V
 35 -7 V
 35 -8 V
 35 -7 V
-36 -7 V
-35 -6 V
+36 -6 V
 35 -7 V
+35 -6 V
 36 -6 V
 35 -6 V
 35 -6 V
@@ -816,24 +815,20 @@ LC6 setrgbcolor
 36 -4 V
 35 -5 V
 35 -4 V
-36 -5 V
+36 -4 V
 35 -4 V
 35 -4 V
 36 -4 V
-35 -3 V
 35 -4 V
 35 -3 V
-36 -3 V
 35 -4 V
+36 -3 V
+35 -3 V
 35 -3 V
 36 -3 V
-35 -2 V
-stroke
-LTw
-% End plot #2
-% Begin plot #3
+35 -3 V
 1.000 UP
-1.000 UL
+stroke
 LTb
 LCb setrgbcolor
 [] 0 setdash
@@ -843,17 +838,17 @@ LCb setrgbcolor
 1.000 UL
 LTb
 LC0 setrgbcolor
-3850 3920 M
+3850 3876 M
 591 0 V
 -591 31 R
 0 -62 V
 591 62 R
 0 -62 V
-1210 2092 M
+1210 2075 M
 31 0 V
 -31 0 R
 31 0 V
-2375 1294 M
+2375 1287 M
 -31 0 R
 62 0 V
 -62 0 R
@@ -863,50 +858,47 @@ LC0 setrgbcolor
 62 0 V
 -62 0 R
 62 0 V
-1134 -6 R
+1134 -5 R
 -31 0 R
 31 0 V
 -31 0 R
 31 0 V
-1210 2092 TriU
-2375 1294 TriU
-3540 1226 TriU
-4705 1220 TriU
-4145 3920 TriU
-LTw
-% End plot #3
-% Begin plot #4
+1210 2075 TriU
+2375 1287 TriU
+3540 1219 TriU
+4705 1214 TriU
+4145 3876 TriU
 1.000 UL
 LTb
 LCb setrgbcolor
 [] 0 setdash
 LC0 setrgbcolor
-1210 2099 M
-35 -63 V
-36 -59 V
-35 -55 V
+1210 2075 M
+35 -62 V
+36 -58 V
+35 -53 V
 35 -50 V
-36 -47 V
-35 -44 V
+36 -46 V
+35 -42 V
 35 -40 V
-35 -38 V
-36 -35 V
-35 -32 V
+35 -37 V
+36 -34 V
+35 -31 V
 35 -30 V
-36 -28 V
-35 -26 V
+36 -27 V
+35 -25 V
 35 -24 V
 36 -22 V
-35 -21 V
+35 -20 V
 35 -19 V
 35 -17 V
-36 -17 V
+36 -16 V
 35 -15 V
 35 -14 V
-36 -14 V
+36 -13 V
 35 -12 V
 35 -11 V
-36 -11 V
+36 -10 V
 35 -10 V
 35 -9 V
 35 -8 V
@@ -914,10 +906,10 @@ LC0 setrgbcolor
 35 -7 V
 35 -7 V
 36 -6 V
+35 -5 V
 35 -6 V
-35 -5 V
 36 -5 V
-35 -5 V
+35 -4 V
 35 -4 V
 36 -4 V
 35 -4 V
@@ -925,55 +917,55 @@ LC0 setrgbcolor
 35 -3 V
 36 -3 V
 35 -3 V
-35 -3 V
-36 -2 V
+35 -2 V
+36 -3 V
 35 -2 V
 35 -2 V
 36 -2 V
+35 -1 V
 35 -2 V
 35 -2 V
-35 -1 V
-36 -1 V
-35 -2 V
-35 -1 V
 36 -1 V
 35 -1 V
 35 -1 V
-36 -1 V
-35 -1 V
+36 -2 V
 35 -1 V
 35 0 V
 36 -1 V
 35 -1 V
+35 -1 V
+35 -1 V
+36 0 V
+35 -1 V
 35 0 V
 36 -1 V
 35 0 V
 35 -1 V
 36 0 V
-35 0 V
 35 -1 V
-36 0 V
-35 0 V
-35 -1 V
-35 0 V
-36 0 V
-35 0 V
-35 -1 V
-36 0 V
-35 0 V
 35 0 V
 36 0 V
 35 -1 V
 35 0 V
 35 0 V
-36 0 V
+36 -1 V
 35 0 V
 35 0 V
 36 0 V
 35 0 V
-35 0 V
-36 0 V
 35 -1 V
+36 0 V
+35 0 V
+35 0 V
+35 0 V
+36 0 V
+35 0 V
+35 0 V
+36 -1 V
+35 0 V
+35 0 V
+36 0 V
+35 0 V
 35 0 V
 35 0 V
 36 0 V
@@ -981,12 +973,8 @@ LC0 setrgbcolor
 35 0 V
 36 0 V
 35 0 V
-stroke
-LTw
-% End plot #4
-% Begin plot #5
 1.000 UP
-1.000 UL
+stroke
 LTb
 LCb setrgbcolor
 [] 0 setdash
@@ -996,17 +984,17 @@ LCb setrgbcolor
 1.000 UL
 LTb
 LC1 setrgbcolor
-3850 3700 M
+3850 3656 M
 591 0 V
 -591 31 R
 0 -62 V
 591 62 R
 0 -62 V
-1210 1473 M
+1210 1464 M
 31 0 V
 -31 0 R
 31 0 V
-2375 1226 M
+2375 1219 M
 -31 0 R
 62 0 V
 -62 0 R
@@ -1016,90 +1004,87 @@ LC1 setrgbcolor
 62 0 V
 -62 0 R
 62 0 V
-1134 -1 R
+1134 0 R
 -31 0 R
 31 0 V
 -31 0 R
 31 0 V
-1210 1473 TriDF
-2375 1226 TriDF
-3540 1220 TriDF
-4705 1219 TriDF
-4145 3700 TriDF
-LTw
-% End plot #5
-% Begin plot #6
+1210 1464 TriDF
+2375 1219 TriDF
+3540 1213 TriDF
+4705 1213 TriDF
+4145 3656 TriDF
 1.000 UL
 LTb
 LCb setrgbcolor
 [] 0 setdash
 LC1 setrgbcolor
-1210 1473 M
+1210 1464 M
 35 -27 V
 36 -24 V
 35 -22 V
 35 -19 V
-36 -18 V
+36 -17 V
 35 -15 V
 35 -14 V
 35 -12 V
 36 -11 V
-35 -10 V
 35 -9 V
-36 -7 V
+35 -9 V
+36 -8 V
 35 -7 V
-35 -7 V
+35 -6 V
 36 -5 V
 35 -5 V
 35 -5 V
-35 -4 V
-36 -3 V
+35 -3 V
+36 -4 V
 35 -3 V
 35 -3 V
-36 -3 V
+36 -2 V
 35 -2 V
 35 -2 V
 36 -2 V
-35 -1 V
 35 -2 V
 35 -1 V
-36 -1 V
-35 -1 V
 35 -1 V
 36 -1 V
-35 0 V
+35 -1 V
 35 -1 V
 36 -1 V
+35 -1 V
+35 0 V
+36 -1 V
+35 -1 V
+35 0 V
+36 0 V
+35 -1 V
+35 0 V
+35 0 V
+36 -1 V
+35 0 V
+35 0 V
+36 0 V
 35 0 V
 35 -1 V
 36 0 V
 35 0 V
+35 0 V
+35 0 V
+36 0 V
+35 0 V
+35 0 V
+36 0 V
+35 0 V
+35 0 V
+36 0 V
+35 0 V
+35 0 V
+35 0 V
+36 0 V
 35 -1 V
 35 0 V
 36 0 V
-35 -1 V
-35 0 V
-36 0 V
-35 0 V
-35 0 V
-36 0 V
-35 0 V
-35 -1 V
-35 0 V
-36 0 V
-35 0 V
-35 0 V
-36 0 V
-35 0 V
-35 0 V
-36 0 V
-35 0 V
-35 0 V
-35 0 V
-36 0 V
-35 0 V
-35 0 V
-36 0 V
 35 0 V
 35 0 V
 36 0 V
@@ -1134,12 +1119,8 @@ LC1 setrgbcolor
 35 0 V
 36 0 V
 35 0 V
-stroke
-LTw
-% End plot #6
-% Begin plot #7
 1.000 UP
-1.000 UL
+stroke
 LTb
 LCb setrgbcolor
 [] 0 setdash
@@ -1149,56 +1130,53 @@ LCb setrgbcolor
 1.000 UL
 LTb
 LC2 setrgbcolor
-3850 3480 M
+3850 3436 M
 591 0 V
 -591 31 R
 0 -62 V
 591 62 R
 0 -62 V
-1210 1294 M
+1210 1286 M
 31 0 V
 -31 0 R
 31 0 V
-1134 -74 R
+1134 -72 R
+-31 0 R
+62 0 V
+-62 0 R
+62 0 V
+1134 -1 R
 -31 0 R
 62 0 V
 -62 0 R
 62 0 V
 1134 0 R
 -31 0 R
-62 0 V
--62 0 R
-62 0 V
-1134 0 R
--31 0 R
 31 0 V
 -31 0 R
 31 0 V
-1210 1294 Star
-2375 1220 Star
-3540 1220 Star
-4705 1220 Star
-4145 3480 Star
-LTw
-% End plot #7
-% Begin plot #8
+1210 1286 Star
+2375 1214 Star
+3540 1213 Star
+4705 1213 Star
+4145 3436 Star
 1.000 UL
 LTb
 LCb setrgbcolor
 [] 0 setdash
 LC2 setrgbcolor
-1210 1294 M
-35 -12 V
+1210 1286 M
+35 -11 V
 36 -9 V
-35 -9 V
+35 -8 V
 35 -7 V
 36 -5 V
 35 -5 V
 35 -4 V
 35 -4 V
 36 -3 V
+35 -2 V
 35 -3 V
-35 -2 V
 36 -1 V
 35 -2 V
 35 -1 V
@@ -1213,17 +1191,17 @@ LC2 setrgbcolor
 35 0 V
 35 0 V
 36 0 V
-35 0 V
 35 -1 V
 35 0 V
-36 0 V
-35 0 V
 35 0 V
 36 0 V
 35 0 V
 35 0 V
 36 0 V
 35 0 V
+35 0 V
+36 0 V
+35 -1 V
 35 0 V
 36 0 V
 35 0 V
@@ -1288,18 +1266,16 @@ LC2 setrgbcolor
 36 0 V
 35 0 V
 stroke
-LTw
-% End plot #8
 2.000 UL
 LTb
 LCb setrgbcolor
 [] 0 setdash
 1.000 UL
 LTb
-1210 4313 N
-0 -3609 V
+1210 4269 N
+0 -3565 V
 3495 0 V
-0 3609 V
+0 3565 V
 -3495 0 V
 Z stroke
 1.000 UP
