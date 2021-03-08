@@ -17,7 +17,7 @@ PI=3.14159
 
 
 #set files used for plotting
-beta=4.5
+beta=5.5
 dim=3
 
 wilsonloopfile=sprintf("../data/wilsonsu%dbeta%.3f.dat", dim, beta)

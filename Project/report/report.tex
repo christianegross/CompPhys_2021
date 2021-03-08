@@ -93,7 +93,7 @@
 
 \section{Introduction}
 
-Quarks as fundamental particles have been postulated since the 1960s, however no free quarks have ever been observed, only colourless bound quark states have been observed. QCD attempts to describe this confinement, but no analytical proof of this description has been found. Analytically solving this would be one of the steps to solving the connected millenium problem of the Yang-Mills spectrum. Numerically, confinement has been shown, and this report aims to reproduce these findings for the easiest case of static quarks, which do not change location.
+Quarks as fundamental particles have been postulated since the 1960s, however no free quarks have ever been observed, only colourless bound quark states have been observed. QCD attempts to describe this confinement, but no analytical proof of this description has been given. Analytically solving this would be one of the steps to solving the connected millenium problem of the Yang-Mills spectrum. Numerically, confinement has been shown, and this report aims to reproduce these findings for the easiest case of static quarks, which do not change location.
 This corresponds to infinitely heavy quarks. More background is given by e.\,g.\, \citet{lepagelqcd} and \citet{povhparticles}.
 
 We discretize the spacetime as a lattice, and use observables calculated with this lattice to extract the potential for various distances.
@@ -183,7 +183,7 @@ The potential is expected to have the form $V(R)=\sigma R-\frac{b}{R}+c$, where 
 
 The code and data from our simulations can be found in the git-repo \url{https://github.com/christianegross/CompPhys_2021} in the folder \texttt{Project}.
 
-We use a Metropolis-Hastings algorithm to simulate the lattice, i.\,e.\, we go through every link of the lattice, transform the link $U_\mu(x)\to U_\mu'(x)=MU_\mu(x)$, where $M$ is a randomly generated SU(N) matrix, and accept the change with the probability $\min[1, \exp(-\beta(S-S'))]$. We use the gnu scientific library (\citet{gsldoc_total}) for the calculations with complex numbers and matrices.
+We use a Metropolis-Hastings algorithm to simulate the lattice, i.\,e.\, we go through every link of the lattice, transform the link $U_\mu(x)\to U_\mu'(x)=MU_\mu(x)$, where $M$ is a randomly generated SU(N) matrix, and accept the change with the probability $\min[1, \exp(-\beta(S'-S))]$. We use the gnu scientific library (\citet{gsldoc_total}) for the calculations with complex numbers and matrices.
 
 The difference in the action does not depend on the whole lattice, but only on \begin{align*}
 \Delta S(x, \mu)=&S-S'=\frac{1}{N}\Re\tr\left\lbrace (U_\mu(x)-U'_\mu(x))\Gamma_\mu(x)\right\rbrace\\
@@ -197,7 +197,7 @@ $U_\mu(x)\Gamma_\mu(x)$ contains all plaquettes $U_\mu(x)$ is part of, and $\Gam
 
 %How to generate SU(N) Matrices: describe.
 When doing the Metropolis-updates, we aim for an acceptance rate of about $50\%$, allowing us to progress to new configurations fast. If our acceptance rate were too low, we would get stuck very easily, and if our acceptance rate were too high, we would not see enough difference after one change.
-For tuning the acceptance rate, we want to be able to specify how much our matrices $M$ differ from the unity matrix with the parameter $\epsilon$. To do so, we generate a hermitian matrix $H$   and then take the matrix $U=\mathbb{1}+i\epsilon H$ and make it a SU matrix by orthonormalizing its columns. In SU(2), we simply normalize the first column $\begin{pmatrix}z_1&z_2\end{pmatrix}^T$ by scaling with $1/(|z_1|^2+|z_2|^2)$ and then set the second column to be $\begin{pmatrix}-z_2^*&z_1^*\end{pmatrix}^T$. For SU(3) matrices, we use the Gram-Schmidt-Orthonormalization procedure, where $\langle x,y\rangle=x^Hy$, to make the second column orthonormal to the first and then calculate the third column as the complex conjugate of the crossproduct of the first two columns. The complex conjugate needs to be taken, to guarantee orthogonality to the first and second column.
+For tuning the acceptance rate, we want to be able to specify how much our matrices $M$ differ from the unity matrix with the parameter $\epsilon$. To do so, we generate a hermitian matrix $H$   and then take the matrix $M=\mathbb{1}+i\epsilon H$ and make it a SU matrix by orthonormalizing its columns. In SU(2), we simply normalize the first column $\begin{pmatrix}z_1&z_2\end{pmatrix}^T$ by scaling with $1/(|z_1|^2+|z_2|^2)$ and then set the second column to be $\begin{pmatrix}-z_2^*&z_1^*\end{pmatrix}^T$. For SU(3) matrices, we use the Gram-Schmidt-Orthonormalization procedure, where $\langle x,y\rangle=x^Hy$, to make the second column orthonormal to the first and then calculate the third column as the complex conjugate of the crossproduct of the first two columns. The complex conjugate needs to be taken, to guarantee orthogonality to the first and second column.
 
 For measuring the observables, we assume periodic boundary conditions in our lattice. The coordinates of the respective neighbours relative to the current position are set in an array, to simplify calculations of the Plaquette.
 
@@ -210,7 +210,7 @@ For determining the mean value and standard deviation of our measured data, we f
 
 After we have determined the expectation value of the Wilson loops for several different $R$ and $T$, we fit the data of $W(R=\text{const.}, T)$ to $c_R\exp(-dT)$. Then we can use the determined $d$ as $aV(R/a)$, and fit the potential to $aV\left(\frac{R}{a}\right)=a^2\sigma \frac{R}{a}-b\left(\frac{R}{a}\right)^{-1}+ac$.
 
-The phenomenological value of the string tension $\sigma$ is known, \citet{Cardoso_2011} give it as $\sqrt{\sigma}=440\si{\mega\electronvolt}$, and thus we can estimate the lattice distande as $a/\si{\femto\meter}=\sqrt{\frac{a^2\sigma}{\sigma}}\hbar c$.
+The phenomenological value of the string tension $\sigma$ is known, \citet{Cardoso_2011} give it as $\sqrt{\sigma}=440\si{\mega\electronvolt}$, and thus we can estimate the lattice distande as $a=\sqrt{\frac{a^2\sigma}{\sigma}}\hbar c$.
 
 \section{Results}
 
