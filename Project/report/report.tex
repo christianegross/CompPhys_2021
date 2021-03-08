@@ -197,7 +197,7 @@ $U_\mu(x)\Gamma_\mu(x)$ contains all plaquettes $U_\mu(x)$ is part of, and $\Gam
 
 %How to generate SU(N) Matrices: describe.
 When doing the Metropolis-updates, we aim for an acceptance rate of about $50\%$, allowing us to progress to new configurations fast. If our acceptance rate were too low, we would get stuck very easily, and if our acceptance rate were too high, we would not see enough difference after one change.
-For tuning the acceptance rate, we want to be able to specify how much our matrices $M$ differ from the unity matrix with the parameter $\epsilon$. To do so, we generate a hermitian matrix $H$   and then take the matrix $M=\mathbb{1}+i\epsilon H$ and make it a SU matrix by orthonormalizing its columns. In SU(2), we simply normalize the first column $\begin{pmatrix}z_1&z_2\end{pmatrix}^T$ by scaling with $1/(|z_1|^2+|z_2|^2)$ and then set the second column to be $\begin{pmatrix}-z_2^*&z_1^*\end{pmatrix}^T$. For SU(3) matrices, we use the Gram-Schmidt-Orthonormalization procedure, where $\langle x,y\rangle=x^Hy$, to make the second column orthonormal to the first and then calculate the third column as the complex conjugate of the crossproduct of the first two columns. The complex conjugate needs to be taken, to guarantee orthogonality to the first and second column.
+For tuning the acceptance rate, we want to be able to specify how much our matrices $M$ differ from the unity matrix with the parameter $\epsilon$. To do so, we generate a hermitian matrix $H$   and then take the matrix $M=\mathbb{1}+i\epsilon H$ and make it a SU matrix by orthonormalizing its columns. In SU(2), we normalize the first column $\begin{pmatrix}z_1&z_2\end{pmatrix}^T$ by scaling with $1/(|z_1|^2+|z_2|^2)$ and then set the second column to be $\begin{pmatrix}-z_2^*&z_1^*\end{pmatrix}^T$. For SU(3) matrices, we use the Gram-Schmidt-Orthonormalization procedure, where $\langle x,y\rangle=x^Hy$, to make the second column orthonormal to the first and then calculate the third column as the complex conjugate of the crossproduct of the first two columns. The complex conjugate needs to be taken, to guarantee orthogonality to the first and second column.
 
 For measuring the observables, we assume periodic boundary conditions in our lattice. The coordinates of the respective neighbours relative to the current position are set in an array, to simplify calculations of the Plaquette.
 
@@ -210,11 +210,11 @@ For determining the mean value and standard deviation of our measured data, we f
 
 After we have determined the expectation value of the Wilson loops for several different $R$ and $T$, we fit the data of $W(R=\text{const.}, T)$ to $c_R\exp(-dT)$. Then we can use the determined $d$ as $aV(R/a)$, and fit the potential to $aV\left(\frac{R}{a}\right)=a^2\sigma \frac{R}{a}-b\left(\frac{R}{a}\right)^{-1}+ac$.
 
-The phenomenological value of the string tension $\sigma$ is known, \citet{Cardoso_2011} give it as $\sqrt{\sigma}=440\si{\mega\electronvolt}$, and thus we can estimate the lattice distande as $a=\sqrt{\frac{a^2\sigma}{\sigma}}\hbar c$.
+The phenomenological value of the string tension $\sigma$ is known, \citet{Cardoso_2011} give it as $\sqrt{\sigma}=440\si{\mega\electronvolt}$, and thus we can estimate the lattice distance as $a=\sqrt{\frac{a^2\sigma}{\sigma}}\hbar c$.
 
 \section{Results}
 
-All measurements were done on an $8^4$ lattice.
+All measurements are done on an $8^4$ lattice.
 
 %pictures
  \begin{figure}
@@ -233,7 +233,7 @@ All measurements were done on an $8^4$ lattice.
 	\label{fig:plaquettethermsu3}
 \end{figure} 
 
-The average value for the plaquette during thermalisation is plotted in fig.~\ref{fig:comparisoncreutz} for SU(2)-matrices, from a cold start, i.\,e.\, the entire lattice starting with unity matrices, and in fig.~\ref{fig:plaquettethermsu3} for SU(3) and a hot start. In order to be able to compare our results to the different definition of the plaquette of \citet{creutzsu2}, we have plotted $1-\langle P\rangle$. Per step, we did 10 Metropolis-updates of each link in the lattice, and the plaquette was calculated directly after one update. The contribution for each link $U_\mu(x)$ was calculated as $\sum_{\mu>\nu}P_{\mu\nu}(x)$.
+The average value for the plaquette during thermalisation is plotted in fig.~\ref{fig:comparisoncreutz} for SU(2)-matrices, from a cold start, i.\,e.\, the entire lattice starting with unity matrices, and in fig.~\ref{fig:plaquettethermsu3} for SU(3) and a hot start. In order to be able to compare our results to the different definition of the plaquette of \citet{creutzsu2}, we plot $1-\langle P\rangle$. Per step, we do 10 Metropolis-updates of each link in the lattice, and the plaquette is calculated directly after one update. The contribution for each link $U_\mu(x)$ is calculated as $\sum_{\mu>\nu}P_{\mu\nu}(x)$.
 
 %-autocorrelation, maybe one picture
 
@@ -247,18 +247,18 @@ The average value for the plaquette during thermalisation is plotted in fig.~\re
 	\label{fig:plaquettetotal}
 \end{figure}
 
-After the thermalisation, we did our measurements on the lattice. All measurements were done after at least 100 thermalisation steps, with the number of measurements between $2048$ and $8192$ per $\beta$. The analysis was done with a binsize of $32$ and $200$ bootstrapsamples. 
+After the thermalisation, we do our measurements on the lattice. All measurements are done after at least 100 thermalisation steps, with the number of measurements between $2048$ and $8192$ per $\beta$. The analysis is done with a binsize of $32$ and $200$ bootstrapsamples. 
 
-The average plaquette for different $\beta$ and SU(2) and SU(3) is shown in fig.~\ref{fig:plaquettetotal}. Here we measured the plaquette by calculating $\sum_{\mu>\nu}P_{\mu\nu}(x)$ for each lattice site $x$, and have also plotted the expectations for strong and weak coupling in SU(2) as given by \citet{creutzsu2}.
+The average plaquette for different $\beta$ and SU(2) and SU(3) is shown in fig.~\ref{fig:plaquettetotal}. Here we measure the plaquette by calculating $\sum_{\mu>\nu}P_{\mu\nu}(x)$ for each lattice site $x$, and also plot the expectations for strong and weak coupling in SU(2) as given by \citet{creutzsu2}.
 
 \begin{figure}
 	\centering
 	\input{wilsonloopsu3beta55report.tex}
-	\caption[Different Wilson loops for SU(3), $\beta=5.5$]{Wilson loops for several $R$ and $T$ including fits to a falling exponential function for SU(3), $\beta=5.5$}
+	\caption[Different Wilson loops for SU(3), $\beta=5.5$]{Wilson loops for several $R$ and $T$ including fits to a falling exponential function for SU(3), $\beta=5.5$. The errors too small too be visible.}
 	\label{fig:wilsonloopbeta5.5su3}
 \end{figure} 
 
-We measured the Wilson-loops for $R=(1,2,3,4)$ and $T=(1,2,3,4)$ for all points in the lattice. For each $\beta$, we fitted falling exponential curves to the datasets for constant $R$ and varying $T$. One such dataset with fits is shown in fig.~\ref{fig:wilsonloopbeta5.5su3}. For all fits we used the nonlinear least-squares Marquardt-Levenberg algorithm built into gnuplot (\citet{gnuplotdoc}).
+We measure the Wilson-loops for $R=(1,2,3,4)$ and $T=(1,2,3,4)$ for all points in the lattice. For each $\beta$, we fit falling exponential curves to the datasets for constant $R$ and varying $T$. One such dataset with fits is shown in fig.~\ref{fig:wilsonloopbeta5.5su3}. For all fits we use the nonlinear least-squares Marquardt-Levenberg algorithm built into gnuplot (\citet{gnuplotdoc}).
 
 %how to extract V(r) from W(r). fit values: maybe in appendix?
 
@@ -274,7 +274,7 @@ We measured the Wilson-loops for $R=(1,2,3,4)$ and $T=(1,2,3,4)$ for all points 
 \begin{figure}
 	\centering
 	\input{potentialsu3report.tex}
-	\caption[Potentials obtained using SU(3)]{Potential values obtained from fitting to the Wilson loops and fit to potential for SU(3), the error bars are $1/1000$ the size of the obtained error for $\beta=2.3$.}
+	\caption[Potentials obtained using SU(3)]{Potential values obtained from fitting to the Wilson loops and fit to potential for SU(3)}
 	\label{fig:fittedpotentialssu3}
 \end{figure} 
 
@@ -301,11 +301,11 @@ As can be seen in fig.~\ref{fig:plaquettetotal}, the average
  plaquette rises with $\beta$, i.\,e.\, with smaller coupling. 
 For SU(2) the predicted function to reproduce strong coupling holds for $\beta=1.6, 2.0$ and $\beta=2.5$. $\beta=3.2$ seems to be the crossing point towards weak coupling, and for larger values of $\beta$, e.\,g.\, $\beta=5.5$ the function for weak coupling gets closer to the measured values of the plaquette.
 
-The exponential decay of the Wilson Loop with distance in time can be nicely seen in fig.~\ref{fig:wilsonloopbeta5.5su3}, and is observed for all datasets. For some parameter combinations there were problems fitting an exponential curve because of negative values for the Wilson loop, which arise from statistical fluctuations.
+The exponential decay of the Wilson Loop with distance in time can be nicely seen in fig.~\ref{fig:wilsonloopbeta5.5su3}, and is observed for all datasets. For some parameter combinations there are problems fitting an exponential curve because of negative values for the Wilson loop, which arise from statistical fluctuations.
 
 %Most Wilson-loops have ncie exponential curves, however some problems with negative values for large $R$. 
 
-Overall the fitted values for the potential reproduce the expected form nicely. This can be seen in fig.~\ref{fig:fittedpotentialssu2} and fig.~\ref{fig:fittedpotentialssu3}. However for larger values of $R/a$ the errors increase, because of the before mentioned fluctuations. In all cases we observe a contribution from the Coulomb-like part of the potential, but due to the range of $\beta$ we are plotting, it is often not visible. In some cases, probably again due to fluctuations, we are observing a Coulomb-part with the wrong sign. We see we can expect confinement in quarks. We experienced further difficulties because we only know the systematic errors depend on $\mathcal{O}(a^2)$, but do not know exact values to assume.
+Overall the fitted values for the potential reproduce the expected form nicely. This can be seen in fig.~\ref{fig:fittedpotentialssu2} and fig.~\ref{fig:fittedpotentialssu3}. However for larger values of $R/a$ the errors increase, because of the before mentioned fluctuations. In all cases we observe a contribution from the Coulomb-like part of the potential, but due to the range of $\beta$ we are plotting, it is often not visible. In some cases, probably again due to fluctuations, we are observing a Coulomb-part with the wrong sign. We see we can expect confinement in quarks. We experience further difficulties because we only know the systematic errors depend on $\mathcal{O}(a^2)$, but do not know exact values to assume.
 
 %Nice potential except for $\beta=2.0$ for SU(3), Coulob-part quite small, so often not visible in plot.
 
@@ -350,7 +350,7 @@ There are several improvements that could be done with more time:
 	\item We could simulate an improved action, e.\,g.\, the tadpole improvement or some higher order of loops in the action, as suggested by \citet{lepagelqcd}
 	\item \citet{lepagelqcd} also suggests smearing the links, which leads to faster convergence for values of the potential
 	\item Larger lattice sizes $l$ would also improve the result, however the computation time scales roughly as $l^4$
-	\item we could work out the systematical error more rigorously
+	\item We could work out the systematical error more rigorously
 \end{itemize}
 
 
