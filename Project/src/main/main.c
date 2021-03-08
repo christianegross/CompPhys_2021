@@ -53,7 +53,6 @@ void generatesu3(gsl_matrix_complex * matrix, double epsilon, gsl_rng * generato
 	double e,f,g,h,j,k,l,m, norm;
 	gsl_vector_complex_view columnzero,columnone,columntwo;
 	gsl_complex complexscalarproduct=GSL_COMPLEX_ZERO;
-	//gsl_complex complexscalarproduct2=GSL_COMPLEX_ZERO;
 	e=2.0*gsl_rng_uniform(generator)-1.0;
 	f=2.0*gsl_rng_uniform(generator)-1.0;
 	g=2.0*gsl_rng_uniform(generator)-1.0;
@@ -62,7 +61,6 @@ void generatesu3(gsl_matrix_complex * matrix, double epsilon, gsl_rng * generato
 	k=2.0*gsl_rng_uniform(generator)-1.0;
 	l=2.0*gsl_rng_uniform(generator)-1.0;
 	m=2.0*gsl_rng_uniform(generator)-1.0;
-	/* r=2.0*gsl_rng_uniform(generator)-1.0; */
 	//set matrix 0 column of 1+i*epsilon*H
 	gsl_matrix_complex_set(matrix, 0, 0, gsl_complex_rect(1, epsilon*e));
 	gsl_matrix_complex_set(matrix, 1, 0, gsl_complex_rect(-epsilon*g, epsilon*f));
@@ -71,33 +69,21 @@ void generatesu3(gsl_matrix_complex * matrix, double epsilon, gsl_rng * generato
 	gsl_matrix_complex_set(matrix, 0, 1, gsl_complex_rect(epsilon*g, epsilon*f));
 	gsl_matrix_complex_set(matrix, 1, 1, gsl_complex_rect(1, epsilon*k));
 	gsl_matrix_complex_set(matrix, 2, 1, gsl_complex_rect(-epsilon*m, epsilon*l));
-	//set matrix 2 column of 1+i*epsilon*H
-	/*gsl_matrix_complex_set(matrix, 0, 2, gsl_complex_rect(epsilon*j, epsilon*h));
-	gsl_matrix_complex_set(matrix, 1, 2, gsl_complex_rect(epsilon*m, epsilon*l));
-	gsl_matrix_complex_set(matrix, 2, 2, gsl_complex_rect(1, epsilon*r));*/
 	//normalize vector zero to make sure determinant is one
 	//rescale by 1/norm
 	columnzero=gsl_matrix_complex_column(matrix, 0);
 	norm=gsl_blas_dznrm2(&columnzero.vector);
 	gsl_blas_zdscal(1.0/norm, &columnzero.vector);
-
+	
+	//use Gram-Schmidt to make column 1 orthonormal to column zero
 	columnone=gsl_matrix_complex_column(matrix, 1);
 	gsl_blas_zdotc (&columnzero.vector, &columnone.vector, &complexscalarproduct);
 	gsl_blas_zaxpy (gsl_complex_mul_real(complexscalarproduct, -1.0), &columnzero.vector, &columnone.vector);
 	norm=gsl_blas_dznrm2(&columnone.vector);
 	gsl_blas_zdscal(1.0/norm, &columnone.vector);
 	columntwo=gsl_matrix_complex_column(matrix, 2);
-	/*
-	gsl_blas_zdotc (&columnzero.vector, &columntwo.vector, &complexscalarproduct);
-	gsl_blas_zdotc (&columnone.vector, &columntwo.vector, &complexscalarproduct2);
-	gsl_blas_zaxpy (gsl_complex_mul_real(complexscalarproduct, -1.0), &columnzero.vector, &columntwo.vector);
-	gsl_blas_zaxpy (gsl_complex_mul_real(complexscalarproduct2, -1.0), &columnone.vector, &columntwo.vector);*/
+	//make column two orthonormal to column zero and one by taking conjugate of their cross product, complex conjugate in functioin cross product
 	crossproduct(&columnzero.vector,&columnone.vector,&columntwo.vector);
-	/*norm=gsl_blas_dznrm2(&columntwo.vector);
-	gsl_blas_zdscal(1.0/norm, &columntwo.vector);*/
-	//~ printf("%f\t%f\n", GSL_REAL(complexscalarproduct), GSL_REAL(complexscalarproduct2));
-	//complexscalarproduct=det(matrix); used for fixing phase
-	//gsl_matrix_complex_scale(matrix, gsl_complex_polar(1.0/gsl_complex_abs(complexscalarproduct), -gsl_complex_arg(complexscalarproduct)/3));
 }
 
 
@@ -115,7 +101,6 @@ inline double deltaS(gsl_matrix_complex *deltacontribution, gsl_matrix_complex* 
 	gsl_matrix_complex_memcpy(helpone, newmatrix);
 	gsl_matrix_complex_sub(helpone, oldmatrix);
 	gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, gsl_complex_rect(1,0), helpone, deltacontribution, gsl_complex_rect(0,0), helptwo);
-	//possibly wrong numerical prefactor
 	return GSL_REAL(trace(helptwo))/((double)dim);
 }
 
@@ -133,7 +118,7 @@ void calculateGamma(int * neighbour, int counter, int mu, int size, gsl_matrix_c
 		gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, matrixarray[counter+neighbour[2*mu]-mu+nu], matrixarray[counter+neighbour[2*nu]], GSL_COMPLEX_ZERO, helpone);
 		gsl_blas_zgemm(CblasNoTrans, CblasConjTrans, GSL_COMPLEX_ONE, helpone, matrixarray[counter-mu+nu] , GSL_COMPLEX_ZERO, helptwo);
 		gsl_matrix_complex_add(deltacontribution, helptwo);
-		if(mu>nu){gsl_matrix_complex_add(plaquettecontribution, helptwo);}
+		if(mu>nu){gsl_matrix_complex_add(plaquettecontribution, helptwo);}	//contribution to plaquette as defined by Wilson-action
 		//backward plaquette
 		gsl_blas_zgemm(CblasConjTrans, CblasConjTrans, GSL_COMPLEX_ONE, matrixarray[counter+neighbour[2*mu]+neighbour[2*nu+1]-mu+nu], matrixarray[counter+neighbour[2*nu+1]], GSL_COMPLEX_ZERO, helpone);
 		gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, helpone, matrixarray[counter+neighbour[2*nu+1]-mu+nu] , GSL_COMPLEX_ZERO, helptwo);
@@ -144,6 +129,7 @@ void calculateGamma(int * neighbour, int counter, int mu, int size, gsl_matrix_c
 /**
  * @fn calculateplaquette(gsl_matrix_complex ** matrixarray, int counter, int* neighbour, int mu, int nu, gsl_matrix_complex *helpone, gsl_matrix_complex *helptwo, gsl_matrix_complex *helpthree)
  * @brief calculates the plaquette at the position counter in the direction mu and nu
+ * @note U_mu(x)*U_nu(x+amu)*U^dagger_mu(x+anu)*U^dagger_nu(x)
  * **/
 double calculateplaquette(gsl_matrix_complex ** matrixarray, int counter, int* neighbour, int mu, int nu, gsl_matrix_complex *helpone, gsl_matrix_complex *helptwo, gsl_matrix_complex *helpthree,int dim){
 	gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, matrixarray[counter+mu], matrixarray[counter+neighbour[2*mu]+nu], GSL_COMPLEX_ZERO, helpone);
@@ -153,16 +139,13 @@ double calculateplaquette(gsl_matrix_complex ** matrixarray, int counter, int* n
 }
 
 double calculatewilsonloop(gsl_matrix_complex ** matrixarray, gsl_matrix_complex ** helparray, int x, int y, int z, int t, int r1, int r2, int r3, int tdistance, int size, int dim){
-/** see two problems:
- * 1. What order to use for x,y,z contributions? average over all possible permutations (xyz, xzy, yxz, yzx, zxy, zyx) oder always do order xyz?
- * 2. How to implement boundary conditions? How to see, where to insert boundaries?
- * ->probably made easier by using x, y, z, t seperately, maybe not put counter as an argument, but individual values for x,y,z,t?
- * **/
-
- /** first calculation: go in x-direction for r1 steps, y for r2 steps, z for r3 steps, t for tdistance steps, and back with xdagger, ydagger, zdagger, tdagger
-  first multiplication: U_x(pos)U_x(pos+ax)**/
+ /**go in x-direction for r1 steps, y for r2 steps, z for r3 steps, t for tdistance steps, and back with xdagger, ydagger, zdagger, tdagger
+  * for each step: multiply current matrix with matrix for next step
+  * exchange m1 and m2 via intermediate to prevent problems with pointers
+  **/
 	gsl_matrix_complex* m1,*m2, *intermediate;
 	int len1init=0,len2init=0,len3init=0,lentinit=0;
+	//set first matrix as start postion in first direction
 	if(r1>=1){
 		gsl_matrix_complex_memcpy (helparray[0], matrixarray[x*size*size*size*4+y*size*size*4+z*size*4+t*4+3]);
 		len1init=1;
@@ -176,7 +159,7 @@ double calculatewilsonloop(gsl_matrix_complex ** matrixarray, gsl_matrix_complex
 		gsl_matrix_complex_memcpy (helparray[0], matrixarray[x*size*size*size*4+y*size*size*4+z*size*4+t*4+0]);
 		lentinit=1;
 	}
-	m1=helparray[0];
+	m1=helparray[0];		//ensure dim*dim matrix
 	m2=helparray[1];
 	//forwards:
 	for (int len1=len1init;len1<r1;len1+=1){
@@ -233,34 +216,30 @@ double calculatewilsonloop(gsl_matrix_complex ** matrixarray, gsl_matrix_complex
  }
 	
 
-double absreal(double number){
-	double var=(number>=0)?number:-number;
-	return var;
-	}
 
 int main(int argc, char **argv){
 	//set up constants, matrices, generator
 
-	int dim=3; //switches between SU2 and SU3
+	int dim=3; 							//switches between SU2 and SU3
 	double epsilon=0.38;
-	int hotstart=1;//switches between hot(1) and cold(0) start
-	int generateensembles=1;//turns thermalization and generation on
-	int makemeasurements=1;//turns measurements on
-	int size=8;// size of each dimension of the lattice
+	int hotstart=1;						//switches between hot(1) and cold(0) start
+	int generateensembles=1;			//turns thermalization and generation on
+	int makemeasurements=1;				//turns measurements on
+	int size=8;							// size of each dimension of the lattice
 	double beta=4.5;
-	const int maxR=4,maxT=4;//maximum Value of R and T
+	const int maxR=4,maxT=4;			//maximum Value of R and T
 	int numberofthermalizations=200;
 
-	int numberofmeasurements=8192; //=pow(2, 13)
+	int numberofmeasurements=8192; 		//=pow(2, 13), ensures all elements are used by binning
 	
 
-	gsl_matrix_complex *newmatrix=gsl_matrix_complex_alloc(dim,dim); //proposed matrix in MH
-	gsl_matrix_complex *multiplier=gsl_matrix_complex_alloc(dim,dim);	//used to change matrix in MH
+	gsl_matrix_complex *newmatrix=gsl_matrix_complex_alloc(dim,dim); 			//proposed matrix in MH
+	gsl_matrix_complex *multiplier=gsl_matrix_complex_alloc(dim,dim);			//used to change matrix in MH
 	gsl_matrix_complex *plaquettecontribution=gsl_matrix_complex_alloc(dim,dim);	
 	gsl_matrix_complex *deltacontribution=gsl_matrix_complex_alloc(dim,dim);
-	int seed=time(NULL);//use fixed seed: result should be exactly reproduced using the same seed
+	int seed=time(NULL);														//use fixed seed: result should be exactly reproduced using the same seed; random seed: A new range of ensembles is generated every time, no repetition
 	gsl_rng *generator;
-	generator=gsl_rng_alloc(gsl_rng_mt19937);//use mersenne-twister
+	generator=gsl_rng_alloc(gsl_rng_mt19937);									//use mersenne-twister
 	gsl_rng_set(generator, seed);
 	
 	
@@ -297,9 +276,9 @@ int main(int argc, char **argv){
 	gsl_vector_view binned_plaquette;
 	gsl_vector * plaquette_correlation_binned=gsl_vector_alloc(numberofmeasurements/32);
 	char wilsonfilename[100];
-	char plaquettedatafilename[100];
-	char plaquetteautocorfilename[100];
-	char plaquetteanafilename[100];
+	char plaquettedatafilename[100];		//entire binned measurements
+	char plaquetteautocorfilename[100];		//data from autocorrelation
+	char plaquetteanafilename[100];			//mean and variance from bootstrapping
 	sprintf(wilsonfilename, "data/wilsonsu%1dbeta%.3f.dat", dim, beta);
 	sprintf(plaquettedatafilename,"data/plaquettedatasu%1dbeta%.3f.dat", dim, beta);
 	sprintf(plaquetteautocorfilename,"data/plaquetteautocorsu%1dbeta%.3f.dat", dim, beta);
@@ -330,6 +309,7 @@ int main(int argc, char **argv){
 	char filename[filenamelength];
 	
 	/**thermalizations**/
+	/** in each run: loop over every lattice point and link direction, do ten Metropolis-Updates for each link **/
 	/** counter defined as position with direction**/
 	/**neighbours: need two neighbours for every direction, one forward and one backward
 	 * 0: t-forward	1:t-backward
@@ -375,7 +355,6 @@ int main(int argc, char **argv){
 									acceptance+=1;
 									gsl_matrix_complex_memcpy(matrixarray[counter], newmatrix); 
 								}
-								/**what to use for plaquette: sum over (mu>nu) or 1/2*sum over (mu)? Also include backwards plaquettes?**/
 								gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_ONE, matrixarray[counter], plaquettecontribution, gsl_complex_rect(0,0), helparray[0]);
 								plaquetteexpectation+=GSL_REAL(trace(helparray[0]));
 							}
@@ -409,7 +388,7 @@ int main(int argc, char **argv){
 			}
 		}
 		/**where to measure plaquette? measure directly after one link is switched, and get contributions from links that are changed in the next step, or loop over entire lattice after every sweep and take longer?
-		Or maybe not longer, since matrix links are looked at ten times per sweep? Maybe look during sweep, but only after ten attempts have ben made?**/
+		Or maybe not longer, since matrix links are looked at ten times per sweep? Maybe look during sweep, but only after ten attempts have ben made? Compare plaquetteexpectation and plaquetteafter**/
 		/**factors for plaquette and acceptance rate: both have to be 1.0 when filled with unity matrices and epsilon=0**/
 		fprintf(stdout, "%d\tacc=%f\tplaq=%f\tplaqafter=%f\n", runs, (double)acceptance/((double)10*size*size*size*size*4),plaquetteexpectation/((double)10*size*size*size*size*4*3*dim/2),
 				plaquetteafter/((double)size*size*size*size*4*3./2.));
@@ -417,14 +396,15 @@ int main(int argc, char **argv){
 	}
 
 
-	//~ /**measurements **/
-	/**Test rather ensembles can be loaded**/
+	/**measurements: do amountofmeasurement sweeps through the lattice with ten Metropolis-updates at every link
+	 * save all ensembles so remeasuring observables is faster **/
+	/**Test whether ensembles can be loaded**/
 	for(;run<=numberofmeasurements;run+=amountof_ens_infile){
 		snprintf (filename, filenamelength, "data/%.3fsu%1densenmble%06d_%06d.datens",beta,dim,run,run+(amountof_ens_infile-1));
 		if(NULL==fopen (filename, "r")){break;}
 	}
 
-	/**sample remaining ensembles**/
+	/**sample remaining ensembles: Save computer times by only calculating ensembles for which no files exist yet**/
 	for(;run<=numberofmeasurements;run+=1){
 		if((run-1)%amountof_ens_infile==0){
 			snprintf (filename, filenamelength, "data/%.3fsu%1densenmble%06d_%06d.datens",beta,dim,run,run+(amountof_ens_infile-1));
@@ -482,7 +462,8 @@ int main(int argc, char **argv){
 	}
 
 
-	/**measure wilsonloop and plaquette**/
+	/**measure wilsonloop and plaquette
+	 * open existing files and only go through the lattices to make measurements, no Metropolis-Updates**/
 	if (makemeasurements==1){
 	for(run=1;run<=numberofmeasurements;run++){
 		if((run-1)%amountof_ens_infile==0){
@@ -495,7 +476,6 @@ int main(int argc, char **argv){
 				printf("run=%d opened filename=%s\n", run,filename);
 			}
 		}
-		//printf("run\t");
 		for (int i=0;i<size*size*size*size*4;i+=1){
 			gsl_matrix_complex_fscanf(ensemble_data, matrixarray[i]);
 		}
@@ -540,6 +520,7 @@ int main(int argc, char **argv){
 		gsl_vector_set(plaquette, run-1, plaquetteexpectation/((double)size*size*size*size*4*3./2.));
 	}
 	fprintf(wilson_data,"R\tT\t<W>\tvar(W)\tbin\n");
+	//no binning/bootstrapping, only simple mean for first estimate
 	//~ double mean=0;
 	//~ for(int R=1;R<=maxR;R++){
 		//~ for(int T=1;T<=maxT;T++){
@@ -570,7 +551,7 @@ int main(int argc, char **argv){
 			for(int T=1;T<=maxT;T++){
 				binned_wilsonexpectationset[(R-1)*maxT+(T-1)]=gsl_vector_subvector(binned_wilsonexpectationset_mem[(R-1)*maxT+(T-1)], 0, wilsonexpectationset[(R-1)*maxT+(T-1)]->size/binsize);
 				binning(wilsonexpectationset[(R-1)*maxT+(T-1)], &binned_wilsonexpectationset[(R-1)*maxT+(T-1)].vector, binsize);
-				bootstrap(&binned_wilsonexpectationset[(R-1)*maxT+(T-1)].vector, generator, 2, &wilsonmean[(R-1)*maxT+(T-1)], &wilsonvar[(R-1)*maxT+(T-1)]);
+				bootstrap(&binned_wilsonexpectationset[(R-1)*maxT+(T-1)].vector, generator, 200, &wilsonmean[(R-1)*maxT+(T-1)], &wilsonvar[(R-1)*maxT+(T-1)]);
 				fprintf(wilson_data, "%d\t%d\t%e\t%e\t%d\n",R,T,wilsonmean[(R-1)*maxT+(T-1)],wilsonvar[(R-1)*maxT+(T-1)], binsize);				
 			}
 		}
